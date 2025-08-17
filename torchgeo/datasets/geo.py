@@ -23,6 +23,7 @@ import rasterio
 import rasterio.merge
 import shapely
 import torch
+import xarray as xr
 from geopandas import GeoDataFrame
 from pyproj import CRS
 from rasterio.enums import Resampling
@@ -440,23 +441,25 @@ class RasterDataset(GeoDataset):
             match = re.match(filename_regex, os.path.basename(filepath))
             if match is not None:
                 try:
-                    with rasterio.open(filepath) as src:
-                        # See if file has a color map
-                        if len(self.cmap) == 0:
-                            try:
-                                self.cmap = src.colormap(1)  # type: ignore[misc]
-                            except ValueError:
-                                pass
+                    with xr.open_dataset(filepath, decode_coords='all') as src:
+                        crs = crs or src.rio.crs or CRS.from_epsg(4326)
 
-                        if crs is None:
-                            crs = src.crs
+                        if src.rio.crs is None:
+                            warnings.warn(
+                                f"Unable to decode coordinates of '{filepath}', "
+                                f'defaulting to {crs}. Set `crs` if this is incorrect.',
+                                UserWarning,
+                            )
+                            src = src.rio.write_crs(crs)
 
-                        with WarpedVRT(src, crs=crs) as vrt:
-                            geometries.append(shapely.box(*vrt.bounds))
-                            if res is None:
-                                res = vrt.res
-                except rasterio.errors.RasterioIOError:
-                    # Skip files that rasterio is unable to read
+                        if src.rio.crs != crs:
+                            src = src.rio.reproject(crs)
+
+                        geometries.append(shapely.box(*src.rio.bounds()))
+                        if res is None:
+                            res = src.rio.resolution()
+                except (OSError, ValueError):
+                    # Skip files that xarray is unable to read
                     continue
                 else:
                     filepaths.append(filepath)
