@@ -20,15 +20,13 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import rasterio
-import rasterio.merge
+import rioxarray.merge
 import shapely
 import torch
 import xarray as xr
 from geopandas import GeoDataFrame
 from pyproj import CRS
 from rasterio.enums import Resampling
-from rasterio.io import DatasetReader
-from rasterio.vrt import WarpedVRT
 from torch import Tensor
 from torch.utils.data import Dataset
 from torchvision.datasets import ImageFolder
@@ -579,50 +577,50 @@ class RasterDataset(GeoDataset):
             image/mask at that index
         """
         if self.cache:
-            vrt_fhs = [self._cached_load_warp_file(fp) for fp in filepaths]
+            datasets = [self._cached_load_warp_file(fp) for fp in filepaths]
         else:
-            vrt_fhs = [self._load_warp_file(fp) for fp in filepaths]
+            datasets = [self._load_warp_file(fp) for fp in filepaths]
 
         x, y, t = self._disambiguate_slice(query)
         bounds = (x.start, y.start, x.stop, y.stop)
         res = (x.step, y.step)
-        dest, _ = rasterio.merge.merge(
-            vrt_fhs, bounds, res, indexes=band_indexes, resampling=self.resampling
+        dataset = rioxarray.merge.merge_datasets(
+            datasets, bounds=bounds, res=res, method=self.resampling, crs=self.crs
         )
         # Use array_to_tensor since merge may return uint16/uint32 arrays.
-        tensor = array_to_tensor(dest)
+        tensor = array_to_tensor(dataset.band_data.values)
         return tensor
 
     @functools.lru_cache(maxsize=128)
-    def _cached_load_warp_file(self, filepath: Path) -> DatasetReader:
+    def _cached_load_warp_file(self, filepath: Path) -> xr.Dataset:
         """Cached version of :meth:`_load_warp_file`.
 
         Args:
             filepath: file to load and warp
 
         Returns:
-            file handle of warped VRT
+            reprojected file handle
         """
         return self._load_warp_file(filepath)
 
-    def _load_warp_file(self, filepath: Path) -> DatasetReader:
+    def _load_warp_file(self, filepath: Path) -> xr.Dataset:
         """Load and warp a file to the correct CRS and resolution.
 
         Args:
             filepath: file to load and warp
 
         Returns:
-            file handle of warped VRT
+            reprojected file handle
         """
-        src = rasterio.open(filepath)
+        src = xr.open_dataset(filepath, decode_coords='all')
 
-        # Only warp if necessary
-        if src.crs != self.crs:
-            vrt = WarpedVRT(src, crs=self.crs)
-            src.close()
-            return vrt
-        else:
-            return src
+        if src.rio.crs is None:
+            src = src.rio.write_crs(self.crs)
+
+        if src.rio.crs != self.crs:
+            src = src.rio.reproject(self.crs)
+
+        return src
 
 
 class VectorDataset(GeoDataset):
