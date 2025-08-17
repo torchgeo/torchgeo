@@ -11,18 +11,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
+import xarray as xr
 from matplotlib.figure import Figure
 from torch import Tensor
 
 from .errors import DatasetNotFoundError, RGBBandsMissingError
 from .geo import NonGeoDataset
-from .utils import (
-    Path,
-    download_and_extract_archive,
-    download_url,
-    extract_archive,
-    lazy_import,
-)
+from .utils import Path, download_and_extract_archive, download_url, extract_archive
 
 
 class DL4GAMAlps(NonGeoDataset):
@@ -80,14 +75,6 @@ class DL4GAMAlps(NonGeoDataset):
     If you use this dataset in your research, please cite the following paper:
 
     * https://doi.org/10.22541/essoar.173557607.70204641/v1
-
-    .. note::
-
-        This dataset requires the following additional libraries to be installed:
-
-        * `xarray <https://pypi.org/project/xarray/>`_
-        * `netcdf4 <https://pypi.org/project/netCDF4/>`_
-          or `h5netcdf <https://pypi.org/project/h5netcdf/>`_
 
     .. versionadded:: 0.7
     """
@@ -171,10 +158,7 @@ class DL4GAMAlps(NonGeoDataset):
         Raises:
             AssertionError: if any parameters are invalid.
             DatasetNotFoundError: if dataset is not found and *download* is False.
-            DependencyNotFoundError: if xarray is not installed.
         """
-        lazy_import('xarray')
-
         self.root = pathlib.Path(root)
         self.split = split
         self.cv_iter = cv_iter
@@ -240,7 +224,6 @@ class DL4GAMAlps(NonGeoDataset):
                 * the cloud and shadow mask
                 * the additional features (DEM, derived features, etc.) if required
         """
-        xr = lazy_import('xarray')
         nc = xr.open_dataset(
             self.fp_patches[index], decode_coords='all', mask_and_scale=True
         )
