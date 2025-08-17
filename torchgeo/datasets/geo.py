@@ -466,7 +466,7 @@ class RasterDataset(GeoDataset):
             if self.bands:
                 if self.all_bands:
                     self.band_indexes = [
-                        self.all_bands.index(i) + 1 for i in self.bands
+                        self.all_bands.index(i) for i in self.bands
                     ]
                 else:
                     msg = (
