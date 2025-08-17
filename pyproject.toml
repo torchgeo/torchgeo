@@ -82,8 +82,8 @@ dependencies = [
     # typing-extensions 4.5+ required for typing_extensions.deprecated
     # can be removed once Python 3.13 is minimum supported version
     "typing-extensions>=4.5",
-    # xarray 0.17+ required by rioxarray
-    "xarray>=0.17",
+    # xarray 0.18+ required for xarray.open_dataset(engine='rasterio')
+    "xarray>=0.18",
 ]
 dynamic = ["version"]
 

@@ -441,7 +441,6 @@ class RasterDataset(GeoDataset):
                             res = (abs(_res[0]), abs(_res[1]))
                 except (OSError, ValueError):
                     # Skip files that xarray is unable to read
-                    raise
                     continue
                 else:
                     filepaths.append(filepath)
