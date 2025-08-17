@@ -438,6 +438,7 @@ class RasterDataset(GeoDataset):
                         geometries.append(shapely.box(*src.rio.bounds()))
                         if res is None:
                             res = src.rio.resolution()
+                            res = (abs(res[0]), abs(res[1]))
                 except (OSError, ValueError):
                     # Skip files that xarray is unable to read
                     continue
@@ -570,7 +571,7 @@ class RasterDataset(GeoDataset):
             datasets, bounds=bounds, res=res, crs=self.crs
         )
         # Use array_to_tensor since merge may return uint16/uint32 arrays.
-        tensor = array_to_tensor(dataset.band_data.values)
+        tensor = array_to_tensor(dataset.band_data.values[band_indexes])
         return tensor
 
     @functools.lru_cache(maxsize=128)
