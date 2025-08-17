@@ -437,8 +437,8 @@ class RasterDataset(GeoDataset):
 
                         geometries.append(shapely.box(*src.rio.bounds()))
                         if res is None:
-                            res = src.rio.resolution()
-                            res = (abs(res[0]), abs(res[1]))
+                            _res = src.rio.resolution()
+                            res = (abs(_res[0]), abs(_res[1]))
                 except (OSError, ValueError):
                     # Skip files that xarray is unable to read
                     continue
@@ -572,7 +572,7 @@ class RasterDataset(GeoDataset):
         )
         # Use array_to_tensor since merge may return uint16/uint32 arrays.
         tensor = array_to_tensor(dataset.band_data.values[band_indexes])
-        return tensor
+        return tensor.squeeze(0)
 
     @functools.lru_cache(maxsize=128)
     def _cached_load_warp_file(self, filepath: Path) -> xr.Dataset:
