@@ -465,9 +465,7 @@ class RasterDataset(GeoDataset):
             self.band_indexes = None
             if self.bands:
                 if self.all_bands:
-                    self.band_indexes = [
-                        self.all_bands.index(i) for i in self.bands
-                    ]
+                    self.band_indexes = [self.all_bands.index(i) for i in self.bands]
                 else:
                     msg = (
                         f'{self.__class__.__name__} is missing an `all_bands` '
