@@ -62,11 +62,9 @@ dependencies = [
     # pyproj 3.4+ required for Python 3.11 wheels
     "pyproj>=3.4",
     # rasterio 1.3.3+ required for Python 3.11 wheels
-    # rasterio 1.4.0-1.4.2 lack support for merging WarpedVRT objects
-    # https://github.com/rasterio/rasterio/issues/3196
-    "rasterio>=1.3.3,!=1.4.0,!=1.4.1,!=1.4.2",
-    # rioxarray 0.11.2+ required for wheels
-    "rioxarray>=0.11.2",
+    "rasterio>=1.3.3",
+    # rioxarray 0.15.2+ required for RasterioBackend.open_dataset(decode_coords='all')
+    "rioxarray>=0.15.2",
     # segmentation-models-pytorch 0.5+ required for new UnetDecoder API
     "segmentation-models-pytorch>=0.5",
     # shapely 2+ required for shapely.Geometry
