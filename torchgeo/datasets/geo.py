@@ -26,7 +26,6 @@ import torch
 import xarray as xr
 from geopandas import GeoDataFrame
 from pyproj import CRS
-from rasterio.enums import Resampling
 from torch import Tensor
 from torch.utils.data import Dataset
 from torchvision.datasets import ImageFolder
@@ -376,23 +375,6 @@ class RasterDataset(GeoDataset):
         else:
             return torch.long
 
-    @property
-    def resampling(self) -> Resampling:
-        """Resampling algorithm used when reading input files.
-
-        Defaults to bilinear for float dtypes and nearest for int dtypes.
-
-        Returns:
-            The resampling method to use.
-
-        .. versionadded:: 0.6
-        """
-        # Based on torch.is_floating_point
-        if self.dtype in [torch.float64, torch.float32, torch.float16, torch.bfloat16]:
-            return Resampling.bilinear
-        else:
-            return Resampling.nearest
-
     def __init__(
         self,
         paths: Path | Iterable[Path] = 'data',
@@ -585,7 +567,7 @@ class RasterDataset(GeoDataset):
         bounds = (x.start, y.start, x.stop, y.stop)
         res = (x.step, y.step)
         dataset = rioxarray.merge.merge_datasets(
-            datasets, bounds=bounds, res=res, method=self.resampling, crs=self.crs
+            datasets, bounds=bounds, res=res, crs=self.crs
         )
         # Use array_to_tensor since merge may return uint16/uint32 arrays.
         tensor = array_to_tensor(dataset.band_data.values)
