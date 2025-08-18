@@ -76,6 +76,13 @@ class DL4GAMAlps(NonGeoDataset):
 
     * https://doi.org/10.22541/essoar.173557607.70204641/v1
 
+    .. note::
+
+        This dataset requires the following additional library to be installed:
+
+        * `netcdf4 <https://pypi.org/project/netCDF4/>`_
+          or `h5netcdf <https://pypi.org/project/h5netcdf/>`_
+
     .. versionadded:: 0.7
     """
 
