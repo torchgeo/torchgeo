@@ -26,6 +26,7 @@ import torch
 import xarray as xr
 from geopandas import GeoDataFrame
 from pyproj import CRS
+from rasterio.enums import Resampling
 from torch import Tensor
 from torch.utils.data import Dataset
 from torchvision.datasets import ImageFolder
@@ -375,6 +376,23 @@ class RasterDataset(GeoDataset):
         else:
             return torch.long
 
+    @property
+    def resampling(self) -> Resampling:
+        """Resampling algorithm used when reading input files.
+
+        Defaults to bilinear for float dtypes and nearest for int dtypes.
+
+        Returns:
+            The resampling method to use.
+
+        .. versionadded:: 0.6
+        """
+        # Based on torch.is_floating_point
+        if self.dtype in [torch.float64, torch.float32, torch.float16, torch.bfloat16]:
+            return Resampling.bilinear
+        else:
+            return Resampling.nearest
+
     def __init__(
         self,
         paths: Path | Iterable[Path] = 'data',
@@ -599,7 +617,7 @@ class RasterDataset(GeoDataset):
             src = src.rio.write_crs(self.crs)
 
         if src.rio.crs != self.crs:
-            src = src.rio.reproject(self.crs)
+            src = src.rio.reproject(self.crs, resampling=self.resampling)
 
         return src
 
