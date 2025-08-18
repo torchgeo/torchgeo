@@ -440,7 +440,7 @@ class RasterDataset(GeoDataset):
             if match is not None:
                 try:
                     with xr.open_dataset(filepath, decode_coords='all') as src:
-                        crs = crs or src.rio.crs # or CRS.from_epsg(4326)
+                        crs = crs or src.rio.crs  # or CRS.from_epsg(4326)
 
                         # if src.rio.crs is None:
                         #     warnings.warn(
