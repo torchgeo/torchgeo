@@ -19,7 +19,7 @@ torch==2.0.0
 torchmetrics==1.2.0
 torchvision==0.15.1
 typing-extensions==4.5.0
-xarray==0.18.0
+xarray==2022.3.0
 
 # datasets
 h5py==3.8.0
