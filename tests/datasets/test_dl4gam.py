@@ -13,6 +13,8 @@ from pytest import MonkeyPatch
 
 from torchgeo.datasets import DatasetNotFoundError, DL4GAMAlps, RGBBandsMissingError
 
+pytest.importorskip('netCDF4', minversion='1.5.8')
+
 
 class TestDL4GAMAlps:
     @pytest.fixture(
