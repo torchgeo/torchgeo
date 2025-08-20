@@ -1,5 +1,5 @@
 ResNet152_Weights
-================
+=================
 
 .. autoclass:: torchgeo.models.ResNet152_Weights
     :members:

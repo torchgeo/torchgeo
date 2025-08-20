@@ -1,5 +1,5 @@
 ViTLarge16_Weights
-================
+==================
 
 .. autoclass:: torchgeo.models.ViTLarge16_Weights
     :members:

@@ -1,5 +1,5 @@
 Panopticon_Weights
-================
+==================
 
 .. autoclass:: torchgeo.models.Panopticon_Weights
     :members:

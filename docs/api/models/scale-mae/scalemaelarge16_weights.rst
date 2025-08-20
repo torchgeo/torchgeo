@@ -1,5 +1,5 @@
 ScaleMAELarge16_Weights
-================
+=======================
 
 .. autoclass:: torchgeo.models.ScaleMAELarge16_Weights
     :members:
