@@ -10,4 +10,3 @@ Available Versions
    :maxdepth: 1
 
    earthloc
-   earthloc_weights

@@ -10,4 +10,3 @@ Available Versions
    :maxdepth: 1
 
    unet
-   unet_weights

@@ -12,5 +12,3 @@ Available Versions
    croma
    croma_base
    croma_large
-   cromabase_weights
-   cromalarge_weights

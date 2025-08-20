@@ -12,6 +12,3 @@ Available Versions
    resnet18
    resnet50
    resnet152
-   resnet18_weights
-   resnet50_weights
-   resnet152_weights

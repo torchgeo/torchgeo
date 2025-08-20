@@ -11,4 +11,3 @@ Available Versions
 
    panopticon
    panopticon_vitb14
-   panopticon_weights

@@ -11,5 +11,3 @@ Available Versions
 
    swin_v2_t
    swin_v2_b
-   swin_v2_t_weights
-   swin_v2_b_weights

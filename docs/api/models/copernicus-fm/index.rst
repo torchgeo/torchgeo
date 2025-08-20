@@ -11,4 +11,3 @@ Available Versions
 
    copernicusfm
    copernicusfm_base
-   copernicusfm_base_weights
