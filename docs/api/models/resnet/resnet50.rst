@@ -2,7 +2,3 @@ resnet50
 ================
 
 .. autofunction:: torchgeo.models.resnet50
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :member-order: bysource
