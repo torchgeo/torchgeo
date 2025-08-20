@@ -11,8 +11,25 @@ Models
 .. toctree::
    :maxdepth: 1
 
-   models/changestar/index
+   models/aurora/index
+   models/change-star/index
+   models/copernicus-fm/index
+   models/croma/index
+   models/dofa/index
+   models/earthloc/index
+   models/farseg/index
+   models/fcn/index
+   models/fc-siamese-networks/index
+   models/l-tae/index
+   models/mosaiks/index
    models/resnet/index
+   models/scale-mae/index
+   models/swin-transformer/index
+   models/panopticon/index
+   models/u-net/index
+   models/vision-transformer/index
+   models/yolo/index
+
 
 Pretrained Weights
 ------------------
