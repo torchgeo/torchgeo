@@ -1,7 +1,7 @@
-resnet50
+ChangeStar
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.ChangeStar
     :members:
     :undoc-members:
     :show-inheritance:

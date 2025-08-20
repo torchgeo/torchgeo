@@ -1,7 +1,7 @@
-resnet50
+earthloc
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.earthloc
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,7 +1,7 @@
-resnet50
+DOFALarge16_Weights
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.DOFALarge16_Weights
     :members:
     :undoc-members:
     :show-inheritance:

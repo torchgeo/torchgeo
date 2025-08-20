@@ -1,7 +1,7 @@
-resnet50
+ScaleMAE
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.ScaleMAE
     :members:
     :undoc-members:
     :show-inheritance:

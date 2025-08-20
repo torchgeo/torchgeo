@@ -1,7 +1,7 @@
-resnet50
+FCSiamDiff
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.FCSiamDiff
     :members:
     :undoc-members:
     :show-inheritance:

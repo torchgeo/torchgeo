@@ -1,7 +1,7 @@
-resnet50
+aurora_weights
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.aurora_weights
     :members:
     :undoc-members:
     :show-inheritance:

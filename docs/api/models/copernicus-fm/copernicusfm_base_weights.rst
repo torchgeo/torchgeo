@@ -1,7 +1,7 @@
-resnet50
+CopernicusFM_Base_Weights
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.CopernicusFM_Base_Weights
     :members:
     :undoc-members:
     :show-inheritance:

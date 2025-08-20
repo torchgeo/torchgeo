@@ -1,7 +1,7 @@
-resnet50
+RCF
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.RCF
     :members:
     :undoc-members:
     :show-inheritance:

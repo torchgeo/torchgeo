@@ -1,7 +1,7 @@
-resnet50
+copernicusfm_base
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.copernicusfm_base
     :members:
     :undoc-members:
     :show-inheritance:

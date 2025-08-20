@@ -1,7 +1,7 @@
-resnet50
+CROMA
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.CROMA
     :members:
     :undoc-members:
     :show-inheritance:

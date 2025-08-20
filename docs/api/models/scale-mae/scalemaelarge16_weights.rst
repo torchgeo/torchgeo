@@ -1,7 +1,7 @@
-resnet50
+ScaleMAELarge16_Weights
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.ScaleMAELarge16_Weights
     :members:
     :undoc-members:
     :show-inheritance:

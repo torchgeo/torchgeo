@@ -1,7 +1,7 @@
-resnet50
+CROMABase_Weights
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.CROMABase_Weights
     :members:
     :undoc-members:
     :show-inheritance:

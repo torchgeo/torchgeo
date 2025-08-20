@@ -1,7 +1,7 @@
-resnet50
+YOLO_Weights
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.YOLO_Weights
     :members:
     :undoc-members:
     :show-inheritance:

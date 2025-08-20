@@ -1,7 +1,7 @@
-resnet50
+ViTSmall14_DINOv2_Weights
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.ViTSmall14_DINOv2_Weights
     :members:
     :undoc-members:
     :show-inheritance:

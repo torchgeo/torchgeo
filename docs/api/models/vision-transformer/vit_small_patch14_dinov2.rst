@@ -1,7 +1,7 @@
-resnet50
+vit_small_patch14_dinov2
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.vit_small_patch14_dinov2
     :members:
     :undoc-members:
     :show-inheritance:

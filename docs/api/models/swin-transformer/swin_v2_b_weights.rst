@@ -1,7 +1,7 @@
-resnet50
+Swin_V2_B_Weights
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.Swin_V2_B_Weights
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,7 +1,7 @@
-resnet50
+ChangeStarFarSeg
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.ChangeStarFarSeg
     :members:
     :undoc-members:
     :show-inheritance:

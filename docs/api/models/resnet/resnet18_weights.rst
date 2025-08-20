@@ -1,7 +1,7 @@
-resnet50
+ResNet18_Weights
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.ResNet18_Weights
     :members:
     :undoc-members:
     :show-inheritance:

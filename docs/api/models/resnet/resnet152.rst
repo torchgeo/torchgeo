@@ -1,7 +1,7 @@
-resnet50
+resnet152
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.resnet152
     :members:
     :undoc-members:
     :show-inheritance:

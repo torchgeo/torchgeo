@@ -1,7 +1,7 @@
-resnet50
+ChangeMixin
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.ChangeMixin
     :members:
     :undoc-members:
     :show-inheritance:

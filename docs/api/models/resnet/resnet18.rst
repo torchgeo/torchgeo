@@ -1,18 +1,8 @@
-ResNet-18
-=========
+resnet18
+================
 
-.. currentmodule:: torchgeo.models
-
-Model function
---------------
-
-.. autofunction:: resnet18
-
-Pretrained Weights
-------------------
-
-.. autoclass:: ResNet18_Weights
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
+.. autofunction:: torchgeo.models.resnet18
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :member-order: bysource

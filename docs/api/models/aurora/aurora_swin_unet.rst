@@ -1,7 +1,7 @@
-resnet50
+aurora_swin_unet
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.aurora_swin_unet
     :members:
     :undoc-members:
     :show-inheritance:

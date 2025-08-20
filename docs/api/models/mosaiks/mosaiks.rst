@@ -1,7 +1,7 @@
-resnet50
+MOSAIKS
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.MOSAIKS
     :members:
     :undoc-members:
     :show-inheritance:

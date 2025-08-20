@@ -1,7 +1,7 @@
-resnet50
+Panopticon
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.Panopticon
     :members:
     :undoc-members:
     :show-inheritance:

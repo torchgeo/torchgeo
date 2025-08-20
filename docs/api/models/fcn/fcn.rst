@@ -1,7 +1,7 @@
-resnet50
+FCN
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.FCN
     :members:
     :undoc-members:
     :show-inheritance:

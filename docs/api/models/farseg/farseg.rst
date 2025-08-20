@@ -1,7 +1,7 @@
-resnet50
+FarSeg
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.FarSeg
     :members:
     :undoc-members:
     :show-inheritance:

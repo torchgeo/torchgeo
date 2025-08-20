@@ -1,7 +1,7 @@
-resnet50
+unet
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.unet
     :members:
     :undoc-members:
     :show-inheritance:

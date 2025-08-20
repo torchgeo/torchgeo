@@ -1,7 +1,7 @@
-resnet50
+ViTHuge14_Weights
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.ViTHuge14_Weights
     :members:
     :undoc-members:
     :show-inheritance:

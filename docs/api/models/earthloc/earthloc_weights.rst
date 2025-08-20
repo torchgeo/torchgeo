@@ -1,7 +1,7 @@
-resnet50
+EarthLoc_Weights
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.EarthLoc_Weights
     :members:
     :undoc-members:
     :show-inheritance:

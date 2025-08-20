@@ -1,7 +1,7 @@
-resnet50
+DOFA
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.DOFA
     :members:
     :undoc-members:
     :show-inheritance:

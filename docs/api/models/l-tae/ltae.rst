@@ -1,7 +1,7 @@
-resnet50
+LTAE
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.LTAE
     :members:
     :undoc-members:
     :show-inheritance:

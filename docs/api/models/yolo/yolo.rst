@@ -1,7 +1,7 @@
-resnet50
+yolo
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autofunction:: torchgeo.models.yolo
     :members:
     :undoc-members:
     :show-inheritance:

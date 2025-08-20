@@ -1,7 +1,7 @@
-resnet50
+ViTBase16_Weights
 ================
 
-.. autofunction:: torchgeo.models.resnet50
+.. autoclass:: torchgeo.models.ViTBase16_Weights
     :members:
     :undoc-members:
     :show-inheritance:
