@@ -15,9 +15,5 @@ Available Versions
    vit_huge_patch14_224
    vit_small_patch14_dinov2
    vit_base_patch14_dinov2
-   vitsmall16_weights
-   vitbase16_weights
-   vitlarge16_weights
-   vithuge14_weights
    vitsmall14_dinov2_weights
    vitbase14_dinov2_weights
