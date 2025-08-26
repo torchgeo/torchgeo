@@ -583,15 +583,19 @@ class RasterDataset(GeoDataset):
         x, y, t = self._disambiguate_slice(query)
         bounds = (x.start, y.start, x.stop, y.stop)
         res = (x.step, y.step)
+
         dataset = rioxarray.merge.merge_datasets(
             datasets, bounds=bounds, res=res, nodata=0, crs=self.crs
         )
-        # Use array_to_tensor since merge may return uint16/uint32 arrays.
+
         if band_indexes:
             array = dataset.band_data[band_indexes].values
         else:
             array = dataset.band_data.values
+
+        # Use array_to_tensor since merge may return uint16/uint32 arrays.
         tensor = array_to_tensor(array)
+
         return tensor.squeeze(0)
 
     @functools.lru_cache(maxsize=128)
