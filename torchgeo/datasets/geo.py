@@ -587,7 +587,11 @@ class RasterDataset(GeoDataset):
             datasets, bounds=bounds, res=res, nodata=0, crs=self.crs
         )
         # Use array_to_tensor since merge may return uint16/uint32 arrays.
-        tensor = array_to_tensor(dataset.band_data.values[band_indexes])
+        if band_indexes:
+            array = dataset.band_data[band_indexes].values
+        else:
+            array = dataset.band_data.values
+        tensor = array_to_tensor(array)
         return tensor.squeeze(0)
 
     @functools.lru_cache(maxsize=128)
