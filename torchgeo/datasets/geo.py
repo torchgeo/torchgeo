@@ -596,7 +596,7 @@ class RasterDataset(GeoDataset):
         # Use array_to_tensor since merge may return uint16/uint32 arrays.
         tensor = array_to_tensor(array)
 
-        return tensor.squeeze(0)
+        return tensor
 
     @functools.lru_cache(maxsize=128)
     def _cached_load_warp_file(self, filepath: Path) -> xr.Dataset:
