@@ -3,6 +3,11 @@
 
 import pytest
 
+pytest.importorskip('neuralgcm', minversion='0.2.0')
+pytest.importorskip('jax')
+pytest.importorskip('xarray')
+pytest.importorskip('gcsfs')
+
 from torchgeo.models import NeuralGCM_Weights, neuralgcm
 
 
@@ -24,7 +29,6 @@ class TestNeuralGCM:
         ],
     )
     def test_weights(self, weights: NeuralGCM_Weights) -> None:
-        pytest.importorskip('neuralgcm', minversion='0.2.0')
         model = neuralgcm(weights=weights)
         assert hasattr(model, 'timestep')
         assert hasattr(model, 'data_coords')
@@ -34,7 +38,6 @@ class TestNeuralGCM:
 
     @pytest.mark.slow
     def test_default_weights(self) -> None:
-        pytest.importorskip('neuralgcm', minversion='0.2.0')
         model = neuralgcm(weights=NeuralGCM_Weights.DETERMINISTIC_1_4_DEG)
         assert hasattr(model, 'timestep')
         assert hasattr(model, 'encode')
@@ -49,11 +52,6 @@ class TestNeuralGCM:
         Performs parts of the NeuralGCM quick start guide:
         https://neuralgcm.readthedocs.io/en/latest/inference_demo.html
         """
-        pytest.importorskip('neuralgcm', minversion='0.2.0')
-        pytest.importorskip('jax')
-        pytest.importorskip('xarray')
-        pytest.importorskip('gcsfs')
-
         import jax
         import numpy as np
         import xarray as xr
