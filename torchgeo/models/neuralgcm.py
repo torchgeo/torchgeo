@@ -6,7 +6,6 @@
 import pickle
 from typing import Any, cast
 
-import gcsfs
 import torch.nn as nn
 from torchvision.models._api import Weights, WeightsEnum
 
