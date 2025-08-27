@@ -186,8 +186,8 @@ class ConvLSTM(nn.Module):
         Returns:
             A tuple of two lists containing:
 
-            * layer_output_list: List of Tensors of shape (b, t, c, h, w)
-            * last_state_list: List of tuples of (h, c) for the last time step
+            - layer_output_list: List of Tensors of shape (b, t, c, h, w)
+            - last_state_list: List of tuples of (h, c) for the last time step
         """
         if not self.batch_first:
             input_tensor = input_tensor.permute(1, 0, 2, 3, 4)
