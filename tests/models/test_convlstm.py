@@ -60,7 +60,7 @@ class TestConvLSTM:
         assert layer_output_list[1].shape == (b, t, hidden_dims[1], h, w)
 
     def test_convlstm_kernel_size_as_list(self) -> None:
-        """Test that kernel_size can be a list of integers."""
+        """Test that kernel_size can be a list of tuples."""
         b = 1
         t = 4
         c = 3
@@ -71,7 +71,7 @@ class TestConvLSTM:
         model = ConvLSTM(
             input_dim=c,
             hidden_dim=16,
-            kernel_size=[3, 3],  # Pass as list of integers
+            kernel_size=[(3, 3)],  # Pass as list of tuples
             num_layers=1,
             batch_first=True,
         )
@@ -109,7 +109,7 @@ class TestConvLSTM:
             ConvLSTM(
                 input_dim=3,
                 hidden_dim=[16, 32],  # 2 layers
-                kernel_size=(3, 3),   # 1 layer
+                kernel_size=[(3, 3)],  # 1 layer
                 num_layers=2,
             )
 
