@@ -59,6 +59,60 @@ class TestConvLSTM:
         assert layer_output_list[0].shape == (b, t, hidden_dims[0], h, w)
         assert layer_output_list[1].shape == (b, t, hidden_dims[1], h, w)
 
+    def test_convlstm_kernel_size_as_list(self) -> None:
+        """Test that kernel_size can be a list of integers."""
+        b = 1
+        t = 4
+        c = 3
+        h = 64
+        w = 64
+        input_tensor = torch.rand(b, t, c, h, w)
+
+        model = ConvLSTM(
+            input_dim=c,
+            hidden_dim=16,
+            kernel_size=[3, 3],  # Pass as list of integers
+            num_layers=1,
+            batch_first=True,
+        )
+        layer_output_list, last_state_list = model(input_tensor)
+
+        assert len(layer_output_list) == 1
+        assert len(last_state_list) == 1
+        assert layer_output_list[0].shape == (b, t, 16, h, w)
+
+    def test_convlstm_batch_first_false(self) -> None:
+        """Test the forward pass with batch_first=False."""
+        b = 1
+        t = 4
+        c = 3
+        h = 64
+        w = 64
+        input_tensor = torch.rand(t, b, c, h, w)  # Note the different order
+
+        model = ConvLSTM(
+            input_dim=c,
+            hidden_dim=16,
+            kernel_size=(3, 3),
+            num_layers=1,
+            batch_first=False,
+        )
+        layer_output_list, last_state_list = model(input_tensor)
+
+        assert len(layer_output_list) == 1
+        assert len(last_state_list) == 1
+        assert layer_output_list[0].shape == (b, t, 16, h, w)
+
+    def test_convlstm_inconsistent_list_length(self) -> None:
+        """Test that inconsistent list lengths raise a ValueError."""
+        with pytest.raises(ValueError, match='Inconsistent list length'):
+            ConvLSTM(
+                input_dim=3,
+                hidden_dim=[16, 32],  # 2 layers
+                kernel_size=(3, 3),   # 1 layer
+                num_layers=2,
+            )
+
     def test_convlstm_invalid_kernel_size(self) -> None:
         """Test that an invalid kernel size raises a ValueError."""
         with pytest.raises(ValueError):
