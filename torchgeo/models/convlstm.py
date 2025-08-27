@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
+#
+# Copyright (c) 2017 Andrea Palazzi
 
 """Convolutional Long Short-Term Memory (ConvLSTM) model."""
-
-from __future__ import annotations
 
 from collections.abc import Sequence
 from typing import cast
@@ -98,6 +98,10 @@ class ConvLSTM(nn.Module):
 
     This model is a sequence-processing model that uses convolutional operations
     within the LSTM cells. It is particularly useful for spatio-temporal data.
+
+    If you use this model in your research, please cite the following paper:
+
+    * https://arxiv.org/abs/1506.04214
     """
 
     def __init__(
@@ -180,9 +184,10 @@ class ConvLSTM(nn.Module):
             hidden_state: An optional initial hidden state.
 
         Returns:
-            A tuple of two lists:
-            1. layer_output_list: List of Tensors of shape (b, t, c, h, w).
-            2. last_state_list: List of tuples of (h, c) for the last time step.
+            A tuple of two lists containing:
+
+            * layer_output_list: List of Tensors of shape (b, t, c, h, w)
+            * last_state_list: List of tuples of (h, c) for the last time step
         """
         if not self.batch_first:
             input_tensor = input_tensor.permute(1, 0, 2, 3, 4)
