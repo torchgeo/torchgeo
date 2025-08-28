@@ -309,10 +309,7 @@ class GeoDataset(Dataset[dict[str, Any]], abc.ABC):
 
 
 class RasterDataset(GeoDataset):
-    """Abstract base class for :class:`GeoDataset` stored as raster files.
-
-    Uses rasterio for file I/O.
-    """
+    """Abstract base class for :class:`GeoDataset` stored as raster files."""
 
     #: Regular expression used to extract date from filename.
     #:
@@ -629,8 +626,6 @@ class RasterDataset(GeoDataset):
 class XarrayDataset(GeoDataset):
     """Abstract base class for :class:`GeoDataset` stored as raster files.
 
-    Uses rioxarray for file I/O.
-
     .. versionadded:: 0.8
     """
 
@@ -667,11 +662,10 @@ class XarrayDataset(GeoDataset):
         geometries = []
         for filepath in self.files:
             try:
-                with xr.open_dataset(
-                    filepath, decode_times=True, decode_coords='all'
-                ) as src:
+                with xr.open_dataset(filepath, decode_coords='all') as src:
                     # TODO: ensure compatibility between pyproj and rasterio CRS objects
                     crs = crs or src.rio.crs or CRS.from_epsg(4326)
+                    # TODO: what if res is 0.0?
                     res = res or src.rio.resolution()
                     tmin = pd.Timestamp(src.time.values.min())
                     tmax = pd.Timestamp(src.time.values.max())
@@ -684,8 +678,8 @@ class XarrayDataset(GeoDataset):
                         )
                         src = src.rio.write_crs(crs)
 
-                    if src.rio.crs != crs or res != src.rio.resolution():
-                        src = src.rio.reproject(crs, res)
+                    if src.rio.crs != crs:
+                        src = src.rio.reproject(crs)
 
                     filepaths.append(filepath)
                     datetimes.append((tmin, tmax))
@@ -718,7 +712,6 @@ class XarrayDataset(GeoDataset):
             Sample of input, target, and/or metadata at that index.
 
         Raises:
-            DependencyNotFoundError: If rioxarray is not installed.
             IndexError: If *query* is not found in the index.
         """
         x, y, t = self._disambiguate_slice(query)
@@ -770,7 +763,9 @@ class XarrayDataset(GeoDataset):
 
             datasets.append(src)
 
-        dataset = rioxr.merge.merge_datasets(datasets, bounds=bounds, res=res)
+        dataset = rioxr.merge.merge_datasets(
+            datasets, bounds=bounds, res=res, nodata=0, crs=self.crs
+        )
         dataset = dataset.sel(time=slice(t.start, t.stop))
 
         # Use array_to_tensor since merge may return uint16/uint32 arrays.
@@ -779,10 +774,7 @@ class XarrayDataset(GeoDataset):
 
 
 class VectorDataset(GeoDataset):
-    """Abstract base class for :class:`GeoDataset` stored as vector files.
-
-    Uses fiona for file I/O.
-    """
+    """Abstract base class for :class:`GeoDataset` stored as vector files."""
 
     #: Regular expression used to extract date from filename.
     #:
