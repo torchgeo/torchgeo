@@ -20,14 +20,13 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import rasterio
-import rasterio.merge
+import rioxarray.merge
 import shapely
 import torch
+import xarray as xr
 from geopandas import GeoDataFrame
 from pyproj import CRS
 from rasterio.enums import Resampling
-from rasterio.io import DatasetReader
-from rasterio.vrt import WarpedVRT
 from torch import Tensor
 from torch.utils.data import Dataset
 from torchvision.datasets import ImageFolder
@@ -440,23 +439,26 @@ class RasterDataset(GeoDataset):
             match = re.match(filename_regex, os.path.basename(filepath))
             if match is not None:
                 try:
-                    with rasterio.open(filepath) as src:
-                        # See if file has a color map
-                        if len(self.cmap) == 0:
-                            try:
-                                self.cmap = src.colormap(1)  # type: ignore[misc]
-                            except ValueError:
-                                pass
+                    with xr.open_dataset(filepath, decode_coords='all') as src:
+                        crs = crs or src.rio.crs  # or CRS.from_epsg(4326)
 
-                        if crs is None:
-                            crs = src.crs
+                        # if src.rio.crs is None:
+                        #     warnings.warn(
+                        #         f"Unable to decode coordinates of '{filepath}', "
+                        #         f'defaulting to {crs}. Set `crs` if this is incorrect.',
+                        #         UserWarning,
+                        #     )
+                        #     src = src.rio.write_crs(crs)
 
-                        with WarpedVRT(src, crs=crs) as vrt:
-                            geometries.append(shapely.box(*vrt.bounds))
-                            if res is None:
-                                res = vrt.res
-                except rasterio.errors.RasterioIOError:
-                    # Skip files that rasterio is unable to read
+                        if src.rio.crs != crs:
+                            src = src.rio.reproject(crs)
+
+                        geometries.append(shapely.box(*src.rio.bounds()))
+                        if res is None:
+                            _res = src.rio.resolution()
+                            res = (abs(_res[0]), abs(_res[1]))
+                except (OSError, ValueError):
+                    # Skip files that xarray is unable to read
                     continue
                 else:
                     filepaths.append(filepath)
@@ -481,9 +483,7 @@ class RasterDataset(GeoDataset):
             self.band_indexes = None
             if self.bands:
                 if self.all_bands:
-                    self.band_indexes = [
-                        self.all_bands.index(i) + 1 for i in self.bands
-                    ]
+                    self.band_indexes = [self.all_bands.index(i) for i in self.bands]
                 else:
                     msg = (
                         f'{self.__class__.__name__} is missing an `all_bands` '
@@ -576,50 +576,58 @@ class RasterDataset(GeoDataset):
             image/mask at that index
         """
         if self.cache:
-            vrt_fhs = [self._cached_load_warp_file(fp) for fp in filepaths]
+            datasets = [self._cached_load_warp_file(fp) for fp in filepaths]
         else:
-            vrt_fhs = [self._load_warp_file(fp) for fp in filepaths]
+            datasets = [self._load_warp_file(fp) for fp in filepaths]
 
         x, y, t = self._disambiguate_slice(query)
         bounds = (x.start, y.start, x.stop, y.stop)
         res = (x.step, y.step)
-        dest, _ = rasterio.merge.merge(
-            vrt_fhs, bounds, res, indexes=band_indexes, resampling=self.resampling
+
+        dataset = rioxarray.merge.merge_datasets(
+            datasets, bounds=bounds, res=res, nodata=0, crs=self.crs
         )
+
+        if band_indexes:
+            array = dataset.band_data[band_indexes].values
+        else:
+            array = dataset.band_data.values
+
         # Use array_to_tensor since merge may return uint16/uint32 arrays.
-        tensor = array_to_tensor(dest)
+        tensor = array_to_tensor(array)
+
         return tensor
 
     @functools.lru_cache(maxsize=128)
-    def _cached_load_warp_file(self, filepath: Path) -> DatasetReader:
+    def _cached_load_warp_file(self, filepath: Path) -> xr.Dataset:
         """Cached version of :meth:`_load_warp_file`.
 
         Args:
             filepath: file to load and warp
 
         Returns:
-            file handle of warped VRT
+            reprojected file handle
         """
         return self._load_warp_file(filepath)
 
-    def _load_warp_file(self, filepath: Path) -> DatasetReader:
+    def _load_warp_file(self, filepath: Path) -> xr.Dataset:
         """Load and warp a file to the correct CRS and resolution.
 
         Args:
             filepath: file to load and warp
 
         Returns:
-            file handle of warped VRT
+            reprojected file handle
         """
-        src = rasterio.open(filepath)
+        src = xr.open_dataset(filepath, decode_coords='all')
 
-        # Only warp if necessary
-        if src.crs != self.crs:
-            vrt = WarpedVRT(src, crs=self.crs)
-            src.close()
-            return vrt
-        else:
-            return src
+        # if src.rio.crs is None:
+        #     src = src.rio.write_crs(self.crs)
+
+        if src.rio.crs != self.crs:
+            src = src.rio.reproject(self.crs, resampling=self.resampling)
+
+        return src
 
 
 class VectorDataset(GeoDataset):
