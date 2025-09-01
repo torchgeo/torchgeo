@@ -7,7 +7,7 @@ import os
 from collections.abc import Callable, Sequence
 from typing import Any, ClassVar
 
-import fiona
+import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -302,34 +302,32 @@ class EnviroAtlas(GeoDataset):
         data = []
         datetimes = []
         geometries = []
-        with fiona.open(
-            os.path.join(root, 'enviroatlas_lotp', 'spatial_index.geojson'), 'r'
-        ) as f:
-            for row in f:
-                if row['properties']['split'] in splits:
-                    geometries.append(shapely.geometry.shape(row['geometry']))
-                    datetimes.append((mint, maxt))
-                    data.append(
-                        {
-                            'naip': row['properties']['naip'],
-                            'nlcd': row['properties']['nlcd'],
-                            'roads': row['properties']['roads'],
-                            'water': row['properties']['water'],
-                            'waterways': row['properties']['waterways'],
-                            'waterbodies': row['properties']['waterbodies'],
-                            'buildings': row['properties']['buildings'],
-                            'lc': row['properties']['lc'],
-                            'prior_no_osm_no_buildings': row['properties'][
-                                'naip'
-                            ].replace(
-                                'a_naip',
-                                'prior_from_cooccurrences_101_31_no_osm_no_buildings',
-                            ),
-                            'prior': row['properties']['naip'].replace(
-                                'a_naip', 'prior_from_cooccurrences_101_31'
-                            ),
-                        }
-                    )
+        gdf = gpd.read_file(
+            os.path.join(root, 'enviroatlas_lotp', 'spatial_index.geojson')
+        )
+        for _, row in gdf.iterrows():
+            if row['split'] in splits:
+                geometries.append(shapely.geometry.shape(row['geometry']))
+                datetimes.append((mint, maxt))
+                data.append(
+                    {
+                        'naip': row['naip'],
+                        'nlcd': row['nlcd'],
+                        'roads': row['roads'],
+                        'water': row['water'],
+                        'waterways': row['waterways'],
+                        'waterbodies': row['waterbodies'],
+                        'buildings': row['buildings'],
+                        'lc': row['lc'],
+                        'prior_no_osm_no_buildings': row['naip'].replace(
+                            'a_naip',
+                            'prior_from_cooccurrences_101_31_no_osm_no_buildings',
+                        ),
+                        'prior': row['naip'].replace(
+                            'a_naip', 'prior_from_cooccurrences_101_31'
+                        ),
+                    }
+                )
 
         index = pd.IntervalIndex.from_tuples(datetimes, closed='both', name='datetime')
         crs = CRS.from_epsg(3857)
