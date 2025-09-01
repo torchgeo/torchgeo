@@ -7,7 +7,7 @@ lightly==1.5.22
 lightning[pytorch-extra]==2.5.3
 matplotlib==3.10.1
 numpy==2.2.4
-pandas==2.3.1
+pandas==2.3.2
 pillow==11.3.0
 pyproj==3.7.1
 rasterio==1.4.3
@@ -17,4 +17,4 @@ timm==1.0.19
 torch==2.8.0
 torchmetrics==1.8.1
 torchvision==0.23.0
-typing-extensions==4.14.1
+typing-extensions==4.15.0
