@@ -258,7 +258,7 @@ class OpenBuildings(VectorDataset):
             axis=1,
         )
         filepaths = [os.path.join(self.paths, filepath) for filepath in gdf['filepath']]
-        datetimes = [pd.Timestamp.min, pd.Timestamp.max] * len(filepaths)
+        datetimes = [(pd.Timestamp.min, pd.Timestamp.max)] * len(filepaths)
 
         if not len(filepaths):
             raise DatasetNotFoundError(self)
@@ -343,7 +343,7 @@ class OpenBuildings(VectorDataset):
             csv_chunks = pd.read_csv(f, chunksize=200000, compression='gzip')
             for chunk in csv_chunks:
                 gdf = gpd.GeoDataFrame(chunk, geometry='geometry', crs=self._source_crs)
-                gdf.filter(bbox=(minx, miny, maxx, maxy), inplace=True)
+                gdf = gdf.filter(bbox=(minx, miny, maxx, maxy))
                 gdf.to_crs(self.crs, inplace=True)
                 shapes.extend(gdf.geometry.tolist())
 

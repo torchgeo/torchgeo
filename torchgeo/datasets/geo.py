@@ -716,11 +716,10 @@ class VectorDataset(GeoDataset):
             if match is not None:
                 try:
                     src = gpd.read_file(filepath, layer=layer)
-                    if src.crs is None:
-                        crs = CRS.from_wkt(src.crs_wkt)
+                    if crs is None:
+                        crs = src.crs
                         src.to_crs(crs, inplace=True)
-                        geometries = src.bounds
-                        geometries.apply(
+                        geometries = src.bounds.apply(
                             lambda row: shapely.geometry.box(
                                 row['minx'], row['miny'], row['maxx'], row['maxy']
                             ),
@@ -786,10 +785,10 @@ class VectorDataset(GeoDataset):
             (maxx, maxy) = transformer.transform(x.stop, y.stop)
 
             # Filter geometries to those that intersect with the bounding box
-            src = src.filter(bbox=(minx, miny, maxx, maxy), inplace=True)
+            src = src.filter(bbox=(minx, miny, maxx, maxy))
 
             # Warp geometries to requested CRS
-            src = src.to_crs(self.crs, inplace=True)
+            src.to_crs(self.crs, inplace=True)
 
             # Get label values to use for rendering each geometry
             if self.label_name:
