@@ -102,15 +102,17 @@ class ConvLSTM(nn.Module):
     If you use this model in your research, please cite the following paper:
 
     * https://arxiv.org/abs/1506.04214
+
+    .. versionadded:: 0.8
     """
 
     def __init__(
         self,
         input_dim: int,
         hidden_dim: int | Sequence[int],
-        kernel_size: tuple[int, int] | Sequence[tuple[int, int]],
+        kernel_size: int | tuple[int, int] | Sequence[int | tuple[int, int]],
         num_layers: int,
-        batch_first: bool = False,
+        batch_first: bool = True,
         bias: bool = True,
         return_all_layers: bool = False,
     ) -> None:
@@ -138,16 +140,16 @@ class ConvLSTM(nn.Module):
             self.hidden_dim = list(hidden_dim)
 
         # Normalize kernel_size to a list of tuples
-        if isinstance(kernel_size, tuple):
-            self.kernel_size: list[tuple[int, int]] = [kernel_size] * num_layers
-        elif isinstance(kernel_size, list):
-            self.kernel_size = [
-                ks if isinstance(ks, tuple) else (ks, ks) for ks in kernel_size
-            ]
+        if isinstance(kernel_size, int):
+            self.kernel_size: list[tuple[int, int]] = [(kernel_size, kernel_size)] * num_layers
+        elif isinstance(kernel_size, tuple):
+            self.kernel_size = [kernel_size] * num_layers
         else:
-            raise ValueError(
-                '`kernel_size` must be an int, a tuple, or a list of ints/tuples.'
-            )
+            # Handle sequence of ints or tuples
+            kernel_size_list = list(kernel_size)
+            self.kernel_size = [
+                (ks, ks) if isinstance(ks, int) else ks for ks in kernel_size_list
+            ]
 
         if not len(self.kernel_size) == len(self.hidden_dim) == num_layers:
             raise ValueError('Inconsistent list length.')
@@ -184,11 +186,8 @@ class ConvLSTM(nn.Module):
             hidden_state: An optional initial hidden state.
 
         Returns:
-            tuple:
-                A tuple containing two lists:
-
-                - layer_output_list: List of Tensors of shape (b, t, c, h, w)
-                - last_state_list: List of tuples of (h, c) for the last time step
+            - layer_output_list: List of Tensors of shape (b, t, c, h, w)
+            - last_state_list: List of tuples of (h, c) for the last time step
         """
         if not self.batch_first:
             input_tensor = input_tensor.permute(1, 0, 2, 3, 4)
@@ -228,7 +227,16 @@ class ConvLSTM(nn.Module):
     def _init_hidden(
         self, batch_size: int, image_size: tuple[int, int]
     ) -> list[tuple[torch.Tensor, torch.Tensor]]:
-        """Initializes the hidden states for all layers."""
+        """Initializes the hidden states for all layers.
+
+        Args:
+            batch_size: The size of the batch dimension.
+            image_size: A tuple of (height, width) for the spatial dimensions.
+
+        Returns:
+            A list of tuples, where each tuple contains the hidden state and cell state
+            tensors for a layer. Each tensor has shape (batch_size, hidden_dim, height, width).
+        """
         init_states: list[tuple[torch.Tensor, torch.Tensor]] = []
         for i in range(self.num_layers):
             cell = cast(ConvLSTMCell, self.cell_list[i])
