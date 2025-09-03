@@ -59,6 +59,28 @@ class TestConvLSTM:
         assert layer_output_list[0].shape == (b, t, hidden_dims[0], h, w)
         assert layer_output_list[1].shape == (b, t, hidden_dims[1], h, w)
 
+    def test_convlstm_kernel_size_as_int(self) -> None:
+        """Test that kernel_size can be an integer."""
+        b = 1
+        t = 4
+        c = 3
+        h = 64
+        w = 64
+        input_tensor = torch.rand(b, t, c, h, w)
+
+        model = ConvLSTM(
+            input_dim=c,
+            hidden_dim=16,
+            kernel_size=3,  # Pass as integer
+            num_layers=1,
+            batch_first=True,
+        )
+        layer_output_list, last_state_list = model(input_tensor)
+
+        assert len(layer_output_list) == 1
+        assert len(last_state_list) == 1
+        assert layer_output_list[0].shape == (b, t, 16, h, w)
+
     def test_convlstm_kernel_size_as_list(self) -> None:
         """Test that kernel_size can be a list of tuples."""
         b = 1
