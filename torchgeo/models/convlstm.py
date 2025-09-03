@@ -188,8 +188,7 @@ class ConvLSTM(nn.Module):
             hidden_state: An optional initial hidden state.
 
         Returns:
-            layer_output_list: List of Tensors of shape (b, t, c, h, w)
-            last_state_list: List of tuples of (h, c) for the last time step
+            A tuple containing layer_output_list and last_state_list.
         """
         if not self.batch_first:
             input_tensor = input_tensor.permute(1, 0, 2, 3, 4)
