@@ -161,21 +161,25 @@ class TestConvLSTM:
 
     def test_convlstm_invalid_tuple_kernel_size(self) -> None:
         """Test that invalid tuple kernel sizes raise a ValueError."""
-        with pytest.raises(ValueError, match='Tuple kernel sizes must be \\(int, int\\)'):
+        with pytest.raises(
+            ValueError, match='Tuple kernel sizes must be \\(int, int\\)'
+        ):
             # Pass a tuple with wrong length
             ConvLSTM(
                 input_dim=3,
                 hidden_dim=16,
-                kernel_size=[(3, 4, 5)],  # Tuple with 3 elements
+                kernel_size=[(3, 4, 5)],  # type: ignore[list-item]  # Tuple with 3 elements
                 num_layers=1,
             )
 
-        with pytest.raises(ValueError, match='Tuple kernel sizes must be \\(int, int\\)'):
+        with pytest.raises(
+            ValueError, match='Tuple kernel sizes must be \\(int, int\\)'
+        ):
             # Pass a tuple with non-integer elements
             ConvLSTM(
                 input_dim=3,
                 hidden_dim=16,
-                kernel_size=[(3.5, 4.5)],  # Tuple with float elements
+                kernel_size=[(3.5, 4.5)],  # type: ignore[list-item]  # Tuple with float elements
                 num_layers=1,
             )
 
