@@ -143,7 +143,7 @@ class ConvLSTM(nn.Module):
         self.kernel_size: list[tuple[int, int]] = []
 
         # Convert to list first to handle both tuples and lists
-        if isinstance(kernel_size, (int, tuple)):
+        if isinstance(kernel_size, int | tuple):
             kernel_size_list = [kernel_size] * num_layers
         else:
             kernel_size_list = list(kernel_size)
