@@ -140,18 +140,26 @@ class ConvLSTM(nn.Module):
             self.hidden_dim = list(hidden_dim)
 
         # Normalize kernel_size to a list of tuples
-        if isinstance(kernel_size, int):
-            self.kernel_size: list[tuple[int, int]] = [
-                (kernel_size, kernel_size)
-            ] * num_layers
-        elif isinstance(kernel_size, tuple):
-            self.kernel_size = [kernel_size] * num_layers
+        self.kernel_size: list[tuple[int, int]] = []
+
+        # Convert to list first to handle both tuples and lists
+        if isinstance(kernel_size, (int, tuple)):
+            kernel_size_list = [kernel_size] * num_layers
         else:
-            # Handle sequence of ints or tuples
             kernel_size_list = list(kernel_size)
-            self.kernel_size = [
-                (ks, ks) if isinstance(ks, int) else ks for ks in kernel_size_list
-            ]
+
+        # Process each element
+        for ks in kernel_size_list:
+            if isinstance(ks, int):
+                self.kernel_size.append((ks, ks))
+            elif isinstance(ks, tuple):
+                if len(ks) != 2 or not all(isinstance(k, int) for k in ks):
+                    raise ValueError("Tuple kernel sizes must be (int, int)")
+                self.kernel_size.append(ks)
+            else:
+                raise ValueError(
+                    "Each kernel size must be an int or a tuple of two ints"
+                )
 
         if not len(self.kernel_size) == len(self.hidden_dim) == num_layers:
             raise ValueError('Inconsistent list length.')

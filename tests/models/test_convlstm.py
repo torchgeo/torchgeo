@@ -135,6 +135,29 @@ class TestConvLSTM:
                 num_layers=2,
             )
 
+    def test_convlstm_mixed_kernel_sizes(self) -> None:
+        """Test that kernel_size can be a list of mixed ints and tuples."""
+        b = 1
+        t = 4
+        c = 3
+        h = 64
+        w = 64
+        input_tensor = torch.rand(b, t, c, h, w)
+
+        model = ConvLSTM(
+            input_dim=c,
+            hidden_dim=[16, 32],
+            kernel_size=[3, (5, 5)],  # Mix of int and tuple
+            num_layers=2,
+            batch_first=True,
+        )
+        layer_output_list, last_state_list = model(input_tensor)
+
+        assert len(layer_output_list) == 2
+        assert len(last_state_list) == 2
+        assert layer_output_list[0].shape == (b, t, 16, h, w)
+        assert layer_output_list[1].shape == (b, t, 32, h, w)
+
     def test_convlstm_invalid_kernel_size(self) -> None:
         """Test that an invalid kernel size raises a ValueError."""
         with pytest.raises(ValueError):
