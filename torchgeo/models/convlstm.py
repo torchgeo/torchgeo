@@ -122,8 +122,10 @@ class ConvLSTM(nn.Module):
             input_dim: Number of channels in the input.
             hidden_dim: Number of hidden channels. Can be a single int (for all
                 layers) or a sequence of ints (one for each layer).
-            kernel_size: Size of the convolutional kernel. Can be a single tuple
-                (for all layers) or a sequence of tuples (one for each layer).
+            kernel_size: Size of the convolutional kernel. Can be:
+                * a single integer (for square kernels)
+                * a tuple of two integers (for rectangular kernels)
+                * a sequence of integers or tuples (one for each layer)
             num_layers: Number of LSTM layers stacked on each other.
             batch_first: If ``True``, then the input and output tensors are
                 provided as (b, t, c, h, w).
@@ -154,11 +156,11 @@ class ConvLSTM(nn.Module):
                 self.kernel_size.append((ks, ks))
             elif isinstance(ks, tuple):
                 if len(ks) != 2 or not all(isinstance(k, int) for k in ks):
-                    raise ValueError("Tuple kernel sizes must be (int, int)")
+                    raise ValueError('Tuple kernel sizes must be (int, int).')
                 self.kernel_size.append(ks)
             else:
                 raise ValueError(
-                    "Each kernel size must be an int or a tuple of two ints"
+                    'Each kernel size must be an int or a tuple of two ints.'
                 )
 
         if not len(self.kernel_size) == len(self.hidden_dim) == num_layers:
