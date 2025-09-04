@@ -150,6 +150,7 @@ class TestConvLSTM:
             kernel_size=[3, (5, 5)],  # Mix of int and tuple
             num_layers=2,
             batch_first=True,
+            return_all_layers=True,
         )
         layer_output_list, last_state_list = model(input_tensor)
 
