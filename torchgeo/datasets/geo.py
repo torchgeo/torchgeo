@@ -692,9 +692,6 @@ class XarrayDataset(GeoDataset):
             raise DatasetNotFoundError(self)
 
         if res is not None:
-            if isinstance(res, int | float):
-                res = (res, res)
-
             self._res = res
 
         # Create the dataset index

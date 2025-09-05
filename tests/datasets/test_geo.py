@@ -491,8 +491,9 @@ class TestXarrayDataset:
     @pytest.fixture(scope='class')
     def dataset(self) -> XarrayDataset:
         root = os.path.join('tests', 'data', 'netcdf')
+        transforms = nn.Identity()
         with pytest.warns(UserWarning, match='Unable to decode coordinates'):
-            return XarrayDataset(root)
+            return XarrayDataset(root, transforms=transforms)
 
     def test_getitem(self, dataset: XarrayDataset) -> None:
         x = dataset[dataset.bounds]
@@ -512,6 +513,10 @@ class TestXarrayDataset:
             IndexError, match='query: .* not found in index with bounds:'
         ):
             dataset[0:0, 0:0, pd.Timestamp.min : pd.Timestamp.min]
+
+    def test_no_data(self, tmp_path: Path) -> None:
+        with pytest.raises(DatasetNotFoundError, match='Dataset not found'):
+            XarrayDataset(tmp_path)
 
 
 class TestVectorDataset:
