@@ -10,13 +10,11 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any, ClassVar
 
-import fiona
+import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import rasterio as rio
 import torch
-from fiona.errors import FionaError, FionaValueError
-from fiona.transform import transform_geom
 from matplotlib.figure import Figure
 from pyproj import CRS
 from rasterio.enums import Resampling
@@ -187,21 +185,14 @@ class SpaceNet(NonGeoDataset, ABC):
         Returns:
             Tensor: label tensor
         """
-        try:
-            with fiona.open(path) as src:
-                vector_crs = CRS(src.crs)
-                labels = [
-                    transform_geom(
-                        vector_crs.to_string(),
-                        raster_crs.to_string(),
-                        feature['geometry'],
-                    )
-                    for feature in src
-                    if feature['geometry']
-                ]
-        except (FionaError, FionaValueError):
-            # Empty geojson files, geometries that cannot be transformed (SN7)
+        gdf = gpd.read_file(path)
+        if gdf.empty:
             labels = []
+        else:
+            # Convert to CRS and filter out invalid geometries
+            gdf.to_crs(raster_crs, inplace=True)
+            gdf.dropna(subset=['geometry'], inplace=True)
+            labels = gdf.geometry.tolist()
 
         if labels:
             mask = rasterize(

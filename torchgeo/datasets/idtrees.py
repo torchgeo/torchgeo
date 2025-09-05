@@ -8,7 +8,7 @@ import os
 from collections.abc import Callable
 from typing import Any, ClassVar, cast, overload
 
-import fiona
+import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -399,15 +399,21 @@ class IDTReeS(NonGeoDataset):
         i = 0
         features: dict[int, dict[str, Any]] = {}
         for path in filepaths:
-            with fiona.open(path) as src:
-                for feature in src:
-                    # The train set has a unique id for each geometry in the properties
-                    if self.split == 'train':
-                        features[feature['properties']['id']] = feature
-                    # The test set has no unique id so create a dummy id
-                    else:
-                        features[i] = feature
-                        i += 1
+            gdf = gpd.read_file(path)
+            for _, row in gdf.iterrows():
+                # The train set has a unique id for each geometry in the properties
+                if self.split == 'train':
+                    features[row['id']] = {
+                        'geometry': row.geometry,
+                        'properties': row.drop('geometry').to_dict(),
+                    }
+                # The test set has no unique id so create a dummy id
+                else:
+                    features[i] = {
+                        'geometry': row.geometry,
+                        'properties': row.drop('geometry').to_dict(),
+                    }
+                    i += 1
         return features
 
     @overload
