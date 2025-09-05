@@ -634,6 +634,7 @@ class XarrayDataset(GeoDataset):
         paths: Path | Iterable[Path] = 'data',
         crs: CRS | None = None,
         res: float | tuple[float, float] | None = None,
+        data_vars: Sequence[str] | None = None,
         transforms: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
     ) -> None:
         """Initialize a new XarrayDataset instance.
@@ -644,6 +645,8 @@ class XarrayDataset(GeoDataset):
                 (defaults to the CRS of the first file found)
             res: resolution of the dataset in units of CRS
                 (defaults to the resolution of the first file found)
+            data_vars: list of data variables to load
+                (defaults to all variables of the first file found)
             transforms: a function/transform that takes an input sample
                 and returns a transformed version
 
@@ -665,8 +668,8 @@ class XarrayDataset(GeoDataset):
                 with xr.open_dataset(filepath, decode_coords='all') as src:
                     # TODO: ensure compatibility between pyproj and rasterio CRS objects
                     crs = crs or src.rio.crs or CRS.from_epsg(4326)
-                    # TODO: what if res is 0.0?
                     res = res or src.rio.resolution()
+                    data_vars = data_vars or list(src.data_vars.keys())
                     tmin = pd.Timestamp(src.time.values.min())
                     tmax = pd.Timestamp(src.time.values.max())
 
@@ -693,6 +696,9 @@ class XarrayDataset(GeoDataset):
 
         if res is not None:
             self._res = res
+
+        if data_vars is not None:
+            self.data_vars = data_vars
 
         # Create the dataset index
         data = {'filepath': filepaths}
@@ -763,11 +769,14 @@ class XarrayDataset(GeoDataset):
         dataset = rioxr.merge.merge_datasets(
             datasets, bounds=bounds, res=res, nodata=0, crs=self.crs
         )
-        dataset = dataset.sel(time=slice(t.start, t.stop))
+        dataset = dataset.sel(time=t)
 
         # Use array_to_tensor since merge may return uint16/uint32 arrays.
-        tensor = array_to_tensor(dataset.temperature.values)
-        return tensor
+        tensors = []
+        for var in self.data_vars:
+            tensors.append(array_to_tensor(dataset[var].values))
+
+        return torch.stack(tensors)
 
 
 class VectorDataset(GeoDataset):
