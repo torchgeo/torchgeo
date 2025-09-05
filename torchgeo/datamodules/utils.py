@@ -43,6 +43,44 @@ def collate_fn_detection(batch: list[dict[str, Tensor]]) -> dict[str, Any]:
     return output
 
 
+def collate_fn_timeseries(
+    batch: list[dict[str, Tensor]], max_timestamp: int = 61
+) -> dict[str, Any]:
+    """Custom timeseries collate fn to handle variable length sequences.
+
+    Args:
+        batch: list of sample dicts return by dataset
+        max_timestamp: maximum length of the time series
+
+    Returns:
+        batch dict output
+
+    .. versionadded:: 0.8
+    """
+    output: dict[str, Any] = {}
+    images = [sample['image'] for sample in batch]
+
+    padded_images = []
+    for img in images:
+        if img.shape[0] < max_timestamp:
+            padding_shape = (max_timestamp - img.shape[0], *img.shape[1:])
+            padding = torch.zeros(padding_shape, dtype=img.dtype)
+            padded_img = torch.cat([img, padding], dim=0)
+            padded_images.append(padded_img)
+        else:
+            padded_images.append(img)
+
+    output['image'] = torch.stack(padded_images)
+    output['mask'] = torch.stack([sample['mask'] for sample in batch])
+
+    if 'bbox_xyxy' in batch[0]:
+        output['bbox_xyxy'] = torch.stack([sample['bbox_xyxy'] for sample in batch])
+    if 'label' in batch[0]:
+        output['label'] = torch.stack([sample['label'] for sample in batch])
+
+    return output
+
+
 def group_shuffle_split(
     groups: Iterable[Any],
     train_size: float | None = None,

@@ -65,6 +65,7 @@ class TestSemanticSegmentationTask:
             'loveda',
             'mmflood',
             'naipchesapeake',
+            'pastis',
             'potsdam2d',
             'sen12ms_all',
             'sen12ms_s1',
@@ -116,6 +117,9 @@ class TestSemanticSegmentationTask:
             '--trainer.log_every_n_steps',
             '1',
         ]
+
+        if name == 'pastis':
+            args.extend(['--data.max_timestamp', '9'])
 
         main(['fit', *args])
         try:
