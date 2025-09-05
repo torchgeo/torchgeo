@@ -491,9 +491,7 @@ class TestXarrayDataset:
 
     @pytest.fixture(
         scope='class',
-        params=itertools.product(
-            ['hdf5', 'netcdf'], [None, CRS.from_epsg(4979)]
-        ),
+        params=itertools.product(['hdf5', 'netcdf'], [None, CRS.from_epsg(4979)]),
     )
     def dataset(self, request: SubRequest) -> XarrayDataset:
         root = os.path.join('tests', 'data', request.param[0])
