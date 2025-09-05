@@ -492,7 +492,7 @@ class TestXarrayDataset:
     @pytest.fixture(
         scope='class',
         params=itertools.product(
-            ['hdf5', 'netcdf'], [CRS.from_epsg(4326), CRS.from_epsg(4979)]
+            ['hdf5', 'netcdf'], [None, CRS.from_epsg(4979)]
         ),
     )
     def dataset(self, request: SubRequest) -> XarrayDataset:
@@ -503,9 +503,7 @@ class TestXarrayDataset:
                 return XarrayDataset(root, crs=request.param[1], transforms=transforms)
             case 'netcdf':
                 with pytest.warns(UserWarning, match='Unable to decode coordinates'):
-                    return XarrayDataset(
-                        root, crs=request.param[1], transforms=transforms
-                    )
+                    return XarrayDataset(root, crs=request.param[1], res=3)
 
     def test_getitem(self, dataset: XarrayDataset) -> None:
         x = dataset[dataset.bounds]
