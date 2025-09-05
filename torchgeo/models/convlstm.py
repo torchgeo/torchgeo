@@ -5,7 +5,6 @@
 
 """Convolutional Long Short-Term Memory (ConvLSTM) model."""
 
-from collections.abc import Sequence
 from typing import cast
 
 import torch
@@ -109,8 +108,8 @@ class ConvLSTM(nn.Module):
     def __init__(
         self,
         input_dim: int,
-        hidden_dim: int | Sequence[int],
-        kernel_size: int | tuple[int, int] | Sequence[int | tuple[int, int]],
+        hidden_dim: int | list[int],
+        kernel_size: int | tuple[int, int] | list[int | tuple[int, int]],
         num_layers: int,
         batch_first: bool = True,
         bias: bool = True,
@@ -121,11 +120,12 @@ class ConvLSTM(nn.Module):
         Args:
             input_dim: Number of channels in the input.
             hidden_dim: Number of hidden channels. Can be a single int (for all
-                layers) or a sequence of ints (one for each layer).
+                layers) or a list of ints (one for each layer).
             kernel_size: Size of the convolutional kernel. Can be:
+
                 * a single integer (for square kernels)
                 * a tuple of two integers (for rectangular kernels)
-                * a sequence of integers or tuples (one for each layer)
+                * a list of integers or tuples (one for each layer)
             num_layers: Number of LSTM layers stacked on each other.
             batch_first: If ``True``, then the input and output tensors are
                 provided as (b, t, c, h, w).
@@ -137,31 +137,17 @@ class ConvLSTM(nn.Module):
 
         # Normalize hidden_dim to a list of ints
         if isinstance(hidden_dim, int):
-            self.hidden_dim: list[int] = [hidden_dim] * num_layers
+            self.hidden_dim = [hidden_dim] * num_layers
         else:
-            self.hidden_dim = list(hidden_dim)
+            self.hidden_dim = hidden_dim
 
         # Normalize kernel_size to a list of tuples
-        self.kernel_size: list[tuple[int, int]] = []
-
-        # Convert to list first to handle both tuples and lists
         if isinstance(kernel_size, int | tuple):
-            kernel_size_list = [kernel_size] * num_layers
+            ks_list = [kernel_size] * num_layers
         else:
-            kernel_size_list = list(kernel_size)
+            ks_list = kernel_size
 
-        # Process each element
-        for ks in kernel_size_list:
-            if isinstance(ks, int):
-                self.kernel_size.append((ks, ks))
-            elif isinstance(ks, tuple):
-                if len(ks) != 2 or not all(isinstance(k, int) for k in ks):
-                    raise ValueError('Tuple kernel sizes must be (int, int).')
-                self.kernel_size.append(ks)
-            else:
-                raise ValueError(
-                    'Each kernel size must be an int or a tuple of two ints.'
-                )
+        self.kernel_size = [(ks, ks) if isinstance(ks, int) else ks for ks in ks_list]
 
         if not len(self.kernel_size) == len(self.hidden_dim) == num_layers:
             raise ValueError('Inconsistent list length.')
@@ -208,8 +194,8 @@ class ConvLSTM(nn.Module):
         if hidden_state is None:
             hidden_state = self._init_hidden(batch_size=b, image_size=(h, w))
 
-        layer_output_list: list[torch.Tensor] = []
-        last_state_list: list[tuple[torch.Tensor, torch.Tensor]] = []
+        layer_output_list = []
+        last_state_list = []
         seq_len = input_tensor.size(1)
         cur_layer_input = input_tensor
 
@@ -248,7 +234,7 @@ class ConvLSTM(nn.Module):
             A list of tuples, where each tuple contains the hidden state and cell state
             tensors for a layer. Each tensor has shape (batch_size, hidden_dim, height, width).
         """
-        init_states: list[tuple[torch.Tensor, torch.Tensor]] = []
+        init_states = []
         for i in range(self.num_layers):
             cell = cast(ConvLSTMCell, self.cell_list[i])
             init_states.append(cell.init_hidden(batch_size, image_size))

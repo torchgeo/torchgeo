@@ -158,39 +158,3 @@ class TestConvLSTM:
         assert len(last_state_list) == 2
         assert layer_output_list[0].shape == (b, t, 16, h, w)
         assert layer_output_list[1].shape == (b, t, 32, h, w)
-
-    def test_convlstm_invalid_tuple_kernel_size(self) -> None:
-        """Test that invalid tuple kernel sizes raise a ValueError."""
-        with pytest.raises(
-            ValueError, match='Tuple kernel sizes must be \\(int, int\\)'
-        ):
-            # Pass a tuple with wrong length
-            ConvLSTM(
-                input_dim=3,
-                hidden_dim=16,
-                kernel_size=[(3, 4, 5)],  # type: ignore[list-item]  # Tuple with 3 elements
-                num_layers=1,
-            )
-
-        with pytest.raises(
-            ValueError, match='Tuple kernel sizes must be \\(int, int\\)'
-        ):
-            # Pass a tuple with non-integer elements
-            ConvLSTM(
-                input_dim=3,
-                hidden_dim=16,
-                kernel_size=[(3.5, 4.5)],  # type: ignore[list-item]  # Tuple with float elements
-                num_layers=1,
-            )
-
-    def test_convlstm_invalid_kernel_size(self) -> None:
-        """Test that an invalid kernel size raises a ValueError."""
-        with pytest.raises(ValueError):
-            # Pass a string, which is an invalid type, to trigger the ValueError.
-            # We ignore the mypy error because this is intentional for testing.
-            ConvLSTM(
-                input_dim=3,
-                hidden_dim=16,
-                kernel_size='invalid',  # type: ignore[arg-type]
-                num_layers=1,
-            )
