@@ -498,10 +498,12 @@ class TestXarrayDataset:
         transforms = nn.Identity()
         match request.param[0]:
             case 'hdf5':
-                return XarrayDataset(root, crs=request.param[1], transforms=transforms)
+                ds = XarrayDataset(root, crs=request.param[1], transforms=transforms)
             case 'netcdf':
                 with pytest.warns(UserWarning, match='Unable to decode coordinates'):
-                    return XarrayDataset(root, crs=request.param[1], res=3)
+                    ds = XarrayDataset(root, crs=request.param[1], res=3)
+
+        return ds
 
     def test_getitem(self, dataset: XarrayDataset) -> None:
         x = dataset[dataset.bounds]
