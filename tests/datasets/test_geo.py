@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+import itertools
 import math
 import os
 import pickle
@@ -488,12 +489,23 @@ class TestRasterDataset:
 class TestXarrayDataset:
     pytest.importorskip('rioxarray')
 
-    @pytest.fixture(scope='class')
-    def dataset(self) -> XarrayDataset:
-        root = os.path.join('tests', 'data', 'netcdf')
+    @pytest.fixture(
+        scope='class',
+        params=itertools.product(
+            ['hdf5', 'netcdf'], [CRS.from_epsg(4326), CRS.from_epsg(4979)]
+        ),
+    )
+    def dataset(self, request: SubRequest) -> XarrayDataset:
+        root = os.path.join('tests', 'data', request.param[0])
         transforms = nn.Identity()
-        with pytest.warns(UserWarning, match='Unable to decode coordinates'):
-            return XarrayDataset(root, transforms=transforms)
+        match request.param[0]:
+            case 'hdf5':
+                return XarrayDataset(root, crs=request.param[1], transforms=transforms)
+            case 'netcdf':
+                with pytest.warns(UserWarning, match='Unable to decode coordinates'):
+                    return XarrayDataset(
+                        root, crs=request.param[1], transforms=transforms
+                    )
 
     def test_getitem(self, dataset: XarrayDataset) -> None:
         x = dataset[dataset.bounds]
