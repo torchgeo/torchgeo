@@ -765,7 +765,7 @@ class XarrayDataset(GeoDataset):
                 src = src.rio.write_crs(self.crs)
 
             if src.rio.crs != self.crs or res != src.rio.resolution():
-                src = src.rio.reproject(self.crs, res)
+                src = src.rio.reproject(self.crs, resolution=res)
 
             datasets.append(src)
 
