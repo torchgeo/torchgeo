@@ -487,7 +487,8 @@ class TestRasterDataset:
 
 
 class TestXarrayDataset:
-    pytest.importorskip('rioxarray')
+    pytest.importorskip('rioxarray', minversion='0.14.1')
+    pytest.importorskip('xarray', minversion='0.17')
 
     @pytest.fixture(
         scope='class',
