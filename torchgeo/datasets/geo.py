@@ -666,7 +666,6 @@ class XarrayDataset(GeoDataset):
         for filepath in self.files:
             try:
                 with xr.open_dataset(filepath, decode_coords='all') as src:
-                    # TODO: ensure compatibility between pyproj and rasterio CRS objects
                     crs = crs or src.rio.crs or CRS.from_epsg(4326)
                     res = res or src.rio.resolution()
                     data_vars = data_vars or list(src.data_vars.keys())
