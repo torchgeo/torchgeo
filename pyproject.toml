@@ -53,8 +53,8 @@ dependencies = [
     "lightning[pytorch-extra]>=2,!=2.3.*,!=2.5.0",
     # matplotlib 3.6+ required for Python 3.11 wheels
     "matplotlib>=3.6",
-    # numpy 1.23.2+ required by Python 3.11 wheels
-    "numpy>=1.23.2",
+    # numpy 1.24+ required by rasterio
+    "numpy>=1.24",
     # pandas 1.5+ required for Python 3.11 wheels
     "pandas>=1.5",
     # pillow 9.2+ required for Python 3.11 wheels
@@ -98,14 +98,15 @@ datasets = [
     "pandas[parquet]>=2",
     # pycocotools 2.0.7+ required for Python 3.11 wheels
     "pycocotools>=2.0.7",
-    "rioxarray",
+    # rioxarray 0.14.1+ required for rasterio 1.4+ compatibility
+    "rioxarray>=0.14.1",
     # scikit-image 0.20+ required for Python 3.11 wheels
     "scikit-image>=0.20",
     # scipy 1.9.2+ required for Python 3.11 wheels
     "scipy>=1.9.2",
     # webdataset 0.2.4+ required for PyTorch tuple seed support
     "webdataset>=0.2.4",
-    # xarray 0.17+ required for rioxarray support
+    # xarray 0.17+ required by rioxarray
     "xarray>=0.17",
 ]
 docs = [
