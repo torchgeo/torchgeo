@@ -29,9 +29,9 @@ from ..geo import NonGeoDataset
 from ..utils import (
     Path,
     check_integrity,
+    download_from_s3,
     extract_archive,
     percentile_normalization,
-    which,
 )
 
 
@@ -47,7 +47,7 @@ class SpaceNet(NonGeoDataset, ABC):
 
        The SpaceNet datasets require the following additional library to be installed:
 
-       * `AWS CLI <https://aws.amazon.com/cli/>`_: to download the dataset from AWS.
+       * `fsspec[s3] <https://filesystem-spec.readthedocs.io/>`_: to download the dataset from AWS.
     """
 
     url = 's3://spacenet-dataset/spacenet/{dataset_id}/tarballs/{tarball}'
@@ -328,8 +328,7 @@ class SpaceNet(NonGeoDataset, ABC):
 
                 # Download the dataset
                 url = self.url.format(dataset_id=self.dataset_id, tarball=tarball)
-                aws = which('aws')
-                aws('s3', 'cp', url, root)
+                download_from_s3(url, root)
                 check_integrity(
                     os.path.join(root, tarball), md5 if self.checksum else None
                 )

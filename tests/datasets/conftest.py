@@ -19,14 +19,42 @@ def copy(url: str, root: Path, *args: Any, **kwargs: Any) -> None:
     shutil.copy(url, root)
 
 
+def copy_recursive(url: str, root: Path, recursive: bool = False, *args: Any, **kwargs: Any) -> None:
+    """Copy function that handles recursive downloads."""
+    os.makedirs(root, exist_ok=True)
+    if recursive:
+        # For recursive copies, copy entire source directory  
+        if os.path.isdir(url):
+            shutil.copytree(url, os.path.join(root, os.path.basename(url)), dirs_exist_ok=True)
+        else:
+            shutil.copy(url, root)
+    else:
+        shutil.copy(url, root)
+
+
 @pytest.fixture(autouse=True)
 def download_url(monkeypatch: MonkeyPatch, request: SubRequest) -> None:
     monkeypatch.setattr(torchvision.datasets.utils, 'download_url', copy)
     monkeypatch.setattr(torchgeo.datasets.utils, 'download_url', copy)
+    monkeypatch.setattr(torchgeo.datasets.utils, 'download_file', copy_recursive)
+    monkeypatch.setattr(torchgeo.datasets.utils, 'download_from_azure', copy_recursive)
+    monkeypatch.setattr(torchgeo.datasets.utils, 'download_from_s3', copy_recursive)
     _, filename = os.path.split(request.path)
     module = filename[5:-3]
     try:
         monkeypatch.setattr(f'torchgeo.datasets.{module}.download_url', copy)
+    except AttributeError:
+        pass
+    try:
+        monkeypatch.setattr(f'torchgeo.datasets.{module}.download_file', copy_recursive)
+    except AttributeError:
+        pass
+    try:
+        monkeypatch.setattr(f'torchgeo.datasets.{module}.download_from_azure', copy_recursive)
+    except AttributeError:
+        pass
+    try:
+        monkeypatch.setattr(f'torchgeo.datasets.{module}.download_from_s3', copy_recursive)
     except AttributeError:
         pass
     monkeypatch.setattr('torchgeo.datasets.copernicus.lcz_s2.download_url', copy)
