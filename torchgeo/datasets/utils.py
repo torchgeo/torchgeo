@@ -37,12 +37,14 @@ from typing_extensions import deprecated
 
 from .errors import DependencyNotFoundError
 
-# Only include import redirects
+# Only include import redirects and new download functions
 __all__ = (
     'check_integrity',
     'download_and_extract_archive',
     'download_url',
     'download_file',
+    'download_from_azure',
+    'download_from_s3',
     'extract_archive',
 )
 

@@ -18,7 +18,7 @@ from torch import Tensor
 
 from .errors import DatasetNotFoundError
 from .geo import NonGeoDataset
-from .utils import Path, which
+from .utils import Path, download_file, download_from_azure
 
 
 class TropicalCyclone(NonGeoDataset):
@@ -38,7 +38,7 @@ class TropicalCyclone(NonGeoDataset):
 
        This dataset requires the following additional library to be installed:
 
-       * `azcopy <https://github.com/Azure/azure-storage-azcopy>`_: to download the
+       * `fsspec[azure] <https://filesystem-spec.readthedocs.io/>`_: to download the
          dataset from Source Cooperative.
 
     .. versionchanged:: 0.4
@@ -156,12 +156,10 @@ class TropicalCyclone(NonGeoDataset):
     def _download(self) -> None:
         """Download the dataset."""
         directory = os.path.join(self.root, self.split)
-        os.makedirs(directory, exist_ok=True)
-        azcopy = which('azcopy')
-        azcopy('sync', f'{self.url}/{self.split}', directory, '--recursive=true')
+        download_from_azure(f'{self.url}/{self.split}', directory, recursive=True)
         files = [f'{self.filename}_features.csv', f'{self.filename}_labels.csv']
         for file in files:
-            azcopy('copy', f'{self.url}/{file}', self.root)
+            download_file(f'{self.url}/{file}', self.root)
 
     def plot(
         self,
