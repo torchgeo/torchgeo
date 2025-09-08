@@ -27,14 +27,16 @@ class AppendNormalizedDifferenceIndex(IntensityAugmentationBase2D):
     .. versionadded:: 0.2
     """
 
-    def __init__(self, index_a: int, index_b: int) -> None:
+    def __init__(self, index_a: int, index_b: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_a: reference band channel index
             index_b: difference band channel index
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(p=1)
+        kwargs.setdefault('p', 1)
+        super().__init__(**kwargs)
         self.flags = {'index_a': index_a, 'index_b': index_b}
 
     def apply_transform(
@@ -79,14 +81,15 @@ class AppendNBR(AppendNormalizedDifferenceIndex):
     .. versionadded:: 0.2
     """
 
-    def __init__(self, index_nir: int, index_swir: int) -> None:
+    def __init__(self, index_nir: int, index_swir: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_nir: index of the Near Infrared (NIR) band in the image
             index_swir: index of the Short-wave Infrared (SWIR) band in the image
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(index_a=index_nir, index_b=index_swir)
+        super().__init__(index_a=index_nir, index_b=index_swir, **kwargs)
 
 
 class AppendNDBI(AppendNormalizedDifferenceIndex):
@@ -103,14 +106,15 @@ class AppendNDBI(AppendNormalizedDifferenceIndex):
     * https://doi.org/10.1080/01431160304987
     """
 
-    def __init__(self, index_swir: int, index_nir: int) -> None:
+    def __init__(self, index_swir: int, index_nir: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_swir: index of the Short-wave Infrared (SWIR) band in the image
             index_nir: index of the Near Infrared (NIR) band in the image
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(index_a=index_swir, index_b=index_nir)
+        super().__init__(index_a=index_swir, index_b=index_nir, **kwargs)
 
 
 class AppendNDSI(AppendNormalizedDifferenceIndex):
@@ -127,14 +131,15 @@ class AppendNDSI(AppendNormalizedDifferenceIndex):
     * https://doi.org/10.1109/IGARSS.1994.399618
     """
 
-    def __init__(self, index_green: int, index_swir: int) -> None:
+    def __init__(self, index_green: int, index_swir: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_green: index of the Green band in the image
             index_swir: index of the Short-wave Infrared (SWIR) band in the image
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(index_a=index_green, index_b=index_swir)
+        super().__init__(index_a=index_green, index_b=index_swir, **kwargs)
 
 
 class AppendNDVI(AppendNormalizedDifferenceIndex):
@@ -151,14 +156,15 @@ class AppendNDVI(AppendNormalizedDifferenceIndex):
     * https://doi.org/10.1016/0034-4257(79)90013-0
     """
 
-    def __init__(self, index_nir: int, index_red: int) -> None:
+    def __init__(self, index_nir: int, index_red: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_nir: index of the Near Infrared (NIR) band in the image
             index_red: index of the Red band in the image
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(index_a=index_nir, index_b=index_red)
+        super().__init__(index_a=index_nir, index_b=index_red, **kwargs)
 
 
 class AppendNDWI(AppendNormalizedDifferenceIndex):
@@ -175,14 +181,15 @@ class AppendNDWI(AppendNormalizedDifferenceIndex):
     * https://doi.org/10.1080/01431169608948714
     """
 
-    def __init__(self, index_green: int, index_nir: int) -> None:
+    def __init__(self, index_green: int, index_nir: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_green: index of the Green band in the image
             index_nir: index of the Near Infrared (NIR) band in the image
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(index_a=index_green, index_b=index_nir)
+        super().__init__(index_a=index_green, index_b=index_nir, **kwargs)
 
 
 class AppendSWI(AppendNormalizedDifferenceIndex):
@@ -201,14 +208,15 @@ class AppendSWI(AppendNormalizedDifferenceIndex):
     .. versionadded:: 0.3
     """
 
-    def __init__(self, index_vre1: int, index_swir2: int) -> None:
+    def __init__(self, index_vre1: int, index_swir2: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_vre1: index of the VRE1 band, e.g. B5 in Sentinel 2 imagery
             index_swir2: index of the SWIR2 band, e.g. B11 in Sentinel 2 imagery
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(index_a=index_vre1, index_b=index_swir2)
+        super().__init__(index_a=index_vre1, index_b=index_swir2, **kwargs)
 
 
 class AppendGNDVI(AppendNormalizedDifferenceIndex):
@@ -227,14 +235,15 @@ class AppendGNDVI(AppendNormalizedDifferenceIndex):
     .. versionadded:: 0.3
     """
 
-    def __init__(self, index_nir: int, index_green: int) -> None:
+    def __init__(self, index_nir: int, index_green: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_nir: index of the NIR band, e.g. B8 in Sentinel 2 imagery
             index_green: index of the Green band, e.g. B3 in Sentinel 2 imagery
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(index_a=index_nir, index_b=index_green)
+        super().__init__(index_a=index_nir, index_b=index_green, **kwargs)
 
 
 class AppendBNDVI(AppendNormalizedDifferenceIndex):
@@ -253,14 +262,15 @@ class AppendBNDVI(AppendNormalizedDifferenceIndex):
     .. versionadded:: 0.3
     """
 
-    def __init__(self, index_nir: int, index_blue: int) -> None:
+    def __init__(self, index_nir: int, index_blue: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_nir: index of the NIR band, e.g. B8 in Sentinel 2 imagery
             index_blue: index of the Blue band, e.g. B2 in Sentinel 2 imagery
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(index_a=index_nir, index_b=index_blue)
+        super().__init__(index_a=index_nir, index_b=index_blue, **kwargs)
 
 
 class AppendNDRE(AppendNormalizedDifferenceIndex):
@@ -279,14 +289,15 @@ class AppendNDRE(AppendNormalizedDifferenceIndex):
     .. versionadded:: 0.3
     """
 
-    def __init__(self, index_nir: int, index_vre1: int) -> None:
+    def __init__(self, index_nir: int, index_vre1: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_nir: index of the NIR band, e.g. B8 in Sentinel 2 imagery
             index_vre1: index of the Red Edge band, B5 in Sentinel 2 imagery
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(index_a=index_nir, index_b=index_vre1)
+        super().__init__(index_a=index_nir, index_b=index_vre1, **kwargs)
 
 
 class AppendTriBandNormalizedDifferenceIndex(IntensityAugmentationBase2D):
@@ -301,15 +312,17 @@ class AppendTriBandNormalizedDifferenceIndex(IntensityAugmentationBase2D):
     .. versionadded:: 0.3
     """
 
-    def __init__(self, index_a: int, index_b: int, index_c: int) -> None:
+    def __init__(self, index_a: int, index_b: int, index_c: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_a: reference band channel index
             index_b: difference band channel index of component 1
             index_c: difference band channel index of component 2
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(p=1)
+        kwargs.setdefault('p', 1)
+        super().__init__(**kwargs)
         self.flags = {'index_a': index_a, 'index_b': index_b, 'index_c': index_c}
 
     def apply_transform(
@@ -357,15 +370,16 @@ class AppendGRNDVI(AppendTriBandNormalizedDifferenceIndex):
     .. versionadded:: 0.3
     """
 
-    def __init__(self, index_nir: int, index_green: int, index_red: int) -> None:
+    def __init__(self, index_nir: int, index_green: int, index_red: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_nir: index of the NIR band, e.g. B8 in Sentinel 2 imagery
             index_green: index of the Green band, B3 in Sentinel 2 imagery
             index_red: index of the Red band, B4 in Sentinel 2 imagery
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(index_a=index_nir, index_b=index_green, index_c=index_red)
+        super().__init__(index_a=index_nir, index_b=index_green, index_c=index_red, **kwargs)
 
 
 class AppendGBNDVI(AppendTriBandNormalizedDifferenceIndex):
@@ -385,15 +399,16 @@ class AppendGBNDVI(AppendTriBandNormalizedDifferenceIndex):
     .. versionadded:: 0.3
     """
 
-    def __init__(self, index_nir: int, index_green: int, index_blue: int) -> None:
+    def __init__(self, index_nir: int, index_green: int, index_blue: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_nir: index of the NIR band, e.g. B8 in Sentinel 2 imagery
             index_green: index of the Green band, B3 in Sentinel 2 imagery
             index_blue: index of the Blue band, B2 in Sentinel 2 imagery
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(index_a=index_nir, index_b=index_green, index_c=index_blue)
+        super().__init__(index_a=index_nir, index_b=index_green, index_c=index_blue, **kwargs)
 
 
 class AppendRBNDVI(AppendTriBandNormalizedDifferenceIndex):
@@ -413,12 +428,13 @@ class AppendRBNDVI(AppendTriBandNormalizedDifferenceIndex):
     .. versionadded:: 0.3
     """
 
-    def __init__(self, index_nir: int, index_red: int, index_blue: int) -> None:
+    def __init__(self, index_nir: int, index_red: int, index_blue: int, **kwargs) -> None:
         """Initialize a new transform instance.
 
         Args:
             index_nir: index of the NIR band, e.g. B8 in Sentinel 2 imagery
             index_red: index of the Red band, B4 in Sentinel 2 imagery
             index_blue: index of the Blue band, B2 in Sentinel 2 imagery
+            **kwargs: Additional arguments to pass to the parent class.
         """
-        super().__init__(index_a=index_nir, index_b=index_red, index_c=index_blue)
+        super().__init__(index_a=index_nir, index_b=index_red, index_c=index_blue, **kwargs)

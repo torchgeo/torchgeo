@@ -99,3 +99,68 @@ def test_append_tri_band_normalized_difference_indices(
     aug = K.AugmentationSequential(index(0, 1, 2), data_keys=None)
     output = aug(sample)
     assert output['image'].shape == (1, c + 1, h, w)
+
+
+def test_append_index_keepdim_sample(sample: dict[str, Tensor]) -> None:
+    c, h, w = sample['image'].shape
+    aug = K.AugmentationSequential(
+        AppendNormalizedDifferenceIndex(index_a=0, index_b=1, keepdim=True),
+        data_keys=None,
+    )
+    output = aug(sample)
+    assert output['image'].shape == (c + 1, h, w)
+
+
+def test_append_index_keepdim_batch(batch: dict[str, Tensor]) -> None:
+    b, c, h, w = batch['image'].shape
+    aug = K.AugmentationSequential(
+        AppendNormalizedDifferenceIndex(index_a=0, index_b=1, keepdim=True),
+        data_keys=None,
+    )
+    output = aug(batch)
+    assert output['image'].shape == (b, c + 1, h, w)
+
+
+def test_append_triband_index_keepdim_batch(batch: dict[str, Tensor]) -> None:
+    b, c, h, w = batch['image'].shape
+    aug = K.AugmentationSequential(
+        AppendTriBandNormalizedDifferenceIndex(
+            index_a=0, index_b=1, index_c=2, keepdim=True
+        ),
+        data_keys=None,
+    )
+    output = aug(batch)
+    assert output['image'].shape == (b, c + 1, h, w)
+
+
+@pytest.mark.parametrize(
+    'index',
+    [
+        AppendBNDVI,
+        AppendNBR,
+        AppendNDBI,
+        AppendNDRE,
+        AppendNDSI,
+        AppendNDVI,
+        AppendNDWI,
+        AppendSWI,
+        AppendGNDVI,
+    ],
+)
+def test_append_normalized_difference_indices_keepdim(
+    sample: dict[str, Tensor], index: AppendNormalizedDifferenceIndex
+) -> None:
+    c, h, w = sample['image'].shape
+    aug = K.AugmentationSequential(index(0, 1, keepdim=True), data_keys=None)
+    output = aug(sample)
+    assert output['image'].shape == (c + 1, h, w)
+
+
+@pytest.mark.parametrize('index', [AppendGBNDVI, AppendGRNDVI, AppendRBNDVI])
+def test_append_tri_band_normalized_difference_indices_keepdim(
+    sample: dict[str, Tensor], index: AppendTriBandNormalizedDifferenceIndex
+) -> None:
+    c, h, w = sample['image'].shape
+    aug = K.AugmentationSequential(index(0, 1, 2, keepdim=True), data_keys=None)
+    output = aug(sample)
+    assert output['image'].shape == (c + 1, h, w)
