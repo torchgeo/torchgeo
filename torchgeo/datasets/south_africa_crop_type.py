@@ -17,7 +17,7 @@ from torch import Tensor
 
 from .errors import DatasetNotFoundError, RGBBandsMissingError
 from .geo import RasterDataset
-from .utils import GeoSlice, Path, download_from_azure
+from .utils import GeoSlice, Path, download_from_cloud
 
 
 class SouthAfricaCropType(RasterDataset):
@@ -258,7 +258,7 @@ class SouthAfricaCropType(RasterDataset):
     def _download(self) -> None:
         """Download the dataset."""
         assert isinstance(self.paths, str | os.PathLike)
-        download_from_azure(self.url, self.paths, recursive=True)
+        download_from_cloud(self.url, self.paths, recursive=True)
 
     def plot(
         self,

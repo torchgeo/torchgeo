@@ -39,8 +39,8 @@ dependencies = [
     "einops>=0.3",
     # fiona 1.8.22+ required for Python 3.11 wheels
     "fiona>=1.8.22",
-    # fsspec 2023.1+ required for unified file system interface
-    "fsspec>=2023.1",
+    # fsspec 2023.1+ required for unified file system interface with all backends
+    "fsspec[s3fs,gcsfs,abfs]>=2023.1",
     # geopandas 0.12.1+ required for Shapely 2+ support
     "geopandas>=0.12.1",
     # kornia 0.7.4+ required for AugmentationSequential support for unknown keys

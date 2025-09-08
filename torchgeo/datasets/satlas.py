@@ -18,7 +18,7 @@ from torch import Tensor
 
 from .errors import DatasetNotFoundError
 from .geo import NonGeoDataset
-from .utils import Path, check_integrity, download_from_s3, extract_archive
+from .utils import Path, check_integrity, download_from_cloud, extract_archive
 
 
 class _Task(TypedDict, total=False):
@@ -709,7 +709,7 @@ class SatlasPretrain(NonGeoDataset):
                     raise DatasetNotFoundError(self)
 
                 # Download and extract the tarball
-                download_from_s3(self.url + tarball, self.root)
+                download_from_cloud(self.url + tarball, self.root)
                 check_integrity(path, md5 if self.checksum else None)
                 extract_archive(path)
 

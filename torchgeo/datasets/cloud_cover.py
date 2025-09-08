@@ -17,7 +17,7 @@ from torch import Tensor
 
 from .errors import DatasetNotFoundError, RGBBandsMissingError
 from .geo import NonGeoDataset
-from .utils import Path, download_from_azure
+from .utils import Path, download_from_cloud
 
 
 class CloudCoverDetection(NonGeoDataset):
@@ -169,7 +169,7 @@ class CloudCoverDetection(NonGeoDataset):
         """Download the dataset."""
         directory = os.path.join(self.root, self.split)
         url = f'{self.url}/{self.splits[self.split]}'
-        download_from_azure(url, directory, recursive=True)
+        download_from_cloud(url, directory, recursive=True)
 
     def plot(
         self,

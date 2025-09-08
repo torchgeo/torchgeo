@@ -18,7 +18,7 @@ from torch import Tensor
 
 from .errors import DatasetNotFoundError
 from .geo import NonGeoDataset
-from .utils import Path, download_from_azure, download_from_cloud
+from .utils import Path, download_from_cloud
 
 
 class TropicalCyclone(NonGeoDataset):
@@ -156,7 +156,7 @@ class TropicalCyclone(NonGeoDataset):
     def _download(self) -> None:
         """Download the dataset."""
         directory = os.path.join(self.root, self.split)
-        download_from_azure(f'{self.url}/{self.split}', directory, recursive=True)
+        download_from_cloud(f'{self.url}/{self.split}', directory, recursive=True)
         files = [f'{self.filename}_features.csv', f'{self.filename}_labels.csv']
         for file in files:
             download_from_cloud(f'{self.url}/{file}', self.root)

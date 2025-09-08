@@ -29,7 +29,7 @@ from ..geo import NonGeoDataset
 from ..utils import (
     Path,
     check_integrity,
-    download_from_s3,
+    download_from_cloud,
     extract_archive,
     percentile_normalization,
 )
@@ -43,11 +43,6 @@ class SpaceNet(NonGeoDataset, ABC):
     of road labels mapped over high-resolution satellite imagery obtained from
     a variety of sensors such as Worldview-2, Worldview-3 and Dove.
 
-    .. note::
-
-       The SpaceNet datasets require the following additional library to be installed:
-
-       * `fsspec[s3] <https://filesystem-spec.readthedocs.io/>`_: to download the dataset from AWS.
     """
 
     url = 's3://spacenet-dataset/spacenet/{dataset_id}/tarballs/{tarball}'
@@ -328,7 +323,7 @@ class SpaceNet(NonGeoDataset, ABC):
 
                 # Download the dataset
                 url = self.url.format(dataset_id=self.dataset_id, tarball=tarball)
-                download_from_s3(url, root)
+                download_from_cloud(url, root)
                 check_integrity(
                     os.path.join(root, tarball), md5 if self.checksum else None
                 )

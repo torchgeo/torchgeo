@@ -17,7 +17,7 @@ from torchvision.utils import draw_bounding_boxes
 
 from .errors import DatasetNotFoundError
 from .geo import NonGeoDataset
-from .utils import Path, download_from_azure
+from .utils import Path, download_from_cloud
 
 
 class NASAMarineDebris(NonGeoDataset):
@@ -137,7 +137,7 @@ class NASAMarineDebris(NonGeoDataset):
 
     def _download(self) -> None:
         """Download the dataset."""
-        download_from_azure(self.url, self.root, recursive=True)
+        download_from_cloud(self.url, self.root, recursive=True)
 
     def plot(
         self,
