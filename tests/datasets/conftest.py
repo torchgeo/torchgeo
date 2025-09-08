@@ -23,9 +23,15 @@ def copy_recursive(url: str, root: Path, recursive: bool = False, *args: Any, **
     """Copy function that handles recursive downloads."""
     os.makedirs(root, exist_ok=True)
     if recursive:
-        # For recursive copies, copy entire source directory  
+        # For recursive copies, copy contents of source directory to destination
         if os.path.isdir(url):
-            shutil.copytree(url, os.path.join(root, os.path.basename(url)), dirs_exist_ok=True)
+            for item in os.listdir(url):
+                src = os.path.join(url, item)
+                dst = os.path.join(root, item)
+                if os.path.isdir(src):
+                    shutil.copytree(src, dst, dirs_exist_ok=True)
+                else:
+                    shutil.copy2(src, dst)
         else:
             shutil.copy(url, root)
     else:
@@ -36,7 +42,7 @@ def copy_recursive(url: str, root: Path, recursive: bool = False, *args: Any, **
 def download_url(monkeypatch: MonkeyPatch, request: SubRequest) -> None:
     monkeypatch.setattr(torchvision.datasets.utils, 'download_url', copy)
     monkeypatch.setattr(torchgeo.datasets.utils, 'download_url', copy)
-    monkeypatch.setattr(torchgeo.datasets.utils, 'download_file', copy_recursive)
+    monkeypatch.setattr(torchgeo.datasets.utils, 'download_from_cloud', copy_recursive)
     monkeypatch.setattr(torchgeo.datasets.utils, 'download_from_azure', copy_recursive)
     monkeypatch.setattr(torchgeo.datasets.utils, 'download_from_s3', copy_recursive)
     _, filename = os.path.split(request.path)
@@ -46,7 +52,7 @@ def download_url(monkeypatch: MonkeyPatch, request: SubRequest) -> None:
     except AttributeError:
         pass
     try:
-        monkeypatch.setattr(f'torchgeo.datasets.{module}.download_file', copy_recursive)
+        monkeypatch.setattr(f'torchgeo.datasets.{module}.download_from_cloud', copy_recursive)
     except AttributeError:
         pass
     try:

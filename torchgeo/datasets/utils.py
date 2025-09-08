@@ -42,7 +42,7 @@ __all__ = (
     'check_integrity',
     'download_and_extract_archive',
     'download_url',
-    'download_file',
+    'download_from_cloud',
     'download_from_azure',
     'download_from_s3',
     'extract_archive',
@@ -55,47 +55,40 @@ GeoSlice: TypeAlias = (
 Path: TypeAlias = str | os.PathLike[str]
 
 
-def download_file(
+def download_from_cloud(
     url: str,
     root: Path,
     filename: str | None = None,
     md5: str | None = None,
     recursive: bool = False,
 ) -> None:
-    """Download a file from a URL using fsspec.
+    """Download a file from cloud storage using fsspec.
     
-    This function provides a unified interface for downloading files from various
-    sources including HTTP/HTTPS, Azure Blob Storage, AWS S3, Google Cloud Storage,
-    and FTP using the fsspec library.
+    This function provides a unified interface for downloading files from cloud
+    storage providers including Azure Blob Storage, AWS S3, and Google Cloud Storage
+    using the fsspec library.
     
     Args:
-        url: URL to download from. Can be:
-            - HTTP/HTTPS: http://example.com/file.zip
+        url: Cloud storage URL to download from. Can be:
             - Azure Blob: https://account.blob.core.windows.net/container/blob
-            - AWS S3: s3://bucket/key
+            - AWS S3: s3://bucket/key or https://bucket.s3.amazonaws.com/key  
             - Google Cloud: gs://bucket/object
-            - FTP: ftp://server/path/file
         root: Directory to save the file to
         filename: Filename to save as. If None, inferred from URL
         md5: Expected MD5 hash of the file for verification
         recursive: Whether to download recursively (for directory-like operations)
         
     Raises:
-        ValueError: If MD5 verification fails
+        ValueError: If MD5 verification fails or unsupported URL
         ImportError: If required fsspec backend is not installed
     """
     # Import fsspec lazily to avoid import errors if not installed
     try:
         import fsspec
     except ImportError:
-        # Fall back to torchvision's download_url for HTTP/HTTPS
-        if url.startswith(('http://', 'https://')):
-            download_url(url, root, filename, md5)
-            return
-        else:
-            raise ImportError("fsspec is required for non-HTTP downloads")
+        raise ImportError("fsspec is required for cloud storage downloads")
     
-    # Parse URL to determine protocol
+    # Parse URL to determine cloud provider
     parsed = urllib.parse.urlparse(url)
     scheme = parsed.scheme.lower()
     
@@ -108,107 +101,87 @@ def download_file(
     
     filepath = os.path.join(root, filename)
     
-    try:
-        # Handle different protocols
-        if scheme in ('http', 'https'):
-            # Standard HTTP/HTTPS download
-            with fsspec.open(url, 'rb') as src:
-                with open(filepath, 'wb') as dst:
-                    shutil.copyfileobj(src, dst)
+    # Handle different cloud providers
+    if scheme == 's3' or (scheme == 'https' and 's3' in parsed.netloc):
+        # AWS S3 download
+        try:
+            import s3fs
+        except ImportError:
+            raise ImportError("s3fs is required for S3 downloads")
         
-        elif scheme == 's3' or (scheme == 'https' and 's3' in parsed.netloc):
-            # AWS S3 download
-            try:
-                import s3fs
-            except ImportError:
-                raise ImportError("s3fs is required for S3 downloads")
-            
-            if scheme == 'https':
-                # Convert HTTPS S3 URL to s3:// format
-                if 's3.amazonaws.com' in parsed.netloc:
-                    bucket = parsed.netloc.split('.')[0]
-                    key = parsed.path.lstrip('/')
-                    s3_url = f's3://{bucket}/{key}'
-                else:
-                    s3_url = url
+        if scheme == 'https':
+            # Convert HTTPS S3 URL to s3:// format
+            if 's3.amazonaws.com' in parsed.netloc:
+                bucket = parsed.netloc.split('.')[0]
+                key = parsed.path.lstrip('/')
+                s3_url = f's3://{bucket}/{key}'
             else:
                 s3_url = url
-                
-            if recursive:
-                # Download directory recursively
-                fs = s3fs.S3FileSystem()
-                fs.get(s3_url.replace('s3://', ''), root, recursive=True)
-            else:
-                # Download single file
-                with fsspec.open(s3_url, 'rb') as src:
-                    with open(filepath, 'wb') as dst:
-                        shutil.copyfileobj(src, dst)
-        
-        elif scheme == 'abfs' or (scheme == 'https' and 'blob.core.windows.net' in parsed.netloc):
-            # Azure Blob Storage download
-            try:
-                import adlfs
-            except ImportError:
-                raise ImportError("adlfs is required for Azure Blob Storage downloads")
+        else:
+            s3_url = url
             
-            if scheme == 'https':
-                # Convert HTTPS Azure URL to abfs:// format
-                parts = parsed.netloc.split('.')
-                account = parts[0]
-                path_parts = parsed.path.strip('/').split('/', 1)
-                container = path_parts[0]
-                blob_path = path_parts[1] if len(path_parts) > 1 else ''
-                abfs_url = f'abfs://{container}@{account}.dfs.core.windows.net/{blob_path}'
-            else:
-                abfs_url = url
-                
-            if recursive:
-                # Download directory recursively
-                fs = adlfs.AzureBlobFileSystem()
-                fs.get(abfs_url.replace('abfs://', ''), root, recursive=True)
-            else:
-                # Download single file
-                with fsspec.open(abfs_url, 'rb') as src:
-                    with open(filepath, 'wb') as dst:
-                        shutil.copyfileobj(src, dst)
+        if recursive:
+            # Download directory recursively
+            fs = s3fs.S3FileSystem()
+            fs.get(s3_url.replace('s3://', ''), root, recursive=True)
+        else:
+            # Download single file
+            with fsspec.open(s3_url, 'rb') as src:
+                with open(filepath, 'wb') as dst:
+                    shutil.copyfileobj(src, dst)
+    
+    elif scheme == 'abfs' or (scheme == 'https' and 'blob.core.windows.net' in parsed.netloc):
+        # Azure Blob Storage download
+        try:
+            import adlfs
+        except ImportError:
+            raise ImportError("adlfs is required for Azure Blob Storage downloads")
         
-        elif scheme == 'gs':
-            # Google Cloud Storage download
-            try:
-                import gcsfs
-            except ImportError:
-                raise ImportError("gcsfs is required for Google Cloud Storage downloads")
+        if scheme == 'https':
+            # Convert HTTPS Azure URL to abfs:// format
+            parts = parsed.netloc.split('.')
+            account = parts[0]
+            path_parts = parsed.path.strip('/').split('/', 1)
+            container = path_parts[0]
+            blob_path = path_parts[1] if len(path_parts) > 1 else ''
+            abfs_url = f'abfs://{container}@{account}.dfs.core.windows.net/{blob_path}'
+        else:
+            abfs_url = url
             
-            if recursive:
-                # Download directory recursively
-                fs = gcsfs.GCSFileSystem()
-                fs.get(url.replace('gs://', ''), root, recursive=True)
-            else:
-                # Download single file
-                with fsspec.open(url, 'rb') as src:
-                    with open(filepath, 'wb') as dst:
-                        shutil.copyfileobj(src, dst)
+        if recursive:
+            # Download directory recursively
+            fs = adlfs.AzureBlobFileSystem()
+            fs.get(abfs_url.replace('abfs://', ''), root, recursive=True)
+        else:
+            # Download single file
+            with fsspec.open(abfs_url, 'rb') as src:
+                with open(filepath, 'wb') as dst:
+                    shutil.copyfileobj(src, dst)
+    
+    elif scheme == 'gs':
+        # Google Cloud Storage download
+        try:
+            import gcsfs
+        except ImportError:
+            raise ImportError("gcsfs is required for Google Cloud Storage downloads")
         
-        elif scheme == 'ftp':
-            # FTP download
+        if recursive:
+            # Download directory recursively
+            fs = gcsfs.GCSFileSystem()
+            fs.get(url.replace('gs://', ''), root, recursive=True)
+        else:
+            # Download single file
             with fsspec.open(url, 'rb') as src:
                 with open(filepath, 'wb') as dst:
                     shutil.copyfileobj(src, dst)
-        
-        else:
-            raise ValueError(f'Unsupported URL scheme: {scheme}')
-        
-        # Verify MD5 if provided
-        if md5 is not None and os.path.exists(filepath):
-            if not check_integrity(filepath, md5):
-                raise ValueError(f'MD5 verification failed for {filepath}')
-                
-    except Exception as e:
-        # If fsspec fails for HTTP/HTTPS, fall back to torchvision
-        if scheme in ('http', 'https'):
-            download_url(url, root, filename, md5)
-        else:
-            raise e
+    
+    else:
+        raise ValueError(f'Unsupported cloud storage URL: {url}')
+    
+    # Verify MD5 if provided
+    if md5 is not None and os.path.exists(filepath):
+        if not check_integrity(filepath, md5):
+            raise ValueError(f'MD5 verification failed for {filepath}')
 
 
 def download_from_azure(
@@ -216,14 +189,14 @@ def download_from_azure(
     root: Path,
     recursive: bool = True,
 ) -> None:
-    """Download from Azure Blob Storage using fsspec (replacement for azcopy).
+    """Download from Azure Blob Storage (wrapper for download_from_cloud).
     
     Args:
         url: Azure Blob Storage URL
         root: Directory to save files to
         recursive: Whether to download recursively
     """
-    download_file(url, root, recursive=recursive)
+    download_from_cloud(url, root, recursive=recursive)
 
 
 def download_from_s3(
@@ -231,14 +204,14 @@ def download_from_s3(
     root: Path,
     recursive: bool = False,
 ) -> None:
-    """Download from AWS S3 using fsspec (replacement for aws s3 cp).
+    """Download from AWS S3 (wrapper for download_from_cloud).
     
     Args:
         url: S3 URL
         root: Directory to save files to  
         recursive: Whether to download recursively
     """
-    download_file(url, root, recursive=recursive)
+    download_from_cloud(url, root, recursive=recursive)
 
 
 
