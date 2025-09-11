@@ -8,10 +8,8 @@ import hashlib
 import os
 import zipfile
 
-import fiona
-from rasterio.crs import CRS
+import geopandas as gpd
 from shapely import Polygon
-from shapely.geometry import mapping
 
 # Size of example crop field polygon in projection units.
 # This is set to align with Sentinel-2 test data, which is a 128x128 image at 10
@@ -20,18 +18,14 @@ SIZE = 1280
 
 
 def create_data_file(dataname: str) -> None:
-    schema = {'geometry': 'Polygon', 'properties': {'EC_hcat_c': 'str'}}
-    with fiona.open(
-        dataname, 'w', crs=CRS.from_epsg(32616), driver='ESRI Shapefile', schema=schema
-    ) as shpfile:
-        coordinates = [[0.0, 0.0], [0.0, SIZE], [SIZE, SIZE], [SIZE, 0.0], [0.0, 0.0]]
-        # The offset aligns with tests/data/sentinel2/data.py.
-        offset = [399960, 4500000 - SIZE]
-        coordinates = [[x + offset[0], y + offset[1]] for x, y in coordinates]
-
-        polygon = Polygon(coordinates)
-        properties = {'EC_hcat_c': '1000000010'}
-        shpfile.write({'geometry': mapping(polygon), 'properties': properties})
+    coordinates = [[0.0, 0.0], [0.0, SIZE], [SIZE, SIZE], [SIZE, 0.0], [0.0, 0.0]]
+    # The offset aligns with tests/data/sentinel2/data.py.
+    offset = [399960, 4500000 - SIZE]
+    coordinates = [[x + offset[0], y + offset[1]] for x, y in coordinates]
+    geometries = [Polygon(coordinates)]
+    data = {'EC_hcat_c': ['1000000010']}
+    gdf = gpd.GeoDataFrame(data, geometry=geometries, crs='EPSG:32616')
+    gdf.to_file(dataname, driver='ESRI Shapefile')
 
 
 def create_csv(fname: str) -> None:

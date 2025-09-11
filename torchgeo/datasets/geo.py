@@ -14,11 +14,11 @@ from collections.abc import Callable, Iterable, Sequence
 from datetime import datetime
 from typing import Any, ClassVar, Literal
 
-import fiona
-import fiona.transform
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import pyogrio
+import pyproj
 import rasterio
 import rasterio.merge
 import shapely
@@ -715,18 +715,18 @@ class VectorDataset(GeoDataset):
             match = re.match(filename_regex, os.path.basename(filepath))
             if match is not None:
                 try:
-                    with fiona.open(filepath, layer=layer) as src:
-                        if crs is None:
-                            crs = CRS.from_wkt(src.crs_wkt)
-
-                        minx, miny, maxx, maxy = src.bounds
-                        (minx, maxx), (miny, maxy) = fiona.transform.transform(
-                            src.crs, crs.to_wkt(), [minx, maxx], [miny, maxy]
+                    src = gpd.read_file(filepath, layer=layer)
+                    if crs is None:
+                        crs = src.crs
+                        src.to_crs(crs, inplace=True)
+                        geometries = src.bounds.apply(
+                            lambda row: shapely.geometry.box(
+                                row['minx'], row['miny'], row['maxx'], row['maxy']
+                            ),
+                            axis=1,
                         )
-                        geometry = shapely.box(minx, miny, maxx, maxy)
-                        geometries.append(geometry)
-                except fiona.errors.FionaValueError:
-                    # Skip files that fiona is unable to read
+                except pyogrio.errors.DataSourceError:
+                    # Skip files that geopandas is unable to read
                     continue
                 else:
                     filepaths.append(filepath)
@@ -777,20 +777,26 @@ class VectorDataset(GeoDataset):
 
         shapes = []
         for filepath in index.filepath:
-            with fiona.open(filepath, layer=self.layer) as src:
-                # We need to know the bounding box of the query in the source CRS
-                (minx, maxx), (miny, maxy) = fiona.transform.transform(
-                    self.crs.to_wkt(), src.crs, [x.start, x.stop], [y.start, y.stop]
-                )
+            src = gpd.read_file(filepath, layer=self.layer)
 
-                # Filter geometries to those that intersect with the bounding box
-                for feature in src.filter(bbox=(minx, miny, maxx, maxy)):
-                    # Warp geometries to requested CRS
-                    shape = fiona.transform.transform_geom(
-                        src.crs, self.crs.to_wkt(), feature['geometry']
-                    )
-                    label = self.get_label(feature)
-                    shapes.append((shape, label))
+            # We need to know the bounding box of the query in the source CRS
+            transformer = pyproj.Transformer.from_crs(self.crs, src.crs, always_xy=True)
+            (minx, miny) = transformer.transform(x.start, y.start)
+            (maxx, maxy) = transformer.transform(x.stop, y.stop)
+
+            # Filter geometries to those that intersect with the bounding box
+            src = src.filter(bbox=(minx, miny, maxx, maxy))
+
+            # Warp geometries to requested CRS
+            src.to_crs(self.crs, inplace=True)
+
+            # Get label values to use for rendering each geometry
+            if self.label_name:
+                labels = src[self.label_name].astype(int)
+            else:
+                labels = [1] * len(src)
+
+            shapes.extend(list(zip(src.geometry, labels)))
 
         # Rasterize geometries
         width = (x.stop - x.start) / x.step
@@ -895,21 +901,6 @@ class VectorDataset(GeoDataset):
             sample = self.transforms(sample)
 
         return sample
-
-    def get_label(self, feature: 'fiona.model.Feature') -> int:
-        """Get label value to use for rendering a feature.
-
-        Args:
-            feature: the :class:`fiona.model.Feature` from which to extract the label.
-
-        Returns:
-            the integer label, or 0 if the feature should not be rendered.
-
-        .. versionadded:: 0.6
-        """
-        if self.label_name:
-            return int(feature['properties'][self.label_name])
-        return 1
 
 
 class NonGeoDataset(Dataset[dict[str, Any]], abc.ABC):
