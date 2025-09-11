@@ -421,6 +421,71 @@ def _dict_list_to_list_dict(
     return uncollated
 
 
+def pad_sequence(
+    batch: list[dict[str, Tensor]],
+    padding_value: float = 0.0,
+    padding_side: str = 'right',
+    padding_length: int | None = None,
+) -> dict[str, Any]:
+    """Custom timeseries collate fn to handle variable length sequences.
+
+    Args:
+        batch: list of sample dicts return by dataset
+        padding_value: value for padded elements
+        padding_side: the side to pad the sequences on
+        padding_length: the length to pad the sequences to. If None, pad to the max length of mini-batch
+
+    Returns:
+        batch dict output
+
+    .. versionadded:: 0.8
+    """
+    output: dict[str, Any] = {}
+    images = [sample['image'] for sample in batch]
+
+    padded_images = []
+    if padding_length is None:
+        padding_length = max(img.shape[0] for img in images)
+
+    for img in images:
+        if img.shape[0] < padding_length:
+            padding_shape = (padding_length - img.shape[0], *img.shape[1:])
+            padding = torch.full(padding_shape, padding_value, dtype=img.dtype)
+            if padding_side == 'right':
+                padded_img = torch.cat([img, padding], dim=0)
+            elif padding_side == 'left':
+                padded_img = torch.cat([padding, img], dim=0)
+            else:
+                raise ValueError(
+                    f"'padding_side' must be either 'left' or 'right', but got '{padding_side}'"
+                )
+            padded_images.append(padded_img)
+        elif img.shape[0] > padding_length:  # truncate: unpad_sequence
+            print(
+                f'Truncating image from length {img.shape[0]} to {padding_length} in pad_sequence.'
+            )
+            if padding_side == 'right':
+                padded_images.append(img[:padding_length])
+            elif padding_side == 'left':
+                padded_images.append(img[-padding_length:])
+            else:
+                raise ValueError(
+                    f"'padding_side' must be either 'left' or 'right', but got '{padding_side}'"
+                )
+        else:
+            padded_images.append(img)
+
+    output['image'] = torch.stack(padded_images)
+    output['mask'] = torch.stack([sample['mask'] for sample in batch])
+
+    if 'bbox_xyxy' in batch[0]:
+        output['bbox_xyxy'] = torch.stack([sample['bbox_xyxy'] for sample in batch])
+    if 'label' in batch[0]:
+        output['label'] = torch.stack([sample['label'] for sample in batch])
+
+    return output
+
+
 def stack_samples(samples: Iterable[Mapping[Any, Any]]) -> dict[Any, Any]:
     """Stack a list of samples along a new axis.
 
