@@ -14,7 +14,7 @@ import torch
 
 from .errors import DatasetNotFoundError
 from .geo import NonGeoDataset
-from .utils import Path, which
+from .utils import Path, download_from_cloud
 
 
 class WesternUSALiveFuelMoisture(NonGeoDataset):
@@ -38,13 +38,6 @@ class WesternUSALiveFuelMoisture(NonGeoDataset):
     If you use this dataset in your research, please cite the following paper:
 
     * https://doi.org/10.1016/j.rse.2020.111797
-
-    .. note::
-
-       This dataset requires the following additional library to be installed:
-
-       * `azcopy <https://github.com/Azure/azure-storage-azcopy>`_: to download the
-         dataset from Source Cooperative.
 
     .. versionadded:: 0.5
     """
@@ -294,6 +287,4 @@ class WesternUSALiveFuelMoisture(NonGeoDataset):
 
     def _download(self) -> None:
         """Download the dataset and extract it."""
-        os.makedirs(self.root, exist_ok=True)
-        azcopy = which('azcopy')
-        azcopy('sync', self.url, self.root, '--recursive=true')
+        download_from_cloud(self.url, self.root, recursive=True)

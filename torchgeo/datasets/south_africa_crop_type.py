@@ -17,7 +17,7 @@ from torch import Tensor
 
 from .errors import DatasetNotFoundError, RGBBandsMissingError
 from .geo import RasterDataset
-from .utils import GeoSlice, Path, which
+from .utils import GeoSlice, Path, download_from_cloud
 
 
 class SouthAfricaCropType(RasterDataset):
@@ -63,7 +63,7 @@ class SouthAfricaCropType(RasterDataset):
     .. note::
        This dataset requires the following additional library to be installed:
 
-       * `azcopy <https://github.com/Azure/azure-storage-azcopy>`_: to download the
+       * `fsspec[azure] <https://filesystem-spec.readthedocs.io/>`_: to download the
          dataset from Source Cooperative.
 
     .. versionadded:: 0.6
@@ -258,9 +258,7 @@ class SouthAfricaCropType(RasterDataset):
     def _download(self) -> None:
         """Download the dataset."""
         assert isinstance(self.paths, str | os.PathLike)
-        os.makedirs(self.paths, exist_ok=True)
-        azcopy = which('azcopy')
-        azcopy('sync', f'{self.url}', self.paths, '--recursive=true')
+        download_from_cloud(self.url, self.paths, recursive=True)
 
     def plot(
         self,

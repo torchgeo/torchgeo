@@ -18,7 +18,7 @@ from torch import Tensor
 
 from .errors import DatasetNotFoundError
 from .geo import NonGeoDataset
-from .utils import Path, check_integrity, extract_archive, which
+from .utils import Path, check_integrity, download_from_cloud, extract_archive
 
 
 class _Task(TypedDict, total=False):
@@ -471,7 +471,7 @@ class SatlasPretrain(NonGeoDataset):
     .. note::
        This dataset requires the following additional library to be installed:
 
-       * `AWS CLI <https://aws.amazon.com/cli/>`_: to download the dataset from AWS.
+       * `fsspec[s3] <https://filesystem-spec.readthedocs.io/>`_: to download the dataset from AWS.
     """
 
     # https://github.com/allenai/satlas/blob/main/satlaspretrain_urls.txt
@@ -709,8 +709,7 @@ class SatlasPretrain(NonGeoDataset):
                     raise DatasetNotFoundError(self)
 
                 # Download and extract the tarball
-                aws = which('aws')
-                aws('s3', 'cp', self.url + tarball, self.root)
+                download_from_cloud(self.url + tarball, self.root)
                 check_integrity(path, md5 if self.checksum else None)
                 extract_archive(path)
 

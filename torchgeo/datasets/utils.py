@@ -8,10 +8,12 @@ from __future__ import annotations
 
 import collections
 import contextlib
+import hashlib
 import importlib
 import os
 import shutil
 import subprocess
+import urllib.parse
 from collections.abc import Iterable, Iterator, Mapping, MutableMapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -35,11 +37,12 @@ from typing_extensions import deprecated
 
 from .errors import DependencyNotFoundError
 
-# Only include import redirects
+# Only include import redirects and new download functions
 __all__ = (
     'check_integrity',
     'download_and_extract_archive',
     'download_url',
+    'download_from_cloud',
     'extract_archive',
 )
 
@@ -48,6 +51,107 @@ GeoSlice: TypeAlias = (
     slice | tuple[slice] | tuple[slice, slice] | tuple[slice, slice, slice]
 )
 Path: TypeAlias = str | os.PathLike[str]
+
+
+def download_from_cloud(
+    url: str,
+    root: Path,
+    filename: str | None = None,
+    recursive: bool = False,
+) -> None:
+    """Download a file from cloud storage using fsspec.
+    
+    This function provides a unified interface for downloading files from cloud
+    storage providers including Azure Blob Storage, AWS S3, and Google Cloud Storage
+    using the fsspec library.
+    
+    Args:
+        url: Cloud storage URL to download from. Can be:
+            - Azure Blob: https://account.blob.core.windows.net/container/blob
+            - AWS S3: s3://bucket/key or https://bucket.s3.amazonaws.com/key  
+            - Google Cloud: gs://bucket/object
+        root: Directory to save the file to
+        filename: Filename to save as. If None, inferred from URL
+        recursive: Whether to download recursively (for directory-like operations)
+        
+    Raises:
+        ValueError: If unsupported URL
+    """
+    import fsspec
+    import s3fs
+    import adlfs
+    import gcsfs
+    
+    # Parse URL to determine cloud provider
+    parsed = urllib.parse.urlparse(url)
+    scheme = parsed.scheme.lower()
+    
+    # Create root directory if it doesn't exist
+    os.makedirs(root, exist_ok=True)
+    
+    # Determine filename if not provided
+    if filename is None:
+        filename = os.path.basename(parsed.path) or 'downloaded_file'
+    
+    filepath = os.path.join(root, filename)
+    
+    # Handle different cloud providers
+    if scheme == 's3' or (scheme == 'https' and 's3' in parsed.netloc):
+        # AWS S3 download        
+        if scheme == 'https':
+            # Convert HTTPS S3 URL to s3:// format
+            if 's3.amazonaws.com' in parsed.netloc:
+                bucket = parsed.netloc.split('.')[0]
+                key = parsed.path.lstrip('/')
+                s3_url = f's3://{bucket}/{key}'
+            else:
+                s3_url = url
+        else:
+            s3_url = url
+            
+        fs = s3fs.S3FileSystem()
+        if recursive:
+            # Download directory recursively
+            fs.get(s3_url.replace('s3://', ''), root, recursive=True)
+        else:
+            # Download single file
+            fs.get(s3_url.replace('s3://', ''), filepath)
+    
+    elif scheme == 'abfs' or (scheme == 'https' and 'blob.core.windows.net' in parsed.netloc):
+        # Azure Blob Storage download        
+        if scheme == 'https':
+            # Convert HTTPS Azure URL to abfs:// format
+            parts = parsed.netloc.split('.')
+            account = parts[0]
+            path_parts = parsed.path.strip('/').split('/', 1)
+            container = path_parts[0]
+            blob_path = path_parts[1] if len(path_parts) > 1 else ''
+            abfs_url = f'abfs://{container}@{account}.dfs.core.windows.net/{blob_path}'
+        else:
+            abfs_url = url
+            
+        fs = adlfs.AzureBlobFileSystem()
+        if recursive:
+            # Download directory recursively
+            fs.get(abfs_url.replace('abfs://', ''), root, recursive=True)
+        else:
+            # Download single file
+            fs.get(abfs_url.replace('abfs://', ''), filepath)
+    
+    elif scheme == 'gs':
+        # Google Cloud Storage download        
+        fs = gcsfs.GCSFileSystem()
+        if recursive:
+            # Download directory recursively
+            fs.get(url.replace('gs://', ''), root, recursive=True)
+        else:
+            # Download single file
+            fs.get(url.replace('gs://', ''), filepath)
+    
+    else:
+        raise ValueError(f'Unsupported cloud storage URL: {url}')
+
+
 
 
 @deprecated('Use torchgeo.datasets.utils.GeoSlice or shapely.Polygon instead')
@@ -707,25 +811,6 @@ to install all optional dependencies."""
         raise DependencyNotFoundError(msg) from None
 
 
-def which(name: Path) -> Executable:
-    """Search for executable *name*.
-
-    Args:
-        name: Name of executable to search for.
-
-    Returns:
-        Callable executable instance.
-
-    Raises:
-        DependencyNotFoundError: If *name* is not installed.
-
-    .. versionadded:: 0.6
-    """
-    if cmd := shutil.which(name):
-        return Executable(cmd)
-    else:
-        msg = f'{name} is not installed and is required to use this dataset.'
-        raise DependencyNotFoundError(msg) from None
 
 
 def convert_poly_coords(

@@ -17,7 +17,7 @@ from torch import Tensor
 
 from .errors import DatasetNotFoundError, RGBBandsMissingError
 from .geo import NonGeoDataset
-from .utils import Path, which
+from .utils import Path, download_from_cloud
 
 
 class CloudCoverDetection(NonGeoDataset):
@@ -49,7 +49,7 @@ class CloudCoverDetection(NonGeoDataset):
 
        This dataset requires the following additional library to be installed:
 
-       * `azcopy <https://github.com/Azure/azure-storage-azcopy>`_: to download the
+       * `fsspec[azure] <https://filesystem-spec.readthedocs.io/>`_: to download the
          dataset from Source Cooperative.
 
     .. versionadded:: 0.4
@@ -168,10 +168,8 @@ class CloudCoverDetection(NonGeoDataset):
     def _download(self) -> None:
         """Download the dataset."""
         directory = os.path.join(self.root, self.split)
-        os.makedirs(directory, exist_ok=True)
         url = f'{self.url}/{self.splits[self.split]}'
-        azcopy = which('azcopy')
-        azcopy('sync', url, directory, '--recursive=true')
+        download_from_cloud(url, directory, recursive=True)
 
     def plot(
         self,

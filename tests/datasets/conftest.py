@@ -19,14 +19,48 @@ def copy(url: str, root: Path, *args: Any, **kwargs: Any) -> None:
     shutil.copy(url, root)
 
 
+def copy_recursive(url: str, root: Path, recursive: bool = False, *args: Any, **kwargs: Any) -> None:
+    """Copy function that handles recursive downloads."""
+    os.makedirs(root, exist_ok=True)
+    if recursive:
+        # For recursive copies, copy contents of source directory to destination
+        if os.path.isdir(url):
+            for item in os.listdir(url):
+                src = os.path.join(url, item)
+                dst = os.path.join(root, item)
+                if os.path.isdir(src):
+                    shutil.copytree(src, dst, dirs_exist_ok=True)
+                else:
+                    shutil.copy2(src, dst)
+        else:
+            shutil.copy(url, root)
+    else:
+        shutil.copy(url, root)
+
+
 @pytest.fixture(autouse=True)
 def download_url(monkeypatch: MonkeyPatch, request: SubRequest) -> None:
     monkeypatch.setattr(torchvision.datasets.utils, 'download_url', copy)
     monkeypatch.setattr(torchgeo.datasets.utils, 'download_url', copy)
+    monkeypatch.setattr(torchgeo.datasets.utils, 'download_from_cloud', copy_recursive)
+    monkeypatch.setattr(torchgeo.datasets.utils, 'download_from_azure', copy_recursive)
+    monkeypatch.setattr(torchgeo.datasets.utils, 'download_from_s3', copy_recursive)
     _, filename = os.path.split(request.path)
     module = filename[5:-3]
     try:
         monkeypatch.setattr(f'torchgeo.datasets.{module}.download_url', copy)
+    except AttributeError:
+        pass
+    try:
+        monkeypatch.setattr(f'torchgeo.datasets.{module}.download_from_cloud', copy_recursive)
+    except AttributeError:
+        pass
+    try:
+        monkeypatch.setattr(f'torchgeo.datasets.{module}.download_from_azure', copy_recursive)
+    except AttributeError:
+        pass
+    try:
+        monkeypatch.setattr(f'torchgeo.datasets.{module}.download_from_s3', copy_recursive)
     except AttributeError:
         pass
     monkeypatch.setattr('torchgeo.datasets.copernicus.lcz_s2.download_url', copy)

@@ -1,6 +1,7 @@
 # required
 einops==0.8.1
 fiona==1.10.1
+fsspec[s3fs,gcsfs,abfs]==2024.12.0
 geopandas==1.0.1
 kornia==0.8.1
 lightly==1.5.22

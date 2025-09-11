@@ -17,7 +17,7 @@ from torchvision.utils import draw_bounding_boxes
 
 from .errors import DatasetNotFoundError
 from .geo import NonGeoDataset
-from .utils import Path, which
+from .utils import Path, download_from_cloud
 
 
 class NASAMarineDebris(NonGeoDataset):
@@ -48,7 +48,7 @@ class NASAMarineDebris(NonGeoDataset):
 
        This dataset requires the following additional library to be installed:
 
-       * `azcopy <https://github.com/Azure/azure-storage-azcopy>`_: to download the
+       * `fsspec[azure] <https://filesystem-spec.readthedocs.io/>`_: to download the
          dataset from Source Cooperative.
 
     .. versionadded:: 0.2
@@ -137,9 +137,7 @@ class NASAMarineDebris(NonGeoDataset):
 
     def _download(self) -> None:
         """Download the dataset."""
-        os.makedirs(self.root, exist_ok=True)
-        azcopy = which('azcopy')
-        azcopy('sync', self.url, self.root, '--recursive=true')
+        download_from_cloud(self.url, self.root, recursive=True)
 
     def plot(
         self,
