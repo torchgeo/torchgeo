@@ -187,7 +187,9 @@ class Seq2Seq(nn.Module):
             teacher_force_prob=teacher_force_prob,
         )
 
-    def forward(self, past_targets: Tensor, future_targets: Tensor | None) -> Tensor:
+    def forward(
+        self, past_targets: Tensor, future_targets: Tensor | None = None
+    ) -> Tensor:
         """Forward pass of the model.
 
         Args:

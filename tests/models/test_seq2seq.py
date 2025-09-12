@@ -75,5 +75,4 @@ class TestSeq2Seq:
     def test_no_future_targets(self) -> None:
         model = Seq2Seq(input_size=1, output_sequence_len=3)
         past_target = torch.rand(1, 10, 1)
-        future_target = None
-        model(past_target, future_target)
+        model(past_target)
