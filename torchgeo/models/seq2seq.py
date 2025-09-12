@@ -70,9 +70,7 @@ class Decoder(nn.Module):
         self,
         input_size: int,
         hidden_size: int,
-        output_size: int,
         rnn_type: Literal['rnn', 'gru', 'lstm'] = 'lstm',
-        target_indices: list[int] | None = None,
         num_layers: int = 1,
         output_sequence_len: int = 1,
         teacher_force_prob: float | None = None,
@@ -82,10 +80,7 @@ class Decoder(nn.Module):
         Args:
             input_size: The number of features in the input.
             hidden_size: The number of features in the hidden state.
-            output_size: The number of features output by the decoder.
             rnn_type: The type of RNN cell to use, one of 'rnn', 'gru' or 'lstm'. Defaults to 'lstm'.
-            target_indices: Indices of the target features in the dataset.
-                If None, uses all features passed to the decoder. Defaults to None.
             num_layers: Number of layers. Defaults to 1.
             output_sequence_len: The number of steps to predict forward. Defaults to 1.
             teacher_force_prob: Probability of using teacher forcing. If None, does not
@@ -103,9 +98,8 @@ class Decoder(nn.Module):
                 self.rnn = nn.LSTM(
                     input_size, hidden_size, num_layers, batch_first=True
                 )
-        self.fc = nn.Linear(hidden_size, output_size)
-        self.output_size = output_size
-        self.target_indices = target_indices
+        self.fc = nn.Linear(hidden_size, input_size)
+        self.output_size = input_size
         self.output_sequence_len = output_sequence_len
         self.teacher_force_prob = teacher_force_prob
 
@@ -138,17 +132,16 @@ class Decoder(nn.Module):
             output = self.fc(last_layer_hidden)
             output = output.permute(1, 0, 2)  # put batch dimension first
             outputs[:, t : t + 1, :] = output
-            current_input = inputs[:, t : t + 1, :].clone()
             teacher_force = (
                 random.random() < self.teacher_force_prob
                 if self.teacher_force_prob is not None
                 else False
             )
-            if not teacher_force:
-                if self.target_indices:
-                    current_input[:, :, self.target_indices] = output
-                else:
-                    current_input = output
+            if teacher_force:
+                # TODO: need to make sure inputs is same length as output_sequence_len
+                current_input = inputs[:, t : t + 1, :].clone()
+            else:
+                current_input = output
 
         return outputs
 
@@ -158,14 +151,9 @@ class Seq2Seq(nn.Module):
 
     def __init__(
         self,
-        input_size_encoder: int,
-        input_size_decoder: int,
+        input_size: int,
         rnn_type: Literal['rnn', 'gru', 'lstm'] = 'lstm',
-        target_indices: list[int] | None = None,
-        encoder_indices: list[int] | None = None,
-        decoder_indices: list[int] | None = None,
         hidden_size: int = 1,
-        output_size: int = 1,
         output_sequence_len: int = 1,
         num_layers: int = 1,
         teacher_force_prob: float | None = None,
@@ -173,73 +161,48 @@ class Seq2Seq(nn.Module):
         """Initialize a new Seq2Seq model.
 
         Args:
-            input_size_encoder: The number of features in the encoder input.
-            input_size_decoder: The number of features in the decoder input.
+            input_size: The number of features in the input.
             rnn_type: The type of RNN cell to use, one of 'rnn', 'gru' or 'lstm'. Defaults to 'lstm'.
-            target_indices: The indices of the target(s) in the dataset. If None, uses all features. Defaults to None.
             encoder_indices: The indices of the encoder inputs. If None, uses all features. Defaults to None.
             decoder_indices: The indices of the decoder inputs. If None, uses all features. Defaults to None.
             hidden_size: The number of features in the hidden states of the encoder and decoder. Defaults to 1.
-            output_size: The number of features output by the model. Defaults to 1.
             output_sequence_len: The number of steps to predict forward. Defaults to 1.
             num_layers: Number of layers in the encoder and decoder. Defaults to 1.
             teacher_force_prob: Probability of using teacher forcing. If None, does not
                 use teacher forcing. Defaults to None.
         """
         super().__init__()
-        for indices, size, name in [
-            (encoder_indices, input_size_encoder, 'encoder_indices'),
-            (decoder_indices, input_size_decoder, 'decoder_indices'),
-            (target_indices, output_size, 'target_indices'),
-        ]:
-            if indices:
-                assert len(indices) == size, f'Length of {name} should match {size}.'
-        if decoder_indices and isinstance(target_indices, list):
-            assert set(target_indices).issubset(set(decoder_indices)), (
-                'target_indices should be in decoder_indices.'
-            )
-            # Target indices need to be mapped to the subset of inputs for decoder
-            target_indices = [
-                i for i, val in enumerate(decoder_indices) if val in target_indices
-            ]
         self.encoder = Encoder(
-            input_size=input_size_encoder,
+            input_size=input_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
             rnn_type=rnn_type,
         )
         self.decoder = Decoder(
-            input_size=input_size_decoder,
+            input_size=input_size,
             hidden_size=hidden_size,
-            output_size=output_size,
             rnn_type=rnn_type,
-            target_indices=target_indices,
             num_layers=num_layers,
             output_sequence_len=output_sequence_len,
             teacher_force_prob=teacher_force_prob,
         )
-        self.encoder_indices = encoder_indices
-        self.decoder_indices = decoder_indices
 
-    def forward(self, past_steps: Tensor, future_steps: Tensor) -> Tensor:
+    def forward(self, past_targets: Tensor, future_targets: Tensor | None) -> Tensor:
         """Forward pass of the model.
 
         Args:
-            past_steps: Past time steps.
-            future_steps: Future time steps.
+            past_targets: Targets for past time steps.
+            future_targets: Targets for future time steps.
 
         Returns:
             Output sequence of shape (b, output_sequence_len, output_size).
         """
-        if self.encoder_indices:
-            inputs_encoder = past_steps[:, :, self.encoder_indices]
+        if future_targets is not None:
+            inputs_decoder = torch.cat(
+                [past_targets[:, -1, :].unsqueeze(1), future_targets], dim=1
+            )
         else:
-            inputs_encoder = past_steps
-        inputs_decoder = torch.cat(
-            [past_steps[:, -1, :].unsqueeze(1), future_steps], dim=1
-        )
-        if self.decoder_indices:
-            inputs_decoder = inputs_decoder[:, :, self.decoder_indices]
-        hidden, cell = self.encoder(inputs_encoder)
+            inputs_decoder = past_targets[:, -1, :].unsqueeze(1)
+        hidden, cell = self.encoder(past_targets)
         outputs: Tensor = self.decoder(inputs_decoder, hidden, cell)
         return outputs

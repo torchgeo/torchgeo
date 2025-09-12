@@ -82,23 +82,23 @@ class AirQuality(NonGeoDataset):
         Returns:
             data at that index
         """
-        past_steps = self.data.iloc[index : index + self.num_past_steps]
-        future_steps = self.data.iloc[
+        past_targets = self.data.iloc[index : index + self.num_past_steps]
+        future_targets = self.data.iloc[
             index + self.num_past_steps : index
             + self.num_past_steps
             + self.num_future_steps
         ]
-        past_steps = torch.tensor(past_steps.values, dtype=torch.float32)
-        future_steps = torch.tensor(future_steps.values, dtype=torch.float32)
+        past_targets = torch.tensor(past_targets.values, dtype=torch.float32)
+        future_targets = torch.tensor(future_targets.values, dtype=torch.float32)
 
-        mean = past_steps.mean(dim=0, keepdim=True)
-        std = past_steps.std(dim=0, keepdim=True)
-        past_steps_normalized = (past_steps - mean) / (std + 1e-12)
-        future_steps_normalized = (future_steps - mean) / (std + 1e-12)
+        mean = past_targets.mean(dim=0, keepdim=True)
+        std = past_targets.std(dim=0, keepdim=True)
+        past_targets_normalized = (past_targets - mean) / (std + 1e-12)
+        future_targets_normalized = (future_targets - mean) / (std + 1e-12)
 
         return {
-            'past': past_steps_normalized,
-            'future': future_steps_normalized,
+            'past_targets': past_targets_normalized,
+            'future_targets': future_targets_normalized,
             'mean': mean,
             'std': std,
         }

@@ -23,8 +23,8 @@ class TestAirQuality:
 
     def test_getitem(self, dataset: AirQuality) -> None:
         item = dataset[0]
-        x = item['past']
-        y = item['future']
+        x = item['past_targets']
+        y = item['future_targets']
         assert isinstance(x, Tensor)
         assert x.shape[1] == 15
         assert x.shape[0] == dataset.num_past_steps
