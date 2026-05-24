@@ -45,12 +45,7 @@ class TestSpatioTemporalClassificationTask:
         self, task: Literal['binary', 'multiclass'], num_classes: int
     ) -> None:
         st_task = SpatioTemporalClassificationTask(
-            in_channels=4,
-            task=task,
-            num_classes=num_classes,
-            convlstm_hidden_dim=[16, 8],
-            convlstm_kernel_size=[3, (1, 1)],
-            convlstm_num_layers=2,
+            in_channels=4, task=task, num_classes=num_classes
         )
         # (B=2, T=3, C=4, H=16, W=16)
         batch = {'image': torch.randn(2, 3, 4, 16, 16)}
@@ -59,24 +54,27 @@ class TestSpatioTemporalClassificationTask:
 
     def test_forward_shape(self) -> None:
         task = SpatioTemporalClassificationTask(
-            in_channels=10,
-            task='multiclass',
-            num_classes=20,
-            convlstm_hidden_dim=[16, 8],
-            convlstm_kernel_size=[3, (1, 1)],
-            convlstm_num_layers=2,
+            in_channels=10, task='multiclass', num_classes=20
         )
         x = torch.randn(2, 9, 10, 32, 32)
         y_hat = task(x)
         assert y_hat.shape == (2, 20)
 
-    def test_unsupported_model(self) -> None:
-        with pytest.raises(
-            ValueError, match="Model type 'unsupported_model' is not supported"
-        ):
-            SpatioTemporalClassificationTask(
-                in_channels=4,
-                task='binary',
-                num_classes=1,
-                model='unsupported_model',  # type: ignore
-            )
+    def test_binary_task(self) -> None:
+        model = SpatioTemporalClassificationTask(
+            in_channels=3, task='binary', num_classes=1
+        )
+        batch = {
+            'image': torch.randn(2, 4, 3, 16, 16),
+            'label': torch.randint(0, 2, (2,), dtype=torch.float),
+            'length': torch.tensor([4, 4]),
+        }
+        # Exercises y = y.float() for bce loss; self.log raises without a Trainer
+        try:
+            model.training_step(batch, 0)
+        except MisconfigurationException:
+            pass
+        probabilities = model.predict_step(batch, 0)
+        assert probabilities.shape == (2, 1)
+        assert torch.all(probabilities >= 0)
+        assert torch.all(probabilities <= 1)

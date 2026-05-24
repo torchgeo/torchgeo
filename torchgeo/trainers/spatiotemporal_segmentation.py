@@ -78,7 +78,10 @@ class SpatioTemporalSegmentationTask(ClassificationMixin, BaseTask):
             self.hparams['num_classes'] or self.hparams['num_labels'] or 1
         )
         self.model = ConvLSTM(
-            input_dim=in_channels, num_classes=num_classes, **self.kwargs
+            input_dim=in_channels,
+            num_classes=num_classes,
+            convolutional_head=True,
+            **self.kwargs,
         )
 
     def _shared_step(self, batch: Any, stage: str) -> Tensor:
