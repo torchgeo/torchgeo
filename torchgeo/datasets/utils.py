@@ -73,9 +73,14 @@ Path: TypeAlias = str | os.PathLike[str]  # noqa: UP040
 #: * label: expected output classification or regression label
 #: * bbox_xyxy: expected output bounding box in (x1, y1, x2, y2) format
 #: * prediction: predicted output
+#: * bounds: spatiotemporal bounds of the sample
+#: * transform: affine transform of the sample
+#: * crs: :term:`coordinate reference system (CRS)` the sample is in
 #:
-#: Values are of type torch.Tensor.
-Sample: TypeAlias = dict[str, Tensor]  # noqa: UP040
+#: Values are usually of type torch.Tensor. The ``crs`` key is an exception: it holds
+#: a non-tensor :class:`pyproj.CRS`. Collation keeps it as a per-sample list, and
+#: device transfer and augmentation pass it through unchanged.
+Sample: TypeAlias = dict[str, Any]  # noqa: UP040
 
 
 @deprecated('Use torchgeo.datasets.utils.GeoSlice or shapely.Polygon instead')
