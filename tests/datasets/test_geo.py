@@ -438,7 +438,7 @@ class TestRasterDataset:
         assert isinstance(x[key], torch.Tensor)
         assert x[key].ndim == expected_ndim
         assert x[key].shape[-3] == len(ds.bands)
-        assert x['crs'] == ds.crs
+        assert ds.crs_registry[int(x['crs'])] == ds.crs
 
     @pytest.mark.parametrize(
         'bands',
@@ -464,7 +464,7 @@ class TestRasterDataset:
         assert isinstance(x[key], torch.Tensor)
         assert x[key].ndim == expected_ndim
         assert x[key].shape[-3] == len(ds.bands)
-        assert x['crs'] == ds.crs
+        assert ds.crs_registry[int(x['crs'])] == ds.crs
 
     def test_reprojection(self) -> None:
         naip1 = NAIP(self.naip_dir, crs=CRS.from_epsg(4087))
@@ -636,7 +636,7 @@ class TestXarrayDataset:
         x = dataset[dataset.bounds]
         assert isinstance(x, dict)
         assert isinstance(x['image'], torch.Tensor)
-        assert x['crs'] == dataset.crs
+        assert dataset.crs_registry[int(x['crs'])] == dataset.crs
 
     def test_and(self, dataset: XarrayDataset) -> None:
         ds = dataset & dataset
@@ -715,7 +715,7 @@ class TestVectorDataset:
         assert isinstance(x, dict)
         assert isinstance(x['mask'], torch.Tensor)
         assert torch.equal(x['mask'].unique(), torch.tensor([0, 1], dtype=torch.uint8))
-        assert x['crs'] == dataset.crs
+        assert dataset.crs_registry[int(x['crs'])] == dataset.crs
 
     def test_getitem_obj_det(self, dataset: CustomVectorDataset) -> None:
         dataset.task = 'object_detection'
@@ -958,7 +958,7 @@ class TestIntersectionDataset:
     def test_getitem(self, dataset: IntersectionDataset) -> None:
         sample = dataset[dataset.bounds]
         assert isinstance(sample['image'], torch.Tensor)
-        assert sample['crs'] == dataset.crs
+        assert dataset.crs_registry[int(sample['crs'])] == dataset.crs
 
     def test_len(self, dataset: IntersectionDataset) -> None:
         assert len(dataset) == 1
@@ -1236,7 +1236,7 @@ class TestUnionDataset:
     def test_getitem(self, dataset: UnionDataset) -> None:
         sample = dataset[dataset.bounds]
         assert isinstance(sample['image'], torch.Tensor)
-        assert sample['crs'] == dataset.crs
+        assert dataset.crs_registry[int(sample['crs'])] == dataset.crs
 
     def test_len(self, dataset: UnionDataset) -> None:
         assert len(dataset) == 2

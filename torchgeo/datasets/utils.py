@@ -77,10 +77,10 @@ Path: TypeAlias = str | os.PathLike[str]  # noqa: UP040
 #: * transform: affine transform of the sample
 #: * crs: :term:`coordinate reference system (CRS)` the sample is in
 #:
-#: Values are usually of type torch.Tensor. The ``crs`` key is an exception: it holds
-#: a non-tensor :class:`pyproj.CRS`. Collation keeps it as a per-sample list, and
-#: device transfer and augmentation pass it through unchanged.
-Sample: TypeAlias = dict[str, Any]  # noqa: UP040
+#: Values are of type torch.Tensor. The ``crs`` key holds an integer index into the
+#: dataset's :attr:`~torchgeo.datasets.geo.GeoDataset.crs_registry`, so the per-sample
+#: :term:`coordinate reference system (CRS)` travels as a tensor.
+Sample: TypeAlias = dict[str, Tensor]  # noqa: UP040
 
 
 @deprecated('Use torchgeo.datasets.utils.GeoSlice or shapely.Polygon instead')

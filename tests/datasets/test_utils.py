@@ -15,7 +15,6 @@ import pytest
 import rasterio
 import torch
 from numpy.typing import NDArray
-from pyproj import CRS
 from pytest import MonkeyPatch
 from rasterio import Affine, MemoryFile
 from rasterio.transform import from_origin
@@ -507,10 +506,7 @@ class TestCollateFunctionsMatchingKeys:
     @pytest.fixture(scope='class')
     @classmethod
     def samples(cls) -> list[Sample]:
-        return [
-            {'image': torch.tensor([1, 2, 0]), 'crs': CRS.from_epsg(4326)},
-            {'image': torch.tensor([0, 0, 3]), 'crs': CRS.from_epsg(3857)},
-        ]
+        return [{'image': torch.tensor([1, 2, 0])}, {'image': torch.tensor([0, 0, 3])}]
 
     def test_stack_unbind_samples(self, samples: list[Sample]) -> None:
         sample = stack_samples(samples)
@@ -520,7 +516,6 @@ class TestCollateFunctionsMatchingKeys:
         new_samples = unbind_samples(sample)
         for i in range(2):
             assert torch.allclose(samples[i]['image'], new_samples[i]['image'])
-            assert samples[i]['crs'] == new_samples[i]['crs']
 
     def test_concat_samples(self, samples: list[Sample]) -> None:
         sample = concat_samples(samples)
