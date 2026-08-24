@@ -75,11 +75,11 @@ Path: TypeAlias = str | os.PathLike[str]  # noqa: UP040
 #: * prediction: predicted output
 #: * bounds: spatiotemporal bounds of the sample
 #: * transform: affine transform of the sample
-#: * crs: :term:`coordinate reference system (CRS)` the sample is in
+#: * crs_index: index into the dataset's ``crs_registry`` giving the sample's CRS
 #:
-#: Values are of type torch.Tensor. The ``crs`` key holds an integer index into the
-#: dataset's :attr:`~torchgeo.datasets.geo.GeoDataset.crs_registry`, so the per-sample
-#: :term:`coordinate reference system (CRS)` travels as a tensor.
+#: Values are of type torch.Tensor. The ``crs_index`` key holds an integer index into
+#: the dataset's :attr:`~torchgeo.datasets.geo.GeoDataset.crs_registry`, so the
+#: per-sample :term:`coordinate reference system (CRS)` travels as a tensor.
 Sample: TypeAlias = dict[str, Tensor]  # noqa: UP040
 
 

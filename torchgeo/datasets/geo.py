@@ -284,7 +284,7 @@ class GeoDataset(Dataset[Sample], abc.ABC, PlottingMixin):
     def crs_registry(self) -> list[PROJ_CRS]:
         """Ordered registry of the CRSs a sample's ``crs`` index refers to.
 
-        A sample's ``crs`` key is an integer index into this list, letting the
+        A sample's ``crs_index`` key is an integer index into this list, letting the
         per-sample :term:`coordinate reference system (CRS)` travel as a tensor (see
         :data:`~torchgeo.datasets.utils.Sample`). A plain dataset reads every query in
         :attr:`crs`, so the registry holds that single CRS.
@@ -591,7 +591,7 @@ class RasterDataset(GeoDataset):
         transform = rasterio.transform.from_origin(x.start, y.stop, x.step, y.step)
         sample: Sample = {
             'bounds': self._slice_to_tensor(index),
-            'crs': torch.tensor(self.crs_registry.index(out_crs)),
+            'crs_index': torch.tensor(self.crs_registry.index(out_crs)),
             'transform': torch.tensor(transform),
         }
 
@@ -984,7 +984,7 @@ class XarrayDataset(GeoDataset):
         transform = rasterio.transform.from_origin(x.start, y.stop, x.step, y.step)
         sample: Sample = {
             'bounds': self._slice_to_tensor(index),
-            'crs': torch.tensor(self.crs_registry.index(out_crs)),
+            'crs_index': torch.tensor(self.crs_registry.index(out_crs)),
             'image': image,
             'transform': torch.tensor(transform),
         }
@@ -1317,7 +1317,7 @@ class VectorDataset(GeoDataset):
         transform = rasterio.transform.from_origin(x.start, y.stop, x.step, y.step)
         sample: Sample = {
             'bounds': self._slice_to_tensor(index),
-            'crs': torch.tensor(self.crs_registry.index(out_crs)),
+            'crs_index': torch.tensor(self.crs_registry.index(out_crs)),
             'transform': torch.tensor(transform),
         }
 
@@ -1600,9 +1600,9 @@ class IntersectionDataset(GeoDataset):
         # The combined sample's CRS is this dataset's own: children are read into a
         # common grid, so drop their per-child crs indices and re-stamp our own.
         for s in samples:
-            s.pop('crs', None)
+            s.pop('crs_index', None)
         sample = self.collate_fn(samples)
-        sample['crs'] = torch.tensor(self.crs_registry.index(self.crs))
+        sample['crs_index'] = torch.tensor(self.crs_registry.index(self.crs))
 
         if self.transforms is not None:
             sample = self.transforms(sample)
@@ -1749,9 +1749,9 @@ class UnionDataset(GeoDataset):
         # The combined sample's CRS is this dataset's own: children are read into a
         # common grid, so drop their per-child crs indices and re-stamp our own.
         for s in samples:
-            s.pop('crs', None)
+            s.pop('crs_index', None)
         sample = self.collate_fn(samples)
-        sample['crs'] = torch.tensor(self.crs_registry.index(self.crs))
+        sample['crs_index'] = torch.tensor(self.crs_registry.index(self.crs))
 
         if self.transforms is not None:
             sample = self.transforms(sample)

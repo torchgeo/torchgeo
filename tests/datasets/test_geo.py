@@ -438,7 +438,7 @@ class TestRasterDataset:
         assert isinstance(x[key], torch.Tensor)
         assert x[key].ndim == expected_ndim
         assert x[key].shape[-3] == len(ds.bands)
-        assert ds.crs_registry[int(x['crs'])] == ds.crs
+        assert ds.crs_registry[int(x['crs_index'])] == ds.crs
 
     @pytest.mark.parametrize(
         'bands',
@@ -464,7 +464,34 @@ class TestRasterDataset:
         assert isinstance(x[key], torch.Tensor)
         assert x[key].ndim == expected_ndim
         assert x[key].shape[-3] == len(ds.bands)
-        assert ds.crs_registry[int(x['crs'])] == ds.crs
+        assert ds.crs_registry[int(x['crs_index'])] == ds.crs
+
+    def test_crs_registry_deterministic(self) -> None:
+        """``crs_registry`` is a deterministic, per-process function of the files.
+
+        Distributed training builds an independent dataset per rank/worker, so a
+        sample's integer ``crs`` only resolves correctly if every process derives an
+        identical registry with no sharing. Two independent constructions (two ranks)
+        and a pickle round-trip (a spawned worker / broadcast) must all agree.
+        """
+        ds1 = NAIP(self.naip_dir)
+        ds2 = NAIP(self.naip_dir)
+        assert ds1.crs_registry == ds2.crs_registry
+
+        x = ds1[ds1.bounds]
+        assert x['crs_index'].dtype == torch.long
+        assert x['crs_index'].ndim == 0
+        assert ds1.crs_registry[int(x['crs_index'])] == ds1.crs
+
+        # The registry must survive the process boundary exactly as a spawned worker
+        # or a DDP broadcast moves the dataset (via pickle), keeping indices stable.
+        ds3 = pickle.loads(pickle.dumps(ds1))
+        assert ds3.crs_registry == ds1.crs_registry
+        y = ds3[ds3.bounds]
+        assert (
+            ds3.crs_registry[int(y['crs_index'])]
+            == ds1.crs_registry[int(x['crs_index'])]
+        )
 
     def test_reprojection(self) -> None:
         naip1 = NAIP(self.naip_dir, crs=CRS.from_epsg(4087))
@@ -636,7 +663,7 @@ class TestXarrayDataset:
         x = dataset[dataset.bounds]
         assert isinstance(x, dict)
         assert isinstance(x['image'], torch.Tensor)
-        assert dataset.crs_registry[int(x['crs'])] == dataset.crs
+        assert dataset.crs_registry[int(x['crs_index'])] == dataset.crs
 
     def test_and(self, dataset: XarrayDataset) -> None:
         ds = dataset & dataset
@@ -715,7 +742,7 @@ class TestVectorDataset:
         assert isinstance(x, dict)
         assert isinstance(x['mask'], torch.Tensor)
         assert torch.equal(x['mask'].unique(), torch.tensor([0, 1], dtype=torch.uint8))
-        assert dataset.crs_registry[int(x['crs'])] == dataset.crs
+        assert dataset.crs_registry[int(x['crs_index'])] == dataset.crs
 
     def test_getitem_obj_det(self, dataset: CustomVectorDataset) -> None:
         dataset.task = 'object_detection'
@@ -958,7 +985,7 @@ class TestIntersectionDataset:
     def test_getitem(self, dataset: IntersectionDataset) -> None:
         sample = dataset[dataset.bounds]
         assert isinstance(sample['image'], torch.Tensor)
-        assert dataset.crs_registry[int(sample['crs'])] == dataset.crs
+        assert dataset.crs_registry[int(sample['crs_index'])] == dataset.crs
 
     def test_len(self, dataset: IntersectionDataset) -> None:
         assert len(dataset) == 1
@@ -1236,7 +1263,7 @@ class TestUnionDataset:
     def test_getitem(self, dataset: UnionDataset) -> None:
         sample = dataset[dataset.bounds]
         assert isinstance(sample['image'], torch.Tensor)
-        assert dataset.crs_registry[int(sample['crs'])] == dataset.crs
+        assert dataset.crs_registry[int(sample['crs_index'])] == dataset.crs
 
     def test_len(self, dataset: UnionDataset) -> None:
         assert len(dataset) == 2
