@@ -328,10 +328,23 @@ class TestGetBlendMask:
         with pytest.raises(ValueError, match='delta crops away the entire patch'):
             get_blend_mask(64, overlap=0, delta=32, method='cosine')
 
-    def test_overlap_exceeds_cropped_patch_raises(self) -> None:
-        """Test overlap larger than the cropped patch raises error."""
+    @pytest.mark.parametrize('overlap', [25, 50])
+    def test_overlap_exceeds_half_cropped_patch_raises(self, overlap: int) -> None:
+        """Overlap above half the cropped patch (48 px here) raises.
+
+        Between half and full size the two ramps would overwrite each other;
+        above full size they would not even fit.
+        """
         with pytest.raises(ValueError, match='overlap exceeds half'):
-            get_blend_mask(64, overlap=50, delta=8, method='cosine')
+            get_blend_mask(64, overlap=overlap, delta=8, method='cosine')
+
+    def test_overlap_at_half_cropped_patch_is_valid(self) -> None:
+        """Exactly half the cropped patch (50% overlap) is the largest valid ramp."""
+        mask = get_blend_mask(64, overlap=24, delta=8, method='cosine')
+        assert mask.shape == (48, 48)
+        # Ramps meet in the middle, so the peak is symmetric and just below 1
+        assert mask[23, 23] == pytest.approx(mask[24, 24])
+        assert 0.99 < mask[24, 24] < 1.0
 
     def test_edge_deltas_suppresses_ramp(self) -> None:
         """Edges with delta=0 in edge_deltas get no blend ramp (weight=1)."""
