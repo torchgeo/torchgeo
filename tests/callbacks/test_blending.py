@@ -56,20 +56,34 @@ def _save_test_patch(
         dst.write(one_hot)
 
 
+def _make_meta(
+    patch_id: int,
+    geo_bbox: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0),
+    transform: list[float] | None = None,
+    bbox: tuple[int, int, int, int] | None = None,
+) -> PatchMetadata:
+    """Build patch metadata for tests that never read the patch file."""
+    meta: PatchMetadata = {
+        'patch_id': patch_id,
+        'file': Path('unused'),
+        'geo_bbox': geo_bbox,
+        'transform': transform if transform is not None else [1.0, 0, 0, 0, -1.0, 0],
+    }
+    if bbox is not None:
+        meta['bbox'] = bbox
+    return meta
+
+
 class TestReconstructSceneFromPatches:
     """Tests for _reconstruct_scene_from_patches."""
 
     def test_single_patch(self) -> None:
         """Test reconstruction with single patch."""
         meta = [
-            {
-                'patch_id': 0,
-                'geo_bbox': (0.0, 360.0, 640.0, 1000.0),
-                'transform': [10.0, 0, 0, 0, -10.0, 1000],
-            }
+            _make_meta(0, (0.0, 360.0, 640.0, 1000.0), [10.0, 0, 0, 0, -10.0, 1000])
         ]
 
-        shape, transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=0)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+        shape, transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=0)
 
         assert shape == (64, 64)
         assert transform == Affine(10.0, 0, 0, 0, -10.0, 1000)
@@ -78,19 +92,15 @@ class TestReconstructSceneFromPatches:
     def test_two_patches_horizontal(self) -> None:
         """Test reconstruction with two horizontal patches."""
         meta = [
-            {
-                'patch_id': 0,
-                'geo_bbox': (100.0, 136.0, 164.0, 200.0),
-                'transform': [1.0, 0, 100.0, 0, -1.0, 200.0],
-            },
-            {
-                'patch_id': 1,
-                'geo_bbox': (132.0, 136.0, 196.0, 200.0),
-                'transform': [1.0, 0, 132.0, 0, -1.0, 200.0],
-            },
+            _make_meta(
+                0, (100.0, 136.0, 164.0, 200.0), [1.0, 0, 100.0, 0, -1.0, 200.0]
+            ),
+            _make_meta(
+                1, (132.0, 136.0, 196.0, 200.0), [1.0, 0, 132.0, 0, -1.0, 200.0]
+            ),
         ]
 
-        shape, transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=0)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+        shape, transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=0)
 
         assert shape == (64, 96)
         assert transform == Affine(1.0, 0, 100.0, 0, -1.0, 200.0)
@@ -100,32 +110,18 @@ class TestReconstructSceneFromPatches:
     def test_inconsistent_resolutions_raises(self) -> None:
         """Test error on inconsistent resolutions."""
         meta = [
-            {
-                'patch_id': 0,
-                'geo_bbox': (0.0, 36.0, 64.0, 100.0),
-                'transform': [1.0, 0, 0, 0, -1.0, 100],
-            },
-            {
-                'patch_id': 1,
-                'geo_bbox': (64.0, 36.0, 192.0, 100.0),
-                'transform': [2.0, 0, 64, 0, -1.0, 100],
-            },
+            _make_meta(0, (0.0, 36.0, 64.0, 100.0), [1.0, 0, 0, 0, -1.0, 100]),
+            _make_meta(1, (64.0, 36.0, 192.0, 100.0), [2.0, 0, 64, 0, -1.0, 100]),
         ]
 
         with pytest.raises(ValueError, match='Inconsistent resolutions'):
-            _reconstruct_scene_from_patches(meta, (64, 64), delta=0)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+            _reconstruct_scene_from_patches(meta, (64, 64), delta=0)
 
     def test_single_patch_south_up(self) -> None:
         """Test reconstruction with a south-up raster (positive y-resolution)."""
-        meta = [
-            {
-                'patch_id': 0,
-                'geo_bbox': (0.0, 0.0, 640.0, 640.0),
-                'transform': [10.0, 0, 0, 0, 10.0, 0],
-            }
-        ]
+        meta = [_make_meta(0, (0.0, 0.0, 640.0, 640.0), [10.0, 0, 0, 0, 10.0, 0])]
 
-        shape, transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=0)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+        shape, transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=0)
 
         assert shape == (64, 64)
         assert transform == Affine(10.0, 0, 0, 0, 10.0, 0)
@@ -134,19 +130,11 @@ class TestReconstructSceneFromPatches:
     def test_two_patches_vertical_south_up(self) -> None:
         """Test reconstruction with two vertical south-up patches."""
         meta = [
-            {
-                'patch_id': 0,
-                'geo_bbox': (0.0, 0.0, 64.0, 64.0),
-                'transform': [1.0, 0, 0.0, 0, 1.0, 0.0],
-            },
-            {
-                'patch_id': 1,
-                'geo_bbox': (0.0, 32.0, 64.0, 96.0),
-                'transform': [1.0, 0, 0.0, 0, 1.0, 32.0],
-            },
+            _make_meta(0, (0.0, 0.0, 64.0, 64.0), [1.0, 0, 0.0, 0, 1.0, 0.0]),
+            _make_meta(1, (0.0, 32.0, 64.0, 96.0), [1.0, 0, 0.0, 0, 1.0, 32.0]),
         ]
 
-        shape, transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=0)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+        shape, transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=0)
 
         assert shape == (96, 64)
         assert transform == Affine(1.0, 0, 0.0, 0, 1.0, 0.0)
@@ -156,19 +144,11 @@ class TestReconstructSceneFromPatches:
     def test_two_patches_vertical_south_up_with_delta(self) -> None:
         """South-up reconstruction with delta > 0 crops correct array edges."""
         meta = [
-            {
-                'patch_id': 0,
-                'geo_bbox': (0.0, 0.0, 64.0, 64.0),
-                'transform': [1.0, 0, 0.0, 0, 1.0, 0.0],
-            },
-            {
-                'patch_id': 1,
-                'geo_bbox': (0.0, 32.0, 64.0, 96.0),
-                'transform': [1.0, 0, 0.0, 0, 1.0, 32.0],
-            },
+            _make_meta(0, (0.0, 0.0, 64.0, 64.0), [1.0, 0, 0.0, 0, 1.0, 0.0]),
+            _make_meta(1, (0.0, 32.0, 64.0, 96.0), [1.0, 0, 0.0, 0, 1.0, 32.0]),
         ]
 
-        shape, _transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=8)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+        shape, _transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=8)
 
         # Patch 0 at geo ymin: array-top (row 0) is scene boundary -> top=0
         assert meta[0]['edge_deltas'] == (0, 8, 0, 0)
@@ -383,15 +363,15 @@ class TestGridIndexing:
     def test_build_and_query(self) -> None:
         """Test building and querying grid index."""
         meta = [
-            {'patch_id': 0, 'bbox': (0, 0, 64, 64)},
-            {'patch_id': 1, 'bbox': (200, 200, 264, 264)},
+            _make_meta(0, bbox=(0, 0, 64, 64)),
+            _make_meta(1, bbox=(200, 200, 264, 264)),
         ]
         grid_size = 128
-        grid = _build_grid_index(meta, grid_size)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+        grid = _build_grid_index(meta, grid_size)
 
         results = _query_grid_index(
             grid,
-            meta,  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+            meta,
             chunk_y=0,
             chunk_x=0,
             chunk_h=64,
@@ -405,16 +385,16 @@ class TestGridIndexing:
     def test_query_multiple_patches(self) -> None:
         """Test querying returns multiple overlapping patches."""
         meta = [
-            {'patch_id': 0, 'bbox': (0, 0, 64, 64)},
-            {'patch_id': 1, 'bbox': (32, 0, 96, 64)},
-            {'patch_id': 2, 'bbox': (200, 200, 264, 264)},
+            _make_meta(0, bbox=(0, 0, 64, 64)),
+            _make_meta(1, bbox=(32, 0, 96, 64)),
+            _make_meta(2, bbox=(200, 200, 264, 264)),
         ]
         grid_size = 128
-        grid = _build_grid_index(meta, grid_size)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+        grid = _build_grid_index(meta, grid_size)
 
         results = _query_grid_index(
             grid,
-            meta,  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+            meta,
             chunk_y=0,
             chunk_x=0,
             chunk_h=100,
@@ -434,15 +414,15 @@ class TestGridIndexing:
         but don't actually overlap with the chunk at pixel level.
         """
         meta = [
-            {'patch_id': 0, 'bbox': (0, 0, 32, 32)},
-            {'patch_id': 1, 'bbox': (96, 96, 128, 128)},
+            _make_meta(0, bbox=(0, 0, 32, 32)),
+            _make_meta(1, bbox=(96, 96, 128, 128)),
         ]
         grid_size = 128
-        grid = _build_grid_index(meta, grid_size)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+        grid = _build_grid_index(meta, grid_size)
 
         results = _query_grid_index(
             grid,
-            meta,  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+            meta,
             chunk_y=0,
             chunk_x=0,
             chunk_h=64,
@@ -456,7 +436,7 @@ class TestGridIndexing:
 
 
 class TestExtentMismatch:
-    """Tests for output extent accuracy (Issue 1)."""
+    """Tests for output extent accuracy."""
 
     def test_extent_matches_input_bounds_3x3_grid(self) -> None:
         """Verify output extent matches original input extent exactly.
@@ -499,7 +479,7 @@ class TestExtentMismatch:
 
 
 class TestBlackBorder:
-    """Tests for edge blending artifacts (Issue 2)."""
+    """Tests for edge blending artifacts."""
 
     def test_no_black_border_at_edges(self, tmp_path: Path) -> None:
         """Verify edge pixels have valid values after blending.
@@ -850,7 +830,7 @@ class TestSinglePatchScene:
         transform = [res, 0, geo_xmin, 0, -res, geo_ymax]
         _save_test_patch(patch_file, logits, transform)
 
-        patch_metadata = [
+        patch_metadata: list[PatchMetadata] = [
             {
                 'patch_id': 0,
                 'file': patch_file,
@@ -861,7 +841,7 @@ class TestSinglePatchScene:
 
         output_path = tmp_path / 'single_patch_output.tif'
         weighted_merge(
-            patch_metadata=patch_metadata,  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+            patch_metadata=patch_metadata,
             num_classes=num_classes,
             overlap=0,
             delta=delta,
@@ -1037,7 +1017,7 @@ class TestSouthUpRasters:
 
         output_path = tmp_path / 'south_up_bounds_output.tif'
         weighted_merge(
-            patch_metadata=patch_metadata,  # type: ignore[arg-type]
+            patch_metadata=patch_metadata,
             num_classes=num_classes,
             overlap=0,
             delta=0,

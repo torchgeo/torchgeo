@@ -148,7 +148,7 @@ def _reconstruct_scene_from_patches(
     Args:
         patch_metadata: List of dicts with 'geo_bbox' and 'transform'.
             geo_bbox is (geo_xmin, geo_ymin, geo_xmax, geo_ymax) in geo coordinates.
-            transform is Tensor [a, b, c, d, e, f] representing affine:
+            transform is the affine as a list [a, b, c, d, e, f]:
                 | a  b  c |   where c, f are the origin
                 | d  e  f |   and a, e are x_res, y_res
                 | 0  0  1 |
@@ -162,8 +162,6 @@ def _reconstruct_scene_from_patches(
 
     Raises:
         ValueError: If patches have inconsistent resolutions or metadata is empty.
-
-
     """
     if not patch_metadata:
         raise ValueError('patch_metadata is empty')
@@ -363,8 +361,6 @@ def _build_grid_index(
 
     Returns:
         Dict mapping (grid_row, grid_col) to list of patch indices.
-
-
     """
     grid: dict[tuple[int, int], list[int]] = defaultdict(list)
 
@@ -406,7 +402,6 @@ def _query_grid_index(
 
     Returns:
         List of patch metadata dicts that may overlap the chunk.
-
     """
     grid_col_start = chunk_x // grid_size
     grid_col_end = (chunk_x + chunk_w - 1) // grid_size
@@ -532,9 +527,8 @@ def weighted_merge(
     """Merge patches from disk with weighted blending.
 
     Uses chunked processing with spatial indexing for memory-efficient
-    merging of arbitrarily large scenes.
-
-    .. versionadded:: 0.11
+    merging of arbitrarily large scenes. Pixels not covered by any patch are
+    written as class 0.
 
     Args:
         patch_metadata: List of dicts with 'file', 'geo_bbox', 'transform'.
@@ -548,7 +542,8 @@ def weighted_merge(
         crs: :term:`coordinate reference system (CRS)` the mosaic is written in.
             Defaults to the CRS of the patches. Every patch must already be in
             this CRS; reprojecting patches is not supported.
-        chunk_size: Size of chunks for processing.
+        chunk_size: Size of chunks for processing. Peak memory is about
+            ``num_classes * chunk_size**2 * 4`` bytes.
         dataset_bounds: Original dataset bounds (minx, miny, maxx, maxy).
         dataset_res: Original dataset resolution as (xres, yres).
         **kwargs: Additional keyword arguments passed to
@@ -557,6 +552,8 @@ def weighted_merge(
 
     Raises:
         ValueError: If *patch_metadata* is empty or a patch is not in the output CRS.
+
+    .. versionadded:: 0.11
     """
     from torchgeo.callbacks.writer import GeoTIFFWriter
 
