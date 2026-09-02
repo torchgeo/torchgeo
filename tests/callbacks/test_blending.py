@@ -658,8 +658,27 @@ class TestNonOverlappingPatches:
 
         with rasterio.open(output_path) as src:
             data = src.read(1)
+            assert src.nodata == 255
             assert data[0, 0] == 1
             assert data[500, 500] == 1
+
+        # Everything between the two patches is uncovered and gets nodata
+        assert np.all(data[:64, 64:500] == 255)
+        assert np.all(data[64:500, :] == 255)
+        # A nodata of None keeps the old behaviour: class 0, no nodata tag
+        output_path = tmp_path / 'output_sparse_no_nodata.tif'
+        weighted_merge(
+            patch_metadata=patch_metadata,
+            num_classes=num_classes,
+            overlap=0,
+            delta=0,
+            output_path=output_path,
+            chunk_size=128,
+            nodata=None,
+        )
+        with rasterio.open(output_path) as src:
+            assert src.nodata is None
+            assert np.all(src.read(1)[64:500, :] == 0)
 
 
 class TestDatasetBoundsMode:
@@ -817,6 +836,29 @@ class TestWeightedMergeValidation:
             weighted_merge(
                 patch_metadata=[],
                 num_classes=2,
+                overlap=0,
+                delta=0,
+                output_path=tmp_path / 'output.tif',
+            )
+
+    def test_nodata_collides_with_class_raises(self, tmp_path: Path) -> None:
+        """A nodata value inside the class range raises."""
+        with pytest.raises(ValueError, match='outside the class range'):
+            weighted_merge(
+                patch_metadata=[_make_meta(0)],
+                num_classes=3,
+                overlap=0,
+                delta=0,
+                output_path=tmp_path / 'output.tif',
+                nodata=2,
+            )
+
+    def test_too_many_classes_raises(self, tmp_path: Path) -> None:
+        """More classes than uint8 can hold raise."""
+        with pytest.raises(ValueError, match='does not fit the uint8 output'):
+            weighted_merge(
+                patch_metadata=[_make_meta(0)],
+                num_classes=257,
                 overlap=0,
                 delta=0,
                 output_path=tmp_path / 'output.tif',

@@ -565,13 +565,14 @@ def weighted_merge(
     chunk_size: int = 4096,
     dataset_bounds: tuple[float, float, float, float] | None = None,
     dataset_res: tuple[float, float] | None = None,
+    nodata: int | None = 255,
     **kwargs: Any,
 ) -> None:
     """Merge patches from disk with weighted blending.
 
     Uses chunked processing with spatial indexing for memory-efficient
-    merging of arbitrarily large scenes. Pixels not covered by any patch are
-    written as class 0.
+    merging of arbitrarily large scenes. Pixels not covered by any patch, for
+    example outside a sampled region of interest, are written as *nodata*.
 
     Args:
         patch_metadata: List of dicts with 'file', 'geo_bbox', 'transform'.
@@ -589,14 +590,20 @@ def weighted_merge(
             ``num_classes * chunk_size**2 * 4`` bytes.
         dataset_bounds: Original dataset bounds (minx, miny, maxx, maxy).
         dataset_res: Original dataset resolution as (xres, yres).
+        nodata: Value written where no patch contributes, and recorded as the
+            nodata value of the output. Must not collide with a class index.
+            If None, uncovered pixels are written as class 0 and the output has
+            no nodata value.
         **kwargs: Additional keyword arguments passed to
             :class:`~torchgeo.callbacks.writer.GeoTIFFWriter` (e.g. ``compress``,
             ``overview_resampling``).
 
     Raises:
-        ValueError: If *patch_metadata* is empty, *delta* exceeds half of *overlap*
-            (neighbouring patches would no longer meet after cropping), or a patch
-            has no CRS, a different CRS, or a different size than the first patch.
+        ValueError: If *patch_metadata* is empty, *num_classes* does not fit the
+            uint8 output, *nodata* collides with a class index, *delta* exceeds
+            half of *overlap* (neighbouring patches would no longer meet after
+            cropping), or a patch has no CRS, a different CRS, or a different
+            size than the first patch.
 
     .. versionadded:: 0.11
     """
@@ -604,6 +611,13 @@ def weighted_merge(
 
     if not patch_metadata:
         raise ValueError('patch_metadata is empty')
+    if num_classes > 256:
+        raise ValueError(f'num_classes ({num_classes}) does not fit the uint8 output')
+    if nodata is not None and not num_classes <= nodata <= 255:
+        raise ValueError(
+            f'nodata ({nodata}) must be a uint8 value outside the class range '
+            f'0..{num_classes - 1}'
+        )
     if 2 * delta > overlap:
         raise ValueError(
             f'delta ({delta}) must not exceed half of overlap ({overlap}), otherwise '
@@ -635,6 +649,7 @@ def weighted_merge(
         num_bands=1,
         crs=RIO_CRS.from_user_input(crs),
         transform=scene_transform,
+        nodata=nodata,
         **kwargs,
     )
 
@@ -745,9 +760,12 @@ def weighted_merge(
                     overlap_row_start:overlap_row_end, overlap_col_start:overlap_col_end
                 ] += mask_region
 
+            uncovered = chunk_weights == 0
             min_weight = 1e-6
             chunk_weights = np.maximum(chunk_weights, min_weight)
             chunk_output = chunk_output / chunk_weights[None, :, :]
             chunk_labels = np.argmax(chunk_output, axis=0).astype(np.uint8)
+            if nodata is not None:
+                chunk_labels[uncovered] = nodata
 
             writer.write_chunk(chunk_labels, chunk_y, chunk_x)
