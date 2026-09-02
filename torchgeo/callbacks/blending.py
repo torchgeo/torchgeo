@@ -11,6 +11,8 @@ from typing import Any, NotRequired, TypedDict
 
 import numpy as np
 import rasterio
+from pyproj import CRS as PROJ_CRS
+from rasterio.crs import CRS as RIO_CRS
 from rasterio.transform import Affine
 from tqdm import tqdm
 
@@ -30,7 +32,7 @@ class PatchMetadata(TypedDict):
 
 
 def _patch_bounds_in_output_crs(
-    meta: PatchMetadata, output_crs: str | None
+    meta: PatchMetadata, output_crs: PROJ_CRS | None
 ) -> tuple[float, float, float, float]:
     """Return a patch's geographic bounds expressed in the output CRS.
 
@@ -107,7 +109,7 @@ def _reconstruct_scene_from_patches(
     patch_metadata: list[PatchMetadata],
     patch_size: tuple[int, int],
     delta: int = 0,
-    output_crs: str | None = None,
+    output_crs: PROJ_CRS | None = None,
 ) -> tuple[tuple[int, int], Affine]:
     """Reconstruct scene-level transform and shape from per-patch transforms.
 
@@ -221,7 +223,7 @@ def _reconstruct_scene_from_patches(
     scene_geo_xmin = global_geo_xmin + min_x * x_res
     scene_origin_y = origin_y + min_y * y_res
 
-    scene_transform = Affine(x_res, 0, scene_geo_xmin, 0, y_res, scene_origin_y)  # ty: ignore[call-non-callable]
+    scene_transform = Affine(x_res, 0, scene_geo_xmin, 0, y_res, scene_origin_y)
 
     output_width = max_x - min_x
     output_height = max_y - min_y
@@ -390,7 +392,7 @@ def _query_grid_index(
 
 def _resolve_output_grid(
     patch_metadata: list[PatchMetadata],
-    output_crs: str | None,
+    output_crs: PROJ_CRS | None,
     patch_size: tuple[int, int],
     delta: int,
     dataset_bounds: tuple[float, float, float, float] | None,
@@ -430,9 +432,9 @@ def _resolve_output_grid(
         y_res = abs(y_res_signed)
 
         if north_up:
-            scene_transform = Affine(x_res_ds, 0, minx, 0, -y_res_ds, maxy)  # ty: ignore[call-non-callable]
+            scene_transform = Affine(x_res_ds, 0, minx, 0, -y_res_ds, maxy)
         else:
-            scene_transform = Affine(x_res_ds, 0, minx, 0, y_res_ds, miny)  # ty: ignore[call-non-callable]
+            scene_transform = Affine(x_res_ds, 0, minx, 0, y_res_ds, miny)
 
         scene_bounds = dataset_bounds
         origin_y = maxy if north_up else miny
@@ -476,12 +478,12 @@ def weighted_merge(
     overlap: int,
     delta: int,
     blend_method: str = 'cosine',
-    crs: str | None = None,
+    crs: PROJ_CRS | None = None,
     output_path: str | Path | None = None,
     chunk_size: int = 4096,
-    cog_config: dict[str, Any] | None = None,
     dataset_bounds: tuple[float, float, float, float] | None = None,
     dataset_res: tuple[float, float] | None = None,
+    **kwargs: Any,
 ) -> None:
     """Merge patches from disk with weighted blending.
 
@@ -491,27 +493,33 @@ def weighted_merge(
     .. versionadded:: 0.11
 
     Args:
-        patch_metadata: List of dicts with 'file', 'bbox', 'transform'.
+        patch_metadata: List of dicts with 'file', 'geo_bbox', 'transform'.
         num_classes: Number of classes.
         overlap: Overlap in pixels.
         delta: Pixels to crop from edges.
         blend_method: 'cosine' or 'linear'. Cosine blending uses a Hann window
             weight mask to reduce edge artifacts, as recommended by
             https://doi.org/10.1371/journal.pone.0229839.
-        crs: Coordinate reference system the mosaic is written in (the output CRS
-            every patch is placed onto).
+        crs: :term:`coordinate reference system (CRS)` the mosaic is written in.
+            Defaults to the CRS of the patches. Every patch must already be in
+            this CRS; reprojecting patches is not supported.
         output_path: Where to save GeoTIFF.
         chunk_size: Size of chunks for processing.
-        cog_config: COG configuration.
         dataset_bounds: Original dataset bounds (minx, miny, maxx, maxy).
         dataset_res: Original dataset resolution as (xres, yres).
+        **kwargs: Additional keyword arguments passed to
+            :class:`~torchgeo.callbacks.writer.GeoTIFFWriter` (e.g. ``compress``,
+            ``overview_resampling``).
 
-
+    Raises:
+        ValueError: If *output_path* is missing or a patch is not in the output CRS.
     """
     from torchgeo.callbacks.writer import GeoTIFFWriter
 
     with rasterio.open(patch_metadata[0]['file']) as src:
         patch_h, patch_w = src.height, src.width
+        if crs is None:
+            crs = PROJ_CRS.from_user_input(src.crs)
 
     output_shape, scene_transform = _resolve_output_grid(
         patch_metadata, crs, (patch_h, patch_w), delta, dataset_bounds, dataset_res
@@ -532,9 +540,9 @@ def weighted_merge(
         width=output_shape[1],
         height=output_shape[0],
         num_bands=1,
-        crs=crs,
+        crs=RIO_CRS.from_user_input(crs),
         transform=scene_transform,
-        cog_config=cog_config,
+        **kwargs,
     )
 
     height, width = output_shape
@@ -557,6 +565,11 @@ def weighted_merge(
             )
             for meta in overlapping:
                 with rasterio.open(meta['file']) as src:
+                    if PROJ_CRS.from_user_input(src.crs) != crs:
+                        raise ValueError(
+                            f'Patch {meta["patch_id"]} is in CRS {src.crs}, but the '
+                            f'output CRS is {crs}. Reprojecting patches is not supported.'
+                        )
                     patch_data = src.read().astype(np.float32)
 
                 edge_deltas = meta.get('edge_deltas', (delta, delta, delta, delta))
@@ -634,5 +647,3 @@ def weighted_merge(
             chunk_labels = np.argmax(chunk_output, axis=0).astype(np.uint8)
 
             writer.write_chunk(chunk_labels, chunk_y, chunk_x)
-
-    writer.finalize()

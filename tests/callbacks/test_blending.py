@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 import rasterio
 import torch
+from pyproj import CRS
 from rasterio.transform import Affine
 
 from torchgeo.callbacks.blending import (
@@ -49,7 +50,7 @@ def _save_test_patch(
         width=one_hot.shape[2],
         count=one_hot.shape[0],
         dtype='uint8',
-        transform=Affine(*transform),  # ty: ignore[call-non-callable]
+        transform=Affine(*transform),
         crs=crs,
     ) as dst:
         dst.write(one_hot)
@@ -71,7 +72,7 @@ class TestReconstructSceneFromPatches:
         shape, transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=0)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
 
         assert shape == (64, 64)
-        assert transform == Affine(10.0, 0, 0, 0, -10.0, 1000)  # ty: ignore[call-non-callable]
+        assert transform == Affine(10.0, 0, 0, 0, -10.0, 1000)
         assert meta[0]['bbox'] == (0, 0, 64, 64)
 
     def test_two_patches_horizontal(self) -> None:
@@ -92,7 +93,7 @@ class TestReconstructSceneFromPatches:
         shape, transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=0)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
 
         assert shape == (64, 96)
-        assert transform == Affine(1.0, 0, 100.0, 0, -1.0, 200.0)  # ty: ignore[call-non-callable]
+        assert transform == Affine(1.0, 0, 100.0, 0, -1.0, 200.0)
         assert meta[0]['bbox'] == (0, 0, 64, 64)
         assert meta[1]['bbox'] == (32, 0, 96, 64)
 
@@ -127,7 +128,7 @@ class TestReconstructSceneFromPatches:
         shape, transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=0)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
 
         assert shape == (64, 64)
-        assert transform == Affine(10.0, 0, 0, 0, 10.0, 0)  # ty: ignore[call-non-callable]
+        assert transform == Affine(10.0, 0, 0, 0, 10.0, 0)
         assert meta[0]['bbox'] == (0, 0, 64, 64)
 
     def test_two_patches_vertical_south_up(self) -> None:
@@ -148,7 +149,7 @@ class TestReconstructSceneFromPatches:
         shape, transform = _reconstruct_scene_from_patches(meta, (64, 64), delta=0)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
 
         assert shape == (96, 64)
-        assert transform == Affine(1.0, 0, 0.0, 0, 1.0, 0.0)  # ty: ignore[call-non-callable]
+        assert transform == Affine(1.0, 0, 0.0, 0, 1.0, 0.0)
         assert meta[0]['bbox'] == (0, 0, 64, 64)
         assert meta[1]['bbox'] == (0, 32, 64, 96)
 
@@ -525,13 +526,14 @@ class TestBlackBorder:
             overlap=overlap,
             delta=delta,
             blend_method='cosine',
-            crs='EPSG:32631',
             output_path=output_path,
             chunk_size=256,
         )
 
         with rasterio.open(output_path) as src:
             data = src.read(1)
+            # crs was not given, so it is taken from the patches
+            assert CRS.from_user_input(src.crs) == CRS.from_epsg(32631)
 
         assert data[0, 0] == expected_class, (
             f'Top-left corner: {data[0, 0]} != {expected_class}'
@@ -602,7 +604,7 @@ class TestNonOverlappingPatches:
             overlap=0,
             delta=0,
             blend_method='cosine',
-            crs='EPSG:32631',
+            crs=CRS.from_epsg(32631),
             output_path=output_path,
             chunk_size=128,
         )
@@ -659,7 +661,7 @@ class TestDatasetBoundsMode:
             overlap=overlap,
             delta=delta,
             blend_method='cosine',
-            crs='EPSG:32631',
+            crs=CRS.from_epsg(32631),
             output_path=output_path,
             chunk_size=256,
             dataset_bounds=dataset_bounds,
@@ -715,7 +717,7 @@ class TestDatasetBoundsMode:
             overlap=overlap,
             delta=delta,
             blend_method='cosine',
-            crs='EPSG:32631',
+            crs=CRS.from_epsg(32631),
             output_path=output_path,
             chunk_size=256,
             dataset_bounds=dataset_bounds,
@@ -759,6 +761,33 @@ class TestWeightedMergeValidation:
                 delta=0,
             )
 
+    def test_patch_crs_mismatch_raises(self, tmp_path: Path) -> None:
+        """Test a patch outside the output CRS raises instead of merging silently."""
+        patch_size = 64
+        transform = [1.0, 0, 0.0, 0, -1.0, 64.0]
+        logits = torch.zeros(2, patch_size, patch_size)
+        patch_file = tmp_path / 'patch_000000.tif'
+        _save_test_patch(patch_file, logits, transform, crs='EPSG:32632')
+
+        patch_metadata: list[PatchMetadata] = [
+            {
+                'patch_id': 0,
+                'file': patch_file,
+                'geo_bbox': (0.0, 0.0, 64.0, 64.0),
+                'transform': transform,
+            }
+        ]
+
+        with pytest.raises(ValueError, match='is in CRS'):
+            weighted_merge(
+                patch_metadata=patch_metadata,
+                num_classes=2,
+                overlap=0,
+                delta=0,
+                crs=CRS.from_epsg(32631),
+                output_path=tmp_path / 'output.tif',
+            )
+
 
 class TestSinglePatchScene:
     """Tests for single-patch scenes."""
@@ -799,7 +828,7 @@ class TestSinglePatchScene:
             overlap=0,
             delta=delta,
             blend_method='cosine',
-            crs='EPSG:32631',
+            crs=CRS.from_epsg(32631),
             output_path=output_path,
             chunk_size=256,
         )
@@ -861,7 +890,7 @@ class TestSouthUpRasters:
             overlap=overlap,
             delta=delta,
             blend_method='cosine',
-            crs='EPSG:32631',
+            crs=CRS.from_epsg(32631),
             output_path=output_path,
             chunk_size=256,
         )
@@ -919,7 +948,7 @@ class TestSouthUpRasters:
             overlap=0,
             delta=0,
             blend_method='cosine',
-            crs='EPSG:32631',
+            crs=CRS.from_epsg(32631),
             output_path=output_path,
             chunk_size=256,
         )
@@ -975,7 +1004,7 @@ class TestSouthUpRasters:
             overlap=0,
             delta=0,
             blend_method='cosine',
-            crs='EPSG:32631',
+            crs=CRS.from_epsg(32631),
             output_path=output_path,
             chunk_size=256,
             dataset_bounds=dataset_bounds,
@@ -1033,7 +1062,7 @@ class TestBlendTransition:
             overlap=overlap,
             delta=delta,
             blend_method='cosine',
-            crs='EPSG:32631',
+            crs=CRS.from_epsg(32631),
             output_path=output_path,
             chunk_size=256,
         )
@@ -1092,7 +1121,7 @@ class TestBlendTransition:
             overlap=overlap,
             delta=delta,
             blend_method='cosine',
-            crs='EPSG:32631',
+            crs=CRS.from_epsg(32631),
             output_path=output_path,
             chunk_size=256,
         )
