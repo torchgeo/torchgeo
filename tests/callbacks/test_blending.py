@@ -989,3 +989,122 @@ class TestSouthUpRasters:
             assert src.transform.e > 0
 
         assert np.all(data == expected_class)
+
+
+class TestBlendTransition:
+    """Tests that exercise the blend ramps with conflicting predictions.
+
+    Every other weighted_merge test uses an effective overlap of zero
+    (overlap - 2 * delta) or identical classes, so the ramps never matter.
+    """
+
+    def test_two_patches_transition_at_overlap_midpoint(self, tmp_path: Path) -> None:
+        """Class boundary between two conflicting patches sits mid-overlap."""
+        patch_size = 64
+        overlap = 24
+        delta = 4
+        num_classes = 3
+        stride = patch_size - overlap
+        classes = [1, 2]
+
+        patch_metadata: list[PatchMetadata] = []
+        for patch_id, expected_class in enumerate(classes):
+            geo_xmin = float(patch_id * stride)
+            geo_xmax = geo_xmin + patch_size
+            logits = torch.zeros(num_classes, patch_size, patch_size)
+            logits[expected_class] = 1.0
+
+            patch_file = tmp_path / f'blend_{patch_id:06d}.tif'
+            transform = [1.0, 0, geo_xmin, 0, -1.0, float(patch_size)]
+            _save_test_patch(patch_file, logits, transform)
+            patch_metadata.append(
+                {
+                    'patch_id': patch_id,
+                    'file': patch_file,
+                    'geo_bbox': (geo_xmin, 0.0, geo_xmax, float(patch_size)),
+                    'transform': transform,
+                }
+            )
+
+        output_path = tmp_path / 'blend_output.tif'
+        weighted_merge(
+            patch_metadata=patch_metadata,
+            num_classes=num_classes,
+            overlap=overlap,
+            delta=delta,
+            blend_method='cosine',
+            crs='EPSG:32631',
+            output_path=output_path,
+            chunk_size=256,
+        )
+
+        with rasterio.open(output_path) as src:
+            data = src.read(1)
+
+        # After cropping delta from the interior edges, the patches overlap on
+        # [stride + delta, patch_size - delta). Symmetric ramps hand each half
+        # of that window to the nearer patch.
+        midpoint = (stride + delta + patch_size - delta) // 2
+        assert data.shape == (patch_size, stride + patch_size)
+        assert np.all(data[:, :midpoint] == classes[0])
+        assert np.all(data[:, midpoint:] == classes[1])
+
+    def test_checkerboard(self, tmp_path: Path) -> None:
+        """A 3x3 checkerboard of overlapping patches stitches into a checkerboard."""
+        patch_size = 64
+        overlap = 24
+        delta = 4
+        num_classes = 2
+        grid = 3
+        stride = patch_size - overlap
+        scene_size = (grid - 1) * stride + patch_size
+
+        patch_metadata: list[PatchMetadata] = []
+        for row in range(grid):
+            for col in range(grid):
+                patch_id = row * grid + col
+                geo_xmin = float(col * stride)
+                geo_ymax = float(scene_size - row * stride)
+                logits = torch.zeros(num_classes, patch_size, patch_size)
+                logits[(row + col) % 2] = 1.0
+
+                patch_file = tmp_path / f'checker_{patch_id:06d}.tif'
+                transform = [1.0, 0, geo_xmin, 0, -1.0, geo_ymax]
+                _save_test_patch(patch_file, logits, transform)
+                patch_metadata.append(
+                    {
+                        'patch_id': patch_id,
+                        'file': patch_file,
+                        'geo_bbox': (
+                            geo_xmin,
+                            geo_ymax - patch_size,
+                            geo_xmin + patch_size,
+                            geo_ymax,
+                        ),
+                        'transform': transform,
+                    }
+                )
+
+        output_path = tmp_path / 'checker_output.tif'
+        weighted_merge(
+            patch_metadata=patch_metadata,
+            num_classes=num_classes,
+            overlap=overlap,
+            delta=delta,
+            blend_method='cosine',
+            crs='EPSG:32631',
+            output_path=output_path,
+            chunk_size=256,
+        )
+
+        with rasterio.open(output_path) as src:
+            data = src.read(1)
+
+        # Boundaries between neighbouring patches fall mid-overlap, so pixel
+        # (r, c) belongs to the patch whose cropped window centre is nearest.
+        boundaries = [i * stride + (stride + patch_size) // 2 for i in range(grid - 1)]
+        owner = np.searchsorted(boundaries, np.arange(scene_size), side='right')
+        expected = (owner[:, None] + owner[None, :]) % 2
+
+        assert data.shape == (scene_size, scene_size)
+        np.testing.assert_array_equal(data, expected)
