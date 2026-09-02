@@ -698,6 +698,34 @@ class TestDatasetBoundsMode:
             assert src.height == 128
             assert data.shape == (128, 128)
 
+    def test_dataset_res_mismatch_raises(self, tmp_path: Path) -> None:
+        """dataset_res that differs from the patch resolution raises."""
+        patch_size = 64
+        transform = [1.0, 0, 0.0, 0, -1.0, 64.0]
+        logits = torch.zeros(2, patch_size, patch_size)
+        patch_file = tmp_path / 'patch_res.tif'
+        _save_test_patch(patch_file, logits, transform)
+
+        patch_metadata: list[PatchMetadata] = [
+            {
+                'patch_id': 0,
+                'file': patch_file,
+                'geo_bbox': (0.0, 0.0, 64.0, 64.0),
+                'transform': transform,
+            }
+        ]
+
+        with pytest.raises(ValueError, match='does not match the patch resolution'):
+            weighted_merge(
+                patch_metadata=patch_metadata,
+                num_classes=2,
+                overlap=0,
+                delta=0,
+                output_path=tmp_path / 'output.tif',
+                dataset_bounds=(0.0, 0.0, 64.0, 64.0),
+                dataset_res=(2.0, 2.0),
+            )
+
     def test_dataset_bounds_edge_coverage(self, tmp_path: Path) -> None:
         """Using dataset_bounds still produces full edge coverage with delta > 0."""
         patch_size = 64

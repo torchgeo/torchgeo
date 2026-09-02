@@ -447,6 +447,9 @@ def _resolve_output_grid(
     Returns:
         output_shape: ``(height, width)`` of the full scene.
         scene_transform: Affine transform for the full scene.
+
+    Raises:
+        ValueError: If *dataset_res* does not match the resolution of the patches.
     """
     patch_h, patch_w = patch_size
 
@@ -462,6 +465,12 @@ def _resolve_output_grid(
         y_res_signed = first_transform[4]
         north_up = y_res_signed < 0
         y_res = abs(y_res_signed)
+
+        if abs(x_res - x_res_ds) > 1e-6 or abs(y_res - y_res_ds) > 1e-6:
+            raise ValueError(
+                f'dataset_res {dataset_res} does not match the patch resolution '
+                f'({x_res}, {y_res}); patches are placed in patch pixel units'
+            )
 
         if north_up:
             scene_transform = Affine(x_res_ds, 0, minx, 0, -y_res_ds, maxy)
