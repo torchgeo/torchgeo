@@ -174,6 +174,8 @@ class TestReconstructSceneFromPatches:
         assert meta[0]['edge_deltas'] == (0, 8, 0, 0)
         # Patch 1 at geo ymax: array-bottom (last row) is scene boundary -> bottom=0
         assert meta[1]['edge_deltas'] == (8, 0, 0, 0)
+        assert meta[0]['boundary_edges'] == (True, False, True, True)
+        assert meta[1]['boundary_edges'] == (False, True, True, True)
         # Scene covers 96 geo units; with delta=8 cropped from interior edges only,
         # effective height = 96 - 0 = 96 (boundary edges preserved)
         assert shape == (96, 64)
@@ -325,7 +327,12 @@ class TestGetBlendMask:
         """Edges with delta=0 in edge_deltas get no blend ramp (weight=1)."""
         edge_deltas = (0, 8, 0, 8)
         mask = get_blend_mask(
-            64, overlap=8, delta=8, method='cosine', edge_deltas=edge_deltas
+            64,
+            overlap=8,
+            delta=8,
+            method='cosine',
+            edge_deltas=edge_deltas,
+            boundary_edges=(True, False, True, False),
         )
 
         assert mask.shape == (56, 56)
@@ -342,6 +349,23 @@ class TestGetBlendMask:
         expected_h = 64 - 4 - 8
         expected_w = 64 - 2 - 6
         assert mask.shape == (expected_h, expected_w)
+
+    def test_delta_zero_keeps_interior_ramps(self) -> None:
+        """delta=0 still ramps interior edges; only boundary edges are flat."""
+        mask = get_blend_mask(
+            64,
+            overlap=8,
+            delta=0,
+            method='cosine',
+            edge_deltas=(0, 0, 0, 0),
+            boundary_edges=(True, False, False, False),
+        )
+
+        assert mask.shape == (64, 64)
+        assert mask[0, 32] == pytest.approx(1.0)
+        assert mask[-1, 32] < 1.0
+        assert mask[32, 0] < 1.0
+        assert mask[32, -1] < 1.0
 
     def test_edge_deltas_none_uses_uniform_delta(self) -> None:
         """When edge_deltas is None, uniform delta is used."""
@@ -1027,11 +1051,16 @@ class TestBlendTransition:
     (overlap - 2 * delta) or identical classes, so the ramps never matter.
     """
 
-    def test_two_patches_transition_at_overlap_midpoint(self, tmp_path: Path) -> None:
-        """Class boundary between two conflicting patches sits mid-overlap."""
+    @pytest.mark.parametrize('delta', [0, 4])
+    def test_two_patches_transition_at_overlap_midpoint(
+        self, tmp_path: Path, delta: int
+    ) -> None:
+        """Class boundary between two conflicting patches sits mid-overlap.
+
+        With delta=0 nothing is cropped, so the ramps span the full overlap.
+        """
         patch_size = 64
         overlap = 24
-        delta = 4
         num_classes = 3
         stride = patch_size - overlap
         classes = [1, 2]

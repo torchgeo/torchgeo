@@ -29,6 +29,7 @@ class PatchMetadata(TypedDict):
     transform: list[float]
     bbox: NotRequired[tuple[int, int, int, int]]
     edge_deltas: NotRequired[tuple[int, int, int, int]]
+    boundary_edges: NotRequired[tuple[bool, bool, bool, bool]]
 
 
 def _patch_bounds_in_output_crs(
@@ -50,6 +51,52 @@ def _patch_bounds_in_output_crs(
     return meta['geo_bbox']
 
 
+def _get_boundary_edges(
+    geo_bbox: tuple[float, float, float, float],
+    scene_bounds: tuple[float, float, float, float],
+    pixel_size: float,
+    *,
+    north_up: bool = True,
+) -> tuple[bool, bool, bool, bool]:
+    """Determine which edges of a patch touch the scene boundary.
+
+    A tolerance of 1.5 * pixel_size is used for boundary detection to handle
+    floating-point imprecision. This means patches within 1.5 pixels of a scene
+    boundary are treated as boundary-touching.
+
+    Edges are given in **array order**: top means first rows of the array, bottom
+    means last rows. For north-up rasters the first row is geo ymax; for south-up
+    it is geo ymin.
+
+    Args:
+        geo_bbox: Patch bounds as (xmin, ymin, xmax, ymax) in geo coordinates.
+        scene_bounds: Scene bounds as (minx, miny, maxx, maxy) in geo coordinates.
+        pixel_size: Size of one pixel in geo units.
+        north_up: Whether the raster has a negative y-resolution (north at the top).
+            South-up rasters (positive y-resolution) swap top/bottom assignments.
+
+    Returns:
+        Tuple of (top, bottom, left, right) flags, True where the edge touches the
+        scene boundary.
+    """
+    minx, miny, maxx, maxy = scene_bounds
+    tolerance = abs(pixel_size) * 1.5
+
+    left = abs(geo_bbox[0] - minx) < tolerance
+    right = abs(geo_bbox[2] - maxx) < tolerance
+    at_geo_top = abs(geo_bbox[3] - maxy) < tolerance
+    at_geo_bottom = abs(geo_bbox[1] - miny) < tolerance
+
+    if north_up:
+        # Array row 0 = geo ymax (north)
+        top, bottom = at_geo_top, at_geo_bottom
+    else:
+        # Array row 0 = geo ymin (south)
+        top, bottom = at_geo_bottom, at_geo_top
+
+    return top, bottom, left, right
+
+
 def _get_edge_deltas(
     geo_bbox: tuple[float, float, float, float],
     scene_bounds: tuple[float, float, float, float],
@@ -62,15 +109,8 @@ def _get_edge_deltas(
 
     Patches touching scene boundaries preserve their edge pixels (delta=0 on that
     edge) to avoid black borders. Interior edges are cropped normally to remove
-    neural network edge artifacts.
-
-    A tolerance of 1.5 * pixel_size is used for boundary detection to handle
-    floating-point imprecision. This means patches within 1.5 pixels of a scene
-    boundary are treated as boundary-touching.
-
-    Returns deltas in **array order**: top means first rows of the array, bottom
-    means last rows. For north-up rasters the first row is geo ymax; for south-up
-    it is geo ymin.
+    neural network edge artifacts. See :func:`_get_boundary_edges` for how
+    boundary edges are detected and for the array-order convention.
 
     Args:
         geo_bbox: Patch bounds as (xmin, ymin, xmax, ymax) in geo coordinates.
@@ -78,30 +118,15 @@ def _get_edge_deltas(
         pixel_size: Size of one pixel in geo units.
         delta: Default pixels to crop from edges.
         north_up: Whether the raster has a negative y-resolution (north at the top).
-            South-up rasters (positive y-resolution) swap top/bottom assignments.
 
     Returns:
         Tuple of (top, bottom, left, right) crop amounts in pixels, where top/bottom
         refer to array rows (not geographic direction).
     """
-    minx, miny, maxx, maxy = scene_bounds
-    tolerance = abs(pixel_size) * 1.5
-
-    left = 0 if abs(geo_bbox[0] - minx) < tolerance else delta
-    right = 0 if abs(geo_bbox[2] - maxx) < tolerance else delta
-
-    at_geo_top = abs(geo_bbox[3] - maxy) < tolerance
-    at_geo_bottom = abs(geo_bbox[1] - miny) < tolerance
-
-    if north_up:
-        # Array row 0 = geo ymax (north)
-        top = 0 if at_geo_top else delta
-        bottom = 0 if at_geo_bottom else delta
-    else:
-        # Array row 0 = geo ymin (south)
-        top = 0 if at_geo_bottom else delta
-        bottom = 0 if at_geo_top else delta
-
+    boundary = _get_boundary_edges(
+        geo_bbox, scene_bounds, pixel_size, north_up=north_up
+    )
+    top, bottom, left, right = (0 if at_boundary else delta for at_boundary in boundary)
     return top, bottom, left, right
 
 
@@ -180,6 +205,9 @@ def _reconstruct_scene_from_patches(
             geo_bbox, scene_bounds, x_res, delta, north_up=north_up
         )
         meta['edge_deltas'] = (top, bottom, left, right)
+        meta['boundary_edges'] = _get_boundary_edges(
+            geo_bbox, scene_bounds, x_res, north_up=north_up
+        )
 
         patch_geo_xmin = geo_bbox[0] + left * x_res
         effective_patch_w = patch_w - left - right
@@ -237,10 +265,9 @@ def get_blend_mask(
     delta: int,
     method: str = 'cosine',
     edge_deltas: tuple[int, int, int, int] | None = None,
+    boundary_edges: tuple[bool, bool, bool, bool] | None = None,
 ) -> np.typing.NDArray[np.floating[Any]]:
     """Generate blend mask for weighted patch merging.
-
-    Uses the same formula as habitalp2 for proven compatibility.
 
     Args:
         patch_size: Size of patch (H, W) or single int.
@@ -248,7 +275,10 @@ def get_blend_mask(
         delta: Default pixels to crop from edges.
         method: Blending method ('cosine' or 'linear').
         edge_deltas: Optional per-edge crop amounts (top, bottom, left, right).
-            If provided, only applies blend ramps on edges where delta > 0.
+            Defaults to *delta* on every edge.
+        boundary_edges: Optional per-edge flags (top, bottom, left, right). Edges
+            marked True touch the scene boundary and get no blend ramp, so the
+            scene edge keeps full weight. Defaults to ramps on every edge.
 
     Returns:
         Blend mask with values in [0, 1].
@@ -263,13 +293,14 @@ def get_blend_mask(
 
     if edge_deltas is not None:
         top, bottom, left, right = edge_deltas
-        apply_top_ramp = top > 0
-        apply_bottom_ramp = bottom > 0
-        apply_left_ramp = left > 0
-        apply_right_ramp = right > 0
     else:
         top = bottom = left = right = delta
-        apply_top_ramp = apply_bottom_ramp = apply_left_ramp = apply_right_ramp = True
+
+    if boundary_edges is None:
+        boundary_edges = (False, False, False, False)
+    apply_top_ramp, apply_bottom_ramp, apply_left_ramp, apply_right_ramp = (
+        not at_boundary for at_boundary in boundary_edges
+    )
 
     h_crop = h - top - bottom
     w_crop = w - left - right
@@ -402,7 +433,8 @@ def _resolve_output_grid(
 
     Single decision point for the output grid. Extent and resolution come from the
     dataset when known, otherwise from the patches. Sets ``meta['bbox']`` and
-    ``meta['edge_deltas']`` on each patch as a side effect, which the merge relies on.
+    ``meta['edge_deltas']`` and ``meta['boundary_edges']`` on each patch as a side
+    effect, which the merge relies on.
 
     Args:
         patch_metadata: Metadata for every written patch.
@@ -445,6 +477,9 @@ def _resolve_output_grid(
                 geo_bbox, scene_bounds, x_res, delta, north_up=north_up
             )
             meta['edge_deltas'] = (top, bottom, left, right)
+            meta['boundary_edges'] = _get_boundary_edges(
+                geo_bbox, scene_bounds, x_res, north_up=north_up
+            )
 
             patch_geo_xmin = geo_bbox[0] + left * x_res
             effective_patch_w = patch_w - left - right
@@ -530,7 +565,8 @@ def weighted_merge(
 
     effective_overlap = max(0, overlap - 2 * delta)
     mask_cache: dict[
-        tuple[int, int, int, int], np.typing.NDArray[np.floating[Any]]
+        tuple[tuple[int, int, int, int], tuple[bool, bool, bool, bool]],
+        np.typing.NDArray[np.floating[Any]],
     ] = {}
 
     if output_path is None:
@@ -573,21 +609,26 @@ def weighted_merge(
                     patch_data = src.read().astype(np.float32)
 
                 edge_deltas = meta.get('edge_deltas', (delta, delta, delta, delta))
+                boundary_edges = meta.get(
+                    'boundary_edges', (False, False, False, False)
+                )
                 top, bottom, left, right = edge_deltas
 
                 bottom_slice = -bottom if bottom > 0 else None
                 right_slice = -right if right > 0 else None
                 patch_data = patch_data[:, top:bottom_slice, left:right_slice]
 
-                if edge_deltas not in mask_cache:
-                    mask_cache[edge_deltas] = get_blend_mask(
+                mask_key = (edge_deltas, boundary_edges)
+                if mask_key not in mask_cache:
+                    mask_cache[mask_key] = get_blend_mask(
                         (patch_h, patch_w),
                         effective_overlap,
                         delta,
                         blend_method,
                         edge_deltas=edge_deltas,
+                        boundary_edges=boundary_edges,
                     )
-                blend_mask = mask_cache[edge_deltas]
+                blend_mask = mask_cache[mask_key]
 
                 bbox = meta['bbox']
                 patch_col_start = bbox[0]
