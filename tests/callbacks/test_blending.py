@@ -311,7 +311,7 @@ class TestGetBlendMask:
     def test_invalid_method_raises(self) -> None:
         """Test invalid blend method raises error."""
         with pytest.raises(ValueError, match='Unknown blend method'):
-            get_blend_mask(64, overlap=8, delta=0, method='invalid')
+            get_blend_mask(64, overlap=8, delta=0, method='invalid')  # ty: ignore[invalid-argument-type]
 
     def test_delta_crops_entire_patch_raises(self) -> None:
         """Test delta that crops away the entire patch raises error."""
@@ -788,29 +788,15 @@ class TestDatasetBoundsMode:
 class TestWeightedMergeValidation:
     """Tests for weighted_merge argument validation."""
 
-    def test_missing_output_path_raises(self, tmp_path: Path) -> None:
-        """Test weighted_merge without output_path raises error."""
-        patch_size = 64
-        transform = [1.0, 0, 0.0, 0, -1.0, 64.0]
-        logits = torch.zeros(2, patch_size, patch_size)
-        patch_file = tmp_path / 'patch_000000.tif'
-        _save_test_patch(patch_file, logits, transform)
-
-        patch_metadata = [
-            {
-                'patch_id': 0,
-                'file': patch_file,
-                'geo_bbox': (0.0, 0.0, 64.0, 64.0),
-                'transform': transform,
-            }
-        ]
-
-        with pytest.raises(ValueError, match='output_path is required'):
+    def test_empty_metadata_raises(self, tmp_path: Path) -> None:
+        """Test weighted_merge with no patches raises before touching the disk."""
+        with pytest.raises(ValueError, match='patch_metadata is empty'):
             weighted_merge(
-                patch_metadata=patch_metadata,  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+                patch_metadata=[],
                 num_classes=2,
                 overlap=0,
                 delta=0,
+                output_path=tmp_path / 'output.tif',
             )
 
     def test_patch_crs_mismatch_raises(self, tmp_path: Path) -> None:

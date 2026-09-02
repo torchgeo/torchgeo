@@ -3,11 +3,9 @@
 
 """Blending utilities for tiled inference."""
 
-from __future__ import annotations
-
+import pathlib
 from collections import defaultdict
-from pathlib import Path
-from typing import Any, NotRequired, TypedDict
+from typing import Any, Literal, NotRequired, TypedDict
 
 import numpy as np
 import rasterio
@@ -15,6 +13,8 @@ from pyproj import CRS as PROJ_CRS
 from rasterio.crs import CRS as RIO_CRS
 from rasterio.transform import Affine
 from tqdm import tqdm
+
+from torchgeo.datasets.utils import Path
 
 
 class PatchMetadata(TypedDict):
@@ -24,7 +24,7 @@ class PatchMetadata(TypedDict):
     """
 
     patch_id: int
-    file: Path
+    file: pathlib.Path
     geo_bbox: tuple[float, float, float, float]
     transform: list[float]
     bbox: NotRequired[tuple[int, int, int, int]]
@@ -263,7 +263,7 @@ def get_blend_mask(
     patch_size: int | tuple[int, int],
     overlap: int,
     delta: int,
-    method: str = 'cosine',
+    method: Literal['cosine', 'linear'] = 'cosine',
     edge_deltas: tuple[int, int, int, int] | None = None,
     boundary_edges: tuple[bool, bool, bool, bool] | None = None,
 ) -> np.typing.NDArray[np.floating[Any]]:
@@ -521,9 +521,9 @@ def weighted_merge(
     num_classes: int,
     overlap: int,
     delta: int,
-    blend_method: str = 'cosine',
+    output_path: Path,
+    blend_method: Literal['cosine', 'linear'] = 'cosine',
     crs: PROJ_CRS | None = None,
-    output_path: str | Path | None = None,
     chunk_size: int = 4096,
     dataset_bounds: tuple[float, float, float, float] | None = None,
     dataset_res: tuple[float, float] | None = None,
@@ -541,13 +541,13 @@ def weighted_merge(
         num_classes: Number of classes.
         overlap: Overlap in pixels.
         delta: Pixels to crop from edges.
+        output_path: Where to save GeoTIFF.
         blend_method: 'cosine' or 'linear'. Cosine blending uses a Hann window
             weight mask to reduce edge artifacts, as recommended by
             https://doi.org/10.1371/journal.pone.0229839.
         crs: :term:`coordinate reference system (CRS)` the mosaic is written in.
             Defaults to the CRS of the patches. Every patch must already be in
             this CRS; reprojecting patches is not supported.
-        output_path: Where to save GeoTIFF.
         chunk_size: Size of chunks for processing.
         dataset_bounds: Original dataset bounds (minx, miny, maxx, maxy).
         dataset_res: Original dataset resolution as (xres, yres).
@@ -556,9 +556,12 @@ def weighted_merge(
             ``overview_resampling``).
 
     Raises:
-        ValueError: If *output_path* is missing or a patch is not in the output CRS.
+        ValueError: If *patch_metadata* is empty or a patch is not in the output CRS.
     """
     from torchgeo.callbacks.writer import GeoTIFFWriter
+
+    if not patch_metadata:
+        raise ValueError('patch_metadata is empty')
 
     with rasterio.open(patch_metadata[0]['file']) as src:
         patch_h, patch_w = src.height, src.width
@@ -578,8 +581,6 @@ def weighted_merge(
         np.typing.NDArray[np.floating[Any]],
     ] = {}
 
-    if output_path is None:
-        raise ValueError('output_path is required')
     writer = GeoTIFFWriter(
         output_path=output_path,
         width=output_shape[1],
