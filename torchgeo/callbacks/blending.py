@@ -3,6 +3,7 @@
 
 """Blending utilities for tiled inference."""
 
+import math
 import pathlib
 from collections import defaultdict
 from typing import Any, Literal, NotRequired, TypedDict
@@ -51,18 +52,51 @@ def _patch_bounds_in_output_crs(
     return meta['geo_bbox']
 
 
+def _snap(value: float) -> int:
+    """Round half up, so a constant sub-pixel offset shifts every patch the same way.
+
+    Python's :func:`round` rounds half to even, which turns a constant 0.5 px
+    offset into a 1 px jitter between neighbouring patches.
+
+    Args:
+        value: Pixel coordinate to snap.
+
+    Returns:
+        Nearest integer, ties rounded up.
+    """
+    return math.floor(value + 0.5)
+
+
+def _patch_crs(src: rasterio.io.DatasetReader, patch_id: int) -> PROJ_CRS:
+    """Read the CRS of a patch file.
+
+    Args:
+        src: Open patch dataset.
+        patch_id: Identifier used in the error message.
+
+    Returns:
+        The patch CRS.
+
+    Raises:
+        ValueError: If the patch has no CRS.
+    """
+    if src.crs is None:
+        raise ValueError(f'Patch {patch_id} has no CRS')
+    return PROJ_CRS.from_user_input(src.crs)
+
+
 def _get_boundary_edges(
     geo_bbox: tuple[float, float, float, float],
     scene_bounds: tuple[float, float, float, float],
-    pixel_size: float,
+    pixel_size: tuple[float, float],
     *,
     north_up: bool = True,
 ) -> tuple[bool, bool, bool, bool]:
     """Determine which edges of a patch touch the scene boundary.
 
-    A tolerance of 1.5 * pixel_size is used for boundary detection to handle
-    floating-point imprecision. This means patches within 1.5 pixels of a scene
-    boundary are treated as boundary-touching.
+    A tolerance of half a pixel per axis is used for boundary detection to handle
+    floating-point imprecision, so a patch edge is boundary-touching only if it is
+    closer to the scene edge than to the next pixel.
 
     Edges are given in **array order**: top means first rows of the array, bottom
     means last rows. For north-up rasters the first row is geo ymax; for south-up
@@ -71,7 +105,7 @@ def _get_boundary_edges(
     Args:
         geo_bbox: Patch bounds as (xmin, ymin, xmax, ymax) in geo coordinates.
         scene_bounds: Scene bounds as (minx, miny, maxx, maxy) in geo coordinates.
-        pixel_size: Size of one pixel in geo units.
+        pixel_size: Size of one pixel as (xres, yres) in geo units.
         north_up: Whether the raster has a negative y-resolution (north at the top).
             South-up rasters (positive y-resolution) swap top/bottom assignments.
 
@@ -80,12 +114,13 @@ def _get_boundary_edges(
         scene boundary.
     """
     minx, miny, maxx, maxy = scene_bounds
-    tolerance = abs(pixel_size) * 1.5
+    tolerance_x = abs(pixel_size[0]) * 0.5
+    tolerance_y = abs(pixel_size[1]) * 0.5
 
-    left = abs(geo_bbox[0] - minx) < tolerance
-    right = abs(geo_bbox[2] - maxx) < tolerance
-    at_geo_top = abs(geo_bbox[3] - maxy) < tolerance
-    at_geo_bottom = abs(geo_bbox[1] - miny) < tolerance
+    left = abs(geo_bbox[0] - minx) < tolerance_x
+    right = abs(geo_bbox[2] - maxx) < tolerance_x
+    at_geo_top = abs(geo_bbox[3] - maxy) < tolerance_y
+    at_geo_bottom = abs(geo_bbox[1] - miny) < tolerance_y
 
     if north_up:
         # Array row 0 = geo ymax (north)
@@ -100,7 +135,7 @@ def _get_boundary_edges(
 def _get_edge_deltas(
     geo_bbox: tuple[float, float, float, float],
     scene_bounds: tuple[float, float, float, float],
-    pixel_size: float,
+    pixel_size: tuple[float, float],
     delta: int,
     *,
     north_up: bool = True,
@@ -115,7 +150,7 @@ def _get_edge_deltas(
     Args:
         geo_bbox: Patch bounds as (xmin, ymin, xmax, ymax) in geo coordinates.
         scene_bounds: Scene bounds as (minx, miny, maxx, maxy) in geo coordinates.
-        pixel_size: Size of one pixel in geo units.
+        pixel_size: Size of one pixel as (xres, yres) in geo units.
         delta: Default pixels to crop from edges.
         north_up: Whether the raster has a negative y-resolution (north at the top).
 
@@ -200,11 +235,11 @@ def _reconstruct_scene_from_patches(
     for meta in patch_metadata:
         geo_bbox = _patch_bounds_in_output_crs(meta, output_crs)
         top, bottom, left, right = _get_edge_deltas(
-            geo_bbox, scene_bounds, x_res, delta, north_up=north_up
+            geo_bbox, scene_bounds, (x_res, abs(y_res)), delta, north_up=north_up
         )
         meta['edge_deltas'] = (top, bottom, left, right)
         meta['boundary_edges'] = _get_boundary_edges(
-            geo_bbox, scene_bounds, x_res, north_up=north_up
+            geo_bbox, scene_bounds, (x_res, abs(y_res)), north_up=north_up
         )
 
         patch_geo_xmin = geo_bbox[0] + left * x_res
@@ -217,8 +252,8 @@ def _reconstruct_scene_from_patches(
         else:
             patch_origin_y = geo_bbox[1] + top * y_res
 
-        patch_col_start = round((patch_geo_xmin - global_geo_xmin) / x_res)
-        patch_row_start = round((patch_origin_y - origin_y) / y_res)
+        patch_col_start = _snap((patch_geo_xmin - global_geo_xmin) / x_res)
+        patch_row_start = _snap((patch_origin_y - origin_y) / y_res)
 
         meta['bbox'] = (
             patch_col_start,
@@ -282,7 +317,8 @@ def get_blend_mask(
         Blend mask with values in [0, 1].
 
     Raises:
-        ValueError: If method is not 'cosine' or 'linear'.
+        ValueError: If method is not 'cosine' or 'linear', the crop removes the
+            whole patch, or the overlap exceeds half of the cropped patch.
     """
     if isinstance(patch_size, int):
         h = w = patch_size
@@ -305,8 +341,11 @@ def get_blend_mask(
 
     if h_crop <= 0 or w_crop <= 0:
         raise ValueError('delta crops away the entire patch')
-    if overlap > min(h_crop, w_crop):
-        raise ValueError('overlap exceeds cropped patch dimensions')
+    if 2 * overlap > min(h_crop, w_crop):
+        raise ValueError(
+            'overlap exceeds half of the cropped patch dimensions, so the ramps on '
+            'opposite edges would overwrite each other'
+        )
 
     if method == 'cosine':
         y = np.ones(h_crop, dtype=np.float32)
@@ -329,7 +368,9 @@ def get_blend_mask(
     elif method == 'linear':
         y = np.ones(h_crop, dtype=np.float32)
         if overlap > 0:
-            ramp = np.linspace(0, 1, overlap, dtype=np.float32)
+            # Skip the exact 0 and 1 endpoints so opposite ramps sum to 1 and no
+            # pixel gets zero weight, mirroring the cosine ramp.
+            ramp = np.linspace(0, 1, overlap + 2, dtype=np.float32)[1:-1]
             if apply_top_ramp:
                 y[:overlap] = ramp
             if apply_bottom_ramp:
@@ -337,7 +378,9 @@ def get_blend_mask(
 
         x = np.ones(w_crop, dtype=np.float32)
         if overlap > 0:
-            ramp = np.linspace(0, 1, overlap, dtype=np.float32)
+            # Skip the exact 0 and 1 endpoints so opposite ramps sum to 1 and no
+            # pixel gets zero weight, mirroring the cosine ramp.
+            ramp = np.linspace(0, 1, overlap + 2, dtype=np.float32)[1:-1]
             if apply_left_ramp:
                 x[:overlap] = ramp
             if apply_right_ramp:
@@ -478,11 +521,11 @@ def _resolve_output_grid(
         for meta in patch_metadata:
             geo_bbox = _patch_bounds_in_output_crs(meta, output_crs)
             top, bottom, left, right = _get_edge_deltas(
-                geo_bbox, scene_bounds, x_res, delta, north_up=north_up
+                geo_bbox, scene_bounds, (x_res, y_res), delta, north_up=north_up
             )
             meta['edge_deltas'] = (top, bottom, left, right)
             meta['boundary_edges'] = _get_boundary_edges(
-                geo_bbox, scene_bounds, x_res, north_up=north_up
+                geo_bbox, scene_bounds, (x_res, y_res), north_up=north_up
             )
 
             patch_geo_xmin = geo_bbox[0] + left * x_res
@@ -494,8 +537,8 @@ def _resolve_output_grid(
             else:
                 patch_origin_y = geo_bbox[1] + top * y_res
 
-            patch_col_start = round((patch_geo_xmin - minx) / x_res)
-            patch_row_start = round((patch_origin_y - origin_y) / y_res_signed)
+            patch_col_start = _snap((patch_geo_xmin - minx) / x_res)
+            patch_row_start = _snap((patch_origin_y - origin_y) / y_res_signed)
 
             meta['bbox'] = (
                 patch_col_start,
@@ -551,7 +594,9 @@ def weighted_merge(
             ``overview_resampling``).
 
     Raises:
-        ValueError: If *patch_metadata* is empty or a patch is not in the output CRS.
+        ValueError: If *patch_metadata* is empty, *delta* exceeds half of *overlap*
+            (neighbouring patches would no longer meet after cropping), or a patch
+            has no CRS, a different CRS, or a different size than the first patch.
 
     .. versionadded:: 0.11
     """
@@ -559,11 +604,16 @@ def weighted_merge(
 
     if not patch_metadata:
         raise ValueError('patch_metadata is empty')
+    if 2 * delta > overlap:
+        raise ValueError(
+            f'delta ({delta}) must not exceed half of overlap ({overlap}), otherwise '
+            'neighbouring patches no longer meet after cropping and leave gaps'
+        )
 
     with rasterio.open(patch_metadata[0]['file']) as src:
         patch_h, patch_w = src.height, src.width
         if crs is None:
-            crs = PROJ_CRS.from_user_input(src.crs)
+            crs = _patch_crs(src, patch_metadata[0]['patch_id'])
 
     output_shape, scene_transform = _resolve_output_grid(
         patch_metadata, crs, (patch_h, patch_w), delta, dataset_bounds, dataset_res
@@ -572,7 +622,7 @@ def weighted_merge(
     grid_size = chunk_size * 2
     grid = _build_grid_index(patch_metadata, grid_size)
 
-    effective_overlap = max(0, overlap - 2 * delta)
+    effective_overlap = overlap - 2 * delta
     mask_cache: dict[
         tuple[tuple[int, int, int, int], tuple[bool, bool, bool, bool]],
         np.typing.NDArray[np.floating[Any]],
@@ -608,10 +658,16 @@ def weighted_merge(
             )
             for meta in overlapping:
                 with rasterio.open(meta['file']) as src:
-                    if PROJ_CRS.from_user_input(src.crs) != crs:
+                    if _patch_crs(src, meta['patch_id']) != crs:
                         raise ValueError(
                             f'Patch {meta["patch_id"]} is in CRS {src.crs}, but the '
                             f'output CRS is {crs}. Reprojecting patches is not supported.'
+                        )
+                    if (src.height, src.width) != (patch_h, patch_w):
+                        raise ValueError(
+                            f'Patch {meta["patch_id"]} has size '
+                            f'{(src.height, src.width)}, but the first patch has size '
+                            f'{(patch_h, patch_w)}; all patches must share one size'
                         )
                     patch_data = src.read().astype(np.float32)
 

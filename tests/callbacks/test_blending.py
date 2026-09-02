@@ -4,6 +4,7 @@
 """Tests for blending utilities."""
 
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import pytest
@@ -172,7 +173,7 @@ class TestGetEdgeDeltas:
     def test_corner_patch_two_edges_zero(self) -> None:
         """Corner patches get delta=0 on two boundary-touching edges."""
         scene_bounds = (0.0, 0.0, 100.0, 100.0)
-        pixel_size = 1.0
+        pixel_size = (1.0, 1.0)
         delta = 8
 
         top_left = (0.0, 36.0, 64.0, 100.0)
@@ -187,7 +188,7 @@ class TestGetEdgeDeltas:
         """Interior patches get delta on all edges."""
         scene_bounds = (0.0, 0.0, 200.0, 200.0)
         interior_patch = (68.0, 68.0, 132.0, 132.0)
-        pixel_size = 1.0
+        pixel_size = (1.0, 1.0)
         delta = 8
 
         result = _get_edge_deltas(interior_patch, scene_bounds, pixel_size, delta)
@@ -196,7 +197,7 @@ class TestGetEdgeDeltas:
     def test_boundary_edge_single_edge_zero(self) -> None:
         """Patches on one boundary get delta=0 on that edge only."""
         scene_bounds = (0.0, 0.0, 200.0, 200.0)
-        pixel_size = 1.0
+        pixel_size = (1.0, 1.0)
         delta = 8
 
         top_edge = (68.0, 136.0, 132.0, 200.0)
@@ -208,22 +209,22 @@ class TestGetEdgeDeltas:
         assert result == (delta, delta, 0, delta)
 
     def test_tolerance_within_threshold(self) -> None:
-        """Patches within 1.5 pixels of boundary count as boundary-touching."""
+        """Patches within half a pixel of the boundary count as boundary-touching."""
         scene_bounds = (0.0, 0.0, 100.0, 100.0)
-        pixel_size = 1.0
+        pixel_size = (1.0, 1.0)
         delta = 8
 
-        almost_top = (32.0, 36.0, 68.0, 99.5)
+        almost_top = (32.0, 36.0, 68.0, 99.8)
         result = _get_edge_deltas(almost_top, scene_bounds, pixel_size, delta)
         assert result[0] == 0
 
     def test_tolerance_outside_threshold(self) -> None:
-        """Patches beyond 1.5 pixels from boundary don't count as boundary."""
+        """Patches a full pixel from the boundary don't count as boundary."""
         scene_bounds = (0.0, 0.0, 100.0, 100.0)
-        pixel_size = 1.0
+        pixel_size = (1.0, 1.0)
         delta = 8
 
-        not_at_top = (32.0, 36.0, 68.0, 98.0)
+        not_at_top = (32.0, 36.0, 68.0, 99.0)
         result = _get_edge_deltas(not_at_top, scene_bounds, pixel_size, delta)
         assert result[0] == delta
 
@@ -231,16 +232,32 @@ class TestGetEdgeDeltas:
         """Single patch covering entire scene has delta=0 on all edges."""
         scene_bounds = (0.0, 0.0, 64.0, 64.0)
         patch = (0.0, 0.0, 64.0, 64.0)
-        pixel_size = 1.0
+        pixel_size = (1.0, 1.0)
         delta = 8
 
         result = _get_edge_deltas(patch, scene_bounds, pixel_size, delta)
         assert result == (0, 0, 0, 0)
 
+    def test_anisotropic_pixels_use_per_axis_tolerance(self) -> None:
+        """The y tolerance follows the y resolution, not the x resolution."""
+        scene_bounds = (0.0, 0.0, 600.0, 100.0)
+        delta = 8
+
+        # Five y-pixels above the scene bottom: interior with yres=10, even though
+        # the coarse xres=60 would have hidden it inside a 1.5 * xres tolerance.
+        patch = (0.0, 50.0, 600.0, 100.0)
+        result = _get_edge_deltas(patch, scene_bounds, (60.0, 10.0), delta)
+        assert result == (0, delta, 0, 0)
+
+        # A third of a y-pixel short of the bottom with yres=60: still boundary.
+        patch = (0.0, 20.0, 600.0, 100.0)
+        result = _get_edge_deltas(patch, scene_bounds, (10.0, 60.0), delta)
+        assert result == (0, 0, 0, 0)
+
     def test_south_up_corner_patch(self) -> None:
         """South-up rasters swap top/bottom in array order."""
         scene_bounds = (0.0, 0.0, 100.0, 100.0)
-        pixel_size = 1.0
+        pixel_size = (1.0, 1.0)
         delta = 8
 
         # Geo bottom-left corner = array top-left for south-up
@@ -288,6 +305,19 @@ class TestGetBlendMask:
         assert mask[0, 32] < mask[32, 32]
         assert mask[32, 32] == pytest.approx(1.0)
 
+    @pytest.mark.parametrize('method', ['cosine', 'linear'])
+    @pytest.mark.parametrize('overlap', [1, 2, 8])
+    def test_opposite_ramps_sum_to_one(self, method: str, overlap: int) -> None:
+        """Ramps of neighbouring patches form a partition of unity, never zero."""
+        mask = get_blend_mask(32, overlap=overlap, delta=0, method=method)  # ty: ignore[invalid-argument-type]
+
+        left = mask[16, :overlap]
+        right = mask[16, -overlap:]
+        # A right edge of one patch lands pixel-for-pixel on the left edge of the
+        # next, so the two ramps are summed without reversing.
+        np.testing.assert_allclose(left + right, 1.0, rtol=1e-5)
+        assert np.all(mask > 0)
+
     def test_invalid_method_raises(self) -> None:
         """Test invalid blend method raises error."""
         with pytest.raises(ValueError, match='Unknown blend method'):
@@ -300,7 +330,7 @@ class TestGetBlendMask:
 
     def test_overlap_exceeds_cropped_patch_raises(self) -> None:
         """Test overlap larger than the cropped patch raises error."""
-        with pytest.raises(ValueError, match='overlap exceeds cropped patch'):
+        with pytest.raises(ValueError, match='overlap exceeds half'):
             get_blend_mask(64, overlap=50, delta=8, method='cosine')
 
     def test_edge_deltas_suppresses_ramp(self) -> None:
@@ -779,6 +809,74 @@ class TestWeightedMergeValidation:
                 output_path=tmp_path / 'output.tif',
             )
 
+    def test_delta_exceeds_half_overlap_raises(self, tmp_path: Path) -> None:
+        """Cropping more than half the overlap would leave gaps between patches."""
+        with pytest.raises(ValueError, match='must not exceed half of overlap'):
+            weighted_merge(
+                patch_metadata=[_make_meta(0)],
+                num_classes=2,
+                overlap=8,
+                delta=5,
+                output_path=tmp_path / 'output.tif',
+            )
+
+    def test_patch_without_crs_raises(self, tmp_path: Path) -> None:
+        """A patch file with no CRS raises a clear error."""
+        patch_size = 64
+        transform = [1.0, 0, 0.0, 0, -1.0, 64.0]
+        one_hot = np.zeros((2, patch_size, patch_size), dtype=np.uint8)
+        patch_file = tmp_path / 'no_crs.tif'
+        with rasterio.open(
+            patch_file,
+            'w',
+            driver='GTiff',
+            height=patch_size,
+            width=patch_size,
+            count=2,
+            dtype='uint8',
+            transform=Affine(*transform),
+        ) as dst:
+            dst.write(one_hot)
+
+        with pytest.raises(ValueError, match='has no CRS'):
+            weighted_merge(
+                patch_metadata=[
+                    _make_meta(0, (0.0, 0.0, 64.0, 64.0), transform)
+                    | {'file': patch_file}
+                ],
+                num_classes=2,
+                overlap=0,
+                delta=0,
+                output_path=tmp_path / 'output.tif',
+            )
+
+    def test_mixed_patch_sizes_raise(self, tmp_path: Path) -> None:
+        """Patches of different sizes raise instead of mis-sizing the scene."""
+        patch_metadata: list[PatchMetadata] = []
+        for patch_id, size in enumerate([16, 8]):
+            geo_xmin = float(patch_id * 16)
+            logits = torch.zeros(2, size, size)
+            patch_file = tmp_path / f'mixed_{patch_id}.tif'
+            transform = [1.0, 0, geo_xmin, 0, -1.0, 16.0]
+            _save_test_patch(patch_file, logits, transform)
+            patch_metadata.append(
+                {
+                    'patch_id': patch_id,
+                    'file': patch_file,
+                    'geo_bbox': (geo_xmin, 16.0 - size, geo_xmin + size, 16.0),
+                    'transform': transform,
+                }
+            )
+
+        with pytest.raises(ValueError, match='all patches must share one size'):
+            weighted_merge(
+                patch_metadata=patch_metadata,
+                num_classes=2,
+                overlap=0,
+                delta=0,
+                output_path=tmp_path / 'output.tif',
+            )
+
     def test_patch_crs_mismatch_raises(self, tmp_path: Path) -> None:
         """Test a patch outside the output CRS raises instead of merging silently."""
         patch_size = 64
@@ -843,7 +941,7 @@ class TestSinglePatchScene:
         weighted_merge(
             patch_metadata=patch_metadata,
             num_classes=num_classes,
-            overlap=0,
+            overlap=16,
             delta=delta,
             blend_method='cosine',
             crs=CRS.from_epsg(32631),
@@ -1046,8 +1144,9 @@ class TestBlendTransition:
     """
 
     @pytest.mark.parametrize('delta', [0, 4])
+    @pytest.mark.parametrize('blend_method', ['cosine', 'linear'])
     def test_two_patches_transition_at_overlap_midpoint(
-        self, tmp_path: Path, delta: int
+        self, tmp_path: Path, delta: int, blend_method: Literal['cosine', 'linear']
     ) -> None:
         """Class boundary between two conflicting patches sits mid-overlap.
 
@@ -1084,7 +1183,7 @@ class TestBlendTransition:
             num_classes=num_classes,
             overlap=overlap,
             delta=delta,
-            blend_method='cosine',
+            blend_method=blend_method,
             crs=CRS.from_epsg(32631),
             output_path=output_path,
             chunk_size=256,
@@ -1101,7 +1200,10 @@ class TestBlendTransition:
         assert np.all(data[:, :midpoint] == classes[0])
         assert np.all(data[:, midpoint:] == classes[1])
 
-    def test_checkerboard(self, tmp_path: Path) -> None:
+    @pytest.mark.parametrize('blend_method', ['cosine', 'linear'])
+    def test_checkerboard(
+        self, tmp_path: Path, blend_method: Literal['cosine', 'linear']
+    ) -> None:
         """A 3x3 checkerboard of overlapping patches stitches into a checkerboard."""
         patch_size = 64
         overlap = 24
@@ -1143,7 +1245,7 @@ class TestBlendTransition:
             num_classes=num_classes,
             overlap=overlap,
             delta=delta,
-            blend_method='cosine',
+            blend_method=blend_method,
             crs=CRS.from_epsg(32631),
             output_path=output_path,
             chunk_size=256,
@@ -1160,3 +1262,52 @@ class TestBlendTransition:
 
         assert data.shape == (scene_size, scene_size)
         np.testing.assert_array_equal(data, expected)
+
+    def test_linear_single_pixel_overlap_has_no_hole(self, tmp_path: Path) -> None:
+        """An effective overlap of one pixel gives that pixel positive weight.
+
+        Regression test: a linear ramp that started at exactly zero left the
+        shared column with zero weight, which argmax turned into class 0.
+        """
+        patch_size = 8
+        overlap = 1
+        num_classes = 2
+        stride = patch_size - overlap
+
+        patch_metadata: list[PatchMetadata] = []
+        for patch_id in range(3):
+            geo_xmin = float(patch_id * stride)
+            logits = torch.zeros(num_classes, patch_size, patch_size)
+            logits[1] = 1.0
+            patch_file = tmp_path / f'thin_{patch_id:06d}.tif'
+            transform = [1.0, 0, geo_xmin, 0, -1.0, float(patch_size)]
+            _save_test_patch(patch_file, logits, transform)
+            patch_metadata.append(
+                {
+                    'patch_id': patch_id,
+                    'file': patch_file,
+                    'geo_bbox': (
+                        geo_xmin,
+                        0.0,
+                        geo_xmin + patch_size,
+                        float(patch_size),
+                    ),
+                    'transform': transform,
+                }
+            )
+
+        output_path = tmp_path / 'thin_output.tif'
+        weighted_merge(
+            patch_metadata=patch_metadata,
+            num_classes=num_classes,
+            overlap=overlap,
+            delta=0,
+            blend_method='linear',
+            output_path=output_path,
+            chunk_size=256,
+        )
+
+        with rasterio.open(output_path) as src:
+            data = src.read(1)
+
+        assert np.all(data == 1)
