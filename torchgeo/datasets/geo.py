@@ -282,12 +282,11 @@ class GeoDataset(Dataset[Sample], abc.ABC, PlottingMixin):
 
     @property
     def crs_registry(self) -> list[PROJ_CRS]:
-        """Ordered registry of the CRSs a sample's ``crs`` index refers to.
+        """Ordered registry of the CRSs a sample's ``crs_index`` refers to.
 
-        A sample's ``crs_index`` key is an integer index into this list, letting the
-        per-sample :term:`coordinate reference system (CRS)` travel as a tensor (see
-        :data:`~torchgeo.datasets.utils.Sample`). A plain dataset reads every query in
-        :attr:`crs`, so the registry holds that single CRS.
+        A sample's ``crs_index`` is an integer index into this list, so the per-sample
+        CRS travels as a tensor. A dataset currently reads every query in :attr:`crs`,
+        so the registry holds only that single CRS.
 
         Returns:
             The CRSs this dataset can emit, in index order.
@@ -1597,8 +1596,8 @@ class IntersectionDataset(GeoDataset):
         # All datasets are guaranteed to have a valid index
         samples = [ds[index] for ds in self.datasets]
 
-        # The combined sample's CRS is this dataset's own: children are read into a
-        # common grid, so drop their per-child crs indices and re-stamp our own.
+        # We don't yet resolve the combined CRS from the child samples, so use self.crs.
+        # Each child's crs_index refers to its own registry, so drop it.
         for s in samples:
             s.pop('crs_index', None)
         sample = self.collate_fn(samples)
@@ -1746,8 +1745,8 @@ class UnionDataset(GeoDataset):
                 f'index: {index} not found in dataset with bounds: {self.bounds}'
             )
 
-        # The combined sample's CRS is this dataset's own: children are read into a
-        # common grid, so drop their per-child crs indices and re-stamp our own.
+        # We don't yet resolve the combined CRS from the child samples, so use self.crs.
+        # Each child's crs_index refers to its own registry, so drop it.
         for s in samples:
             s.pop('crs_index', None)
         sample = self.collate_fn(samples)
