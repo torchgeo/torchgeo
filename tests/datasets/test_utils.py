@@ -588,8 +588,25 @@ def test_percentile_normalization(img: NDArray[np.float64]) -> None:
     assert 0 <= img.min() <= img.max() <= 1
 
 
-@pytest.mark.parametrize('img', [torch.rand(2, 2), torch.zeros(2, 2)])
+@pytest.mark.parametrize(
+    'img',
+    [
+        torch.rand(2, 2),
+        torch.zeros(2, 2),
+        # regression test: integer images used to fail with
+        # "quantile() input tensor must be either float or double dtype"
+        torch.randint(0, 255, (3, 64, 64), dtype=torch.int64),
+    ],
+)
 def test_quantile_normalization(img: Tensor) -> None:
+    img = quantile_normalization(img)
+    assert 0 <= img.min() <= img.max() <= 1
+
+
+def test_quantile_normalization_large_image() -> None:
+    # regression test: images with more than 2**24 elements used to fail
+    # with "quantile() input tensor is too large"
+    img = torch.rand(3, 5000, 5000)
     img = quantile_normalization(img)
     assert 0 <= img.min() <= img.max() <= 1
 

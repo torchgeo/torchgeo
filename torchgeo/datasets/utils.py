@@ -12,6 +12,7 @@ import fnmatch
 import glob
 import hashlib
 import importlib
+import math
 import os
 import pathlib
 import shutil
@@ -889,10 +890,49 @@ def quantile_normalization(
     if (img == nodata).all():
         return img
 
-    lower = torch.quantile(img[img != nodata], lower, dim, interpolation='higher')
-    upper = torch.quantile(img[img != nodata], upper, dim, interpolation='lower')
+    values = img[img != nodata]
+
+    # torch.quantile only supports float/double tensors.
+    if not torch.is_floating_point(values):
+        values = values.float()
+
+    # torch.quantile has a hard limit of 2**24 elements, see
+    # https://github.com/pytorch/pytorch/issues/64947. Fall back to sorting
+    # and indexing manually for inputs larger than that.
+    if values.numel() > 2**24:
+        lower = _quantile_unbounded(values, lower, interpolation='higher')
+        upper = _quantile_unbounded(values, upper, interpolation='lower')
+    else:
+        lower = torch.quantile(values, lower, dim, interpolation='higher')
+        upper = torch.quantile(values, upper, dim, interpolation='lower')
+
     img = (img - lower) / (upper - lower + 1e-5)
     return torch.clamp(img, 0, 1)
+
+
+def _quantile_unbounded(
+    values: Tensor, q: float | Tensor, interpolation: str
+) -> Tensor:
+    """Quantile of a 1D tensor with no limit on the number of elements.
+
+    :func:`torch.quantile` refuses tensors with more than 2**24 elements.
+    This computes the same result (for a single scalar ``q`` and the
+    ``'higher'``/``'lower'`` interpolation modes) by sorting instead.
+
+    Args:
+        values: 1D tensor to compute the quantile of.
+        q: Quantile in range [0, 1].
+        interpolation: Either ``'higher'`` or ``'lower'``.
+
+    Returns:
+        The requested quantile as a 0-dim tensor.
+    """
+    n = values.numel()
+    sorted_values = torch.sort(values).values
+    rank = float(q) * (n - 1)
+    idx = math.ceil(rank) if interpolation == 'higher' else math.floor(rank)
+    idx = min(max(idx, 0), n - 1)
+    return sorted_values[idx]
 
 
 def array_to_tensor(array: np.typing.NDArray[Any]) -> Tensor:
