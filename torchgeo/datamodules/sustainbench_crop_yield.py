@@ -5,6 +5,8 @@
 
 from typing import Any
 
+import torch
+
 from ..datasets import SustainBenchCropYield
 from .geo import NonGeoDataModule
 
@@ -13,7 +15,15 @@ class SustainBenchCropYieldDataModule(NonGeoDataModule):
     """LightningDataModule for SustainBench Crop Yield dataset.
 
     .. versionadded:: 0.5
+
+    .. versionchanged:: 0.8
+        Normalization is now identity (mean=0, std=1); the dataset already
+        returns images scaled to [0, 1].
     """
+
+    # dataset returns images already scaled to [0, 1], so normalization is identity
+    mean = torch.tensor(0)
+    std = torch.tensor(1)
 
     def __init__(
         self, batch_size: int = 32, num_workers: int = 0, **kwargs: Any

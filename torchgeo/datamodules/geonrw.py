@@ -7,6 +7,7 @@ import os
 from typing import Any
 
 import kornia.augmentation as K
+import torch
 from torch.utils.data import Subset
 
 from ..datasets import GeoNRW
@@ -21,7 +22,15 @@ class GeoNRWDataModule(NonGeoDataModule):
     See :func:`setup` for more details.
 
     .. versionadded:: 0.6
+
+    .. versionchanged:: 0.8
+        Normalization is now identity (mean=0, std=1); the dataset already
+        returns images scaled to [0, 1].
     """
+
+    # dataset returns images already scaled to [0, 1], so normalization is identity
+    mean = torch.tensor(0)
+    std = torch.tensor(1)
 
     def __init__(
         self, batch_size: int = 64, num_workers: int = 0, size: int = 256, **kwargs: Any
