@@ -5,6 +5,7 @@ import os
 import pickle
 import re
 import shutil
+import urllib.request
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -417,6 +418,22 @@ def test_download_url_truncated(tmp_path: Path, monkeypatch: MonkeyPatch) -> Non
 
     assert not (tmp_path / filename).exists()
     assert list(tmp_path.iterdir()) == []
+
+
+def test_download_url_timeout(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    """A stalled download must time out instead of blocking forever."""
+    url = Path('tests/data/vhr10/NWPU VHR-10 dataset.zip').absolute().as_uri()
+    urlopen = urllib.request.urlopen
+    timeouts: list[float | None] = []
+
+    def record(request: Any, *args: Any, **kwargs: Any) -> Any:
+        timeouts.append(kwargs.get('timeout'))
+        return urlopen(request, *args, **kwargs)
+
+    monkeypatch.setattr(urllib.request, 'urlopen', record)
+
+    download_url(url, tmp_path)
+    assert timeouts == [60]
 
 
 def test_download_and_extract_archive(tmp_path: Path) -> None:

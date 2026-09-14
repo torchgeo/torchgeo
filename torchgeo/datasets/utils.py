@@ -414,6 +414,7 @@ def download_url(
     Raises:
         RuntimeError: If checksum of downloaded file does not match.
         urllib.error.URLError: If download fails.
+        TimeoutError: If the download stalls for longer than 60 seconds.
     """
     if not filename:
         filename = os.path.basename(url)
@@ -431,7 +432,9 @@ def download_url(
         # interrupted download cannot leave a truncated file behind.
         tmp = f'{fpath}.tmp'
         try:
-            with urllib.request.urlopen(request) as response:
+            # Socket timeout, so a stalled download raises instead of hanging
+            # forever. Applies per read, so a slow download is unaffected.
+            with urllib.request.urlopen(request, timeout=60) as response:
                 total = response.headers.get('Content-Length')
                 expected = int(total) if total else None
                 with (
