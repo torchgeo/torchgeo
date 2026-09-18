@@ -39,7 +39,7 @@ def _collate_optional(batch: list[Sample], key: str) -> list[Tensor]:
         one tensor per sample, in batch order
     """
     # Match the dtype, device, and trailing shape of the samples that do have
-    # objects, so an empty target concatenates with the rest.
+    # objects, so that an empty target concatenates with the rest.
     template = next(sample[key] for sample in batch if key in sample)
     empty = template.new_empty((0, *template.shape[1:]))
     return [sample.get(key, empty) for sample in batch]
@@ -48,11 +48,8 @@ def _collate_optional(batch: list[Sample], key: str) -> list[Tensor]:
 def collate_fn_detection(batch: list[Sample]) -> DetectionSample:
     """Custom collate fn for object detection and instance segmentation.
 
-    Samples without any objects are supported. A batch may mix chips that have
-    annotations with chips that have none, for example when a
-    :class:`~torchgeo.datasets.UnionDataset` skips a
-    :class:`~torchgeo.datasets.VectorDataset` that does not intersect the chip.
-    Such samples are collated as empty tensors rather than dropped.
+    A batch may mix chips that have objects with chips that have none. Chips
+    with none are collated as empty tensors rather than dropped.
 
     Args:
         batch: list of sample dicts return by dataset
