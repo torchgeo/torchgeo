@@ -253,7 +253,7 @@ class USAVars(NonGeoDataset):
         Returns:
             a matplotlib Figure with the rendered sample
 
-        versionchanged:: 0.11
+        .. versionchanged:: 0.11
             Renamed show_labels to show_titles - keep show_labels as deprecated alias
         """
         if show_labels is not None:
