@@ -7,6 +7,7 @@ index = [
     'TerraTorch',
     'DeepForest',
     'OTB',
+    'openEO',
     'Raster Vision',
     'GeoAI',
     'samgeo',
@@ -15,9 +16,9 @@ index = [
     'GDL',
     'py4dgeo',
     'SITS',
+    'GeoTessera',
     'ML4Floods',
     'srai',
-    'GeoTessera',
     'AIDE',
     'scikit-eo',
     'Myria3D',
@@ -36,6 +37,7 @@ name_to_github = {
     'SITS': ('e-sensing', 'sits'),
     'Raster Vision': ('azavea', 'raster-vision'),
     'DeepHyperX': ('nshaud', 'DeepHyperX'),
+    'openEO': ('Open-EO', 'openeo-python-client'),
     'Pyinterpolate': ('DataverseLabs', 'pyinterpolate'),
     'GDL': ('NRCan', 'geo-deep-learning'),
     'OTBTF': ('remicres', 'otbtf'),
@@ -95,6 +97,7 @@ hardcoded_coverage = {
     'torchange': 0,
     'AIDE': 0,
     'rs-embed': 61,
+    'openEO': 70,
 }
 name_to_pypi = {
     'SPy': 'spectral',
@@ -115,8 +118,9 @@ name_to_pypi = {
     'torchange': 'torchange',
     'rs-embed': 'rs-embed',
     'py4dgeo': 'py4dgeo',
+    'openEO': 'openeo',
 }
-name_to_cran = {'SITS': 'sits'}
+name_to_cran = {'SITS': 'sits', 'openEO': 'openeo'}
 name_to_conda = {
     'SPy': 'spectral',
     'SITS': 'r-sits',
@@ -128,4 +132,5 @@ name_to_conda = {
     'GeoAI': 'geoai',
     'TerraTorch': 'terratorch',
     'torchange': 'torchange',
+    'openEO': 'openeo',
 }
