@@ -96,12 +96,12 @@ The table reports EuroSAT test-set top-1 accuracy using kNN with five neighbors.
      - 0.8507
      - --
      - --
-   * - Supervised ImageNet [#imagenet]_
+   * - Supervised ImageNet
      - ResNet-50
      - 0.8948
      - --
      - --
-   * - Supervised ImageNet [#imagenet]_
+   * - Supervised ImageNet
      - ViT-S/16
      - 0.9178
      - --
@@ -144,8 +144,6 @@ The selected learning rate depends on both the task and the encoder. The rates i
 .. rubric:: Footnotes
 
 .. [#floor] The image-statistics baseline concatenates each image's per-band mean, standard deviation, minimum, and maximum into a 52-dimensional vector and uses the same kNN classifier. It does not use a neural network.
-
-.. [#imagenet] These ImageNet-pretrained encoders use ``in_chans=13``. To adapt the pretrained input convolution, ``timm.models.adapt_input_conv`` tiles the RGB filters to accommodate 13 input channels.
 
 Running the benchmark
 ---------------------
