@@ -12,7 +12,7 @@ This page describes TorchGeo's SSL tasks and a EuroSAT benchmark for comparing t
 Available tasks
 ---------------
 
-The tasks below subclass :class:`~torchgeo.tasks.BaseTask`. The ``model`` argument selects a `timm <https://huggingface.co/docs/timm/reference/models>`__ encoder, subject to the restrictions noted below, and ``in_channels`` sets the number of input bands for multispectral imagery.
+The tasks below subclass :class:`~torchgeo.tasks.BaseTask`. Each task has a ``model`` argument that selects a `timm <https://huggingface.co/docs/timm/reference/models>`__ encoder, subject to the restrictions noted below, and ``in_channels`` sets the number of input bands for multispectral imagery.
 
 .. list-table::
    :header-rows: 1
@@ -65,7 +65,7 @@ Use the following settings when comparing runs with the results below.
    * - Selection
      - Select the learning rate using validation accuracy, then evaluate the selected model once on the test set
 
-Resizing and normalization affect the comparison. The reference paper reports changes in model rankings when images are evaluated at their native 64x64 resolution instead of 224x224. In our runs, changing preprocessing produced a 0.43 range in kNN accuracy for the same ImageNet-pretrained ResNet-50.
+Resizing and normalization affect the comparison. The reference paper reports changes in model rankings when images are evaluated at their native 64x64 resolution instead of 224x224. In our runs, for example, changing preprocessing produced a 0.43 range in kNN accuracy for the same ImageNet-pretrained ResNet-50.
 
 Results
 -------
@@ -148,9 +148,9 @@ The selected learning rate depends on both the task and the encoder. The rates i
 Running the benchmark
 ---------------------
 
-Use the configurations in `configs/ssl_benchmarking <https://github.com/torchgeo/torchgeo/tree/main/configs/ssl_benchmarking>`__ to reproduce the six SSL runs. Each learning rate was selected from a four-rate sweep using validation accuracy.
+Use the configurations in `configs/ssl_benchmarking <https://github.com/torchgeo/torchgeo/tree/main/configs/ssl_benchmarking>`__ to reproduce the six SSL runs. I.e. run `torchgeo fit --config configs/ssl_benchmarking/byol_resnet50.yaml`.
 
-See :doc:`/tutorials/ssl_knn_eval` for the training and evaluation code, including preprocessing and checks for collapse. The tutorial uses EuroSAT100 for a short demonstration; use the full EuroSAT dataset and the settings above for this benchmark.
+See :doc:`/tutorials/ssl_knn_eval` for evaluation code and checks for collapse. The tutorial uses EuroSAT100 for a short demonstration; use the full EuroSAT dataset and the settings above for this benchmark.
 
 Adding a new task
 -----------------
