@@ -1,9 +1,9 @@
 Self-Supervised Learning Tasks
 ==============================
 
-Self-supervised learning (SSL) trains encoders without labels. To assess the learned features, we use them to classify labeled images. Training loss alone is insufficient: each SSL method optimizes a different objective, and a decreasing loss can accompany representation collapse, where the encoder produces nearly identical features for different images.
+Self-supervised learning (SSL) trains encoders without labels. Training loss alone is insufficient to determine whether an SSL training method is working as a decreasing loss can accompany representation collapse, where the encoder produces nearly identical features for different images. To properly evaluate SSL methods, we use the features from the encoder as input to a downstream task with labeled data.
 
-This page describes TorchGeo's SSL tasks and a EuroSAT benchmark for comparing them. It includes results and configurations for the existing tasks, along with evaluation guidance for contributors adding a new task.
+This page describes TorchGeo's SSL tasks and a EuroSAT benchmark for comparing them as well as any newly proposed SSL task. It includes results and configurations for the existing tasks, along with evaluation guidance for contributors adding a new task.
 
 .. contents::
    :local:
@@ -38,7 +38,7 @@ The tasks below subclass :class:`~torchgeo.tasks.BaseTask`. The ``model`` argume
 Benchmarking
 ------------
 
-We pretrain on EuroSAT's 13-band multispectral images without labels, then freeze the encoder and evaluate its features with a k-nearest-neighbor (kNN) classifier. This evaluation follows `Corley et al. 2024, "Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters" <https://arxiv.org/abs/2305.13456>`_. Using kNN avoids the optimizer, learning-rate, and regularization choices needed to train a linear probe.
+We benchmark by pretraining on EuroSAT's 13-band multispectral images without labels, then freeze the encoder and evaluate its features with a k-nearest-neighbor (kNN) classifier. This evaluation follows `Corley et al. 2024, "Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters" <https://arxiv.org/abs/2305.13456>`_. Using kNN avoids the optimizer, learning-rate, and regularization choices needed to train a linear probe.
 
 Use the following settings when comparing runs with the results below.
 
@@ -59,7 +59,7 @@ Use the following settings when comparing runs with the results below.
    * - Features
      - ``forward_head(forward_features(x), pre_logits=True)`` on the frozen encoder, evaluated on unaugmented images
    * - Classifier
-     - ``sklearn.neighbors.KNeighborsClassifier(n_neighbors=5)``, Euclidean
+     - ``sklearn.neighbors.KNeighborsClassifier(n_neighbors=5)``, Euclidean distance
    * - Scaling
      - Evaluate kNN with and without ``StandardScaler`` and report the better accuracy, following the reference paper
    * - Selection
@@ -139,88 +139,20 @@ The table reports EuroSAT test-set top-1 accuracy using kNN with five neighbors.
 
 The image-statistics baseline scores 0.8937, higher than either randomly initialized encoder. The ImageNet-pretrained ViT scores 0.9178. Compare against these baselines as well as random initialization when assessing whether SSL improves classification accuracy.
 
-The selected learning rate depends on both the task and the encoder. The rates in this table span four orders of magnitude: MoCo v3 uses 1e-2 with ResNet-50 and 1e-4 with ViT-S/16. Sweep learning rates for each combination rather than assuming one setting will work for all of them.
-
-Three of the sixteen MoCo and SimCLR runs completed all 60 epochs but produced checkpoints with entirely NaN features. Another run collapsed to a near-constant embedding while its loss stayed flat. ``torchgeo fit`` exited successfully in each case. The feature checks described below help identify these failures.
-
-All results use a single seed. Differences of a few thousandths, such as 0.005, need repeated runs before they can support a reliable ranking.
+The selected learning rate depends on both the task and the encoder. The rates in this table span four orders of magnitude: MoCo v3 uses 1e-2 with ResNet-50 and 1e-4 with ViT-S/16. Sweep learning rates for each combination rather than assuming one setting will work for all of them. For example, three of the sixteen MoCo and SimCLR runs that we did produced checkpoints with entirely NaN features. Another run collapsed to a near-constant embedding while its loss stayed flat.
 
 .. rubric:: Footnotes
 
 .. [#floor] The image-statistics baseline concatenates each image's per-band mean, standard deviation, minimum, and maximum into a 52-dimensional vector and uses the same kNN classifier. It does not use a neural network.
 
-.. [#imagenet] These ImageNet-pretrained encoders use ``in_chans=13``. To adapt the pretrained input convolution, ``timm.models.adapt_input_conv`` tiles the RGB filters ``ceil(13 / 3) = 5`` times, truncates to 13 channels, and rescales by ``3 / 13`` to preserve the activation magnitude. The remaining layers retain their ImageNet weights.
+.. [#imagenet] These ImageNet-pretrained encoders use ``in_chans=13``. To adapt the pretrained input convolution, ``timm.models.adapt_input_conv`` tiles the RGB filters to accommodate 13 input channels.
 
 Running the benchmark
 ---------------------
 
-Pretrain using a TorchGeo task and :class:`~torchgeo.datamodules.EuroSATDataModule`, which applies the per-band standardization used in this benchmark. Save the following configuration as ``moco_resnet50.yaml`` to train MoCo v3 with a ResNet-50 encoder:
+Use the configurations in `configs/ssl_benchmarking <https://github.com/torchgeo/torchgeo/tree/main/configs/ssl_benchmarking>`__ to reproduce the six SSL runs. Each learning rate was selected from a four-rate sweep using validation accuracy.
 
-.. code-block:: yaml
-
-   seed_everything: 0
-   trainer:
-     accelerator: gpu
-     devices: 1
-     max_epochs: 60
-     precision: 16-mixed
-     benchmark: true
-   model:
-     class_path: MoCo
-     init_args:
-       model: resnet50
-       in_channels: 13
-       version: 3
-       lr: 0.01
-       size: 224
-   data:
-     class_path: EuroSATDataModule
-     init_args:
-       batch_size: 128
-       num_workers: 8
-     dict_kwargs:
-       root: data/eurosat
-
-.. code-block:: console
-
-   $ python -m torchgeo fit --config moco_resnet50.yaml
-
-The complete configurations for the six SSL runs are in `configs/ssl_benchmarking <https://github.com/torchgeo/torchgeo/tree/main/configs/ssl_benchmarking>`__. They include each task's options, along with logging and checkpoint settings. Each learning rate was selected from a four-rate sweep using validation accuracy.
-
-After training, load the checkpoint and evaluate the frozen encoder. ``torchgeo fit`` does not run the kNN evaluation. The :doc:`/tutorials/ssl_knn_eval` tutorial shows how to load the encoder, preprocess the images, and fit the classifier. The functions below extract features and evaluate them with kNN:
-
-.. code-block:: python
-
-   import torch
-   from sklearn.neighbors import KNeighborsClassifier
-   from sklearn.preprocessing import StandardScaler
-
-
-   @torch.no_grad()
-   def features(backbone, loader, device):
-       backbone.eval().to(device)
-       out, targets = [], []
-       for batch in loader:
-           x = batch['image'].to(device)
-           z = backbone.forward_head(backbone.forward_features(x), pre_logits=True)
-           out.append(z.flatten(1).cpu())
-           targets.append(batch['label'])
-       return torch.cat(out).numpy(), torch.cat(targets).numpy()
-
-
-   def knn_score(train, train_y, test, test_y):
-       scores = []
-       for scaler in (None, StandardScaler()):
-           a, b = (train, test) if scaler is None else (
-               scaler.fit_transform(train), scaler.transform(test)
-           )
-           probe = KNeighborsClassifier(n_neighbors=5).fit(a, train_y)
-           scores.append(probe.score(b, test_y))
-       return max(scores)
-
-Extract features without random augmentations, using the normalization and input size specified above. The encoder is available as ``backbone`` for :class:`~torchgeo.tasks.SimCLR` and :class:`~torchgeo.tasks.MoCo`, and as ``model.backbone.model`` for :class:`~torchgeo.tasks.BYOL`.
-
-For each checkpoint, check that the features are finite and examine the L2-normalized embeddings. Near-zero standard deviation across images and a mean pairwise cosine similarity near one indicate representation collapse. Report these checks alongside accuracy.
+See :doc:`/tutorials/ssl_knn_eval` for the training and evaluation code, including preprocessing and checks for collapse. The tutorial uses EuroSAT100 for a short demonstration; use the full EuroSAT dataset and the settings above for this benchmark.
 
 Adding a new task
 -----------------
@@ -232,6 +164,6 @@ When adding an SSL task, include:
 #. Tests in ``tests/tasks/test_foo.py``.
 #. An API documentation entry in ``docs/api/tasks.rst``.
 
-Evaluate the task using the benchmark settings above, trying at least three or four learning rates on the EuroSAT validation split. The current MoCo v3 and SimCLR defaults are scaled for a batch size of 4096: ``lr=9.6`` is ``0.6 x 4096 / 256`` for MoCo v3, and ``lr=4.8`` is ``0.3 x 4096 / 256`` for SimCLR. These defaults were too large for the batch size of 128 used here.
+Evaluate the task using the benchmark settings above, trying at least three or four learning rates on the EuroSAT validation split. The current MoCo v3 and SimCLR defaults are scaled for a batch size of 4096: ``lr=9.6`` is ``0.6 x 4096 / 256`` for MoCo v3, and ``lr=4.8`` is ``0.3 x 4096 / 256`` for SimCLR.
 
 Select the learning rate using validation accuracy, then evaluate the selected model once on the test split. Include the configuration, kNN accuracy, and checks for collapse in the pull request so reviewers can compare the result with the baselines. If accuracy is below the image-statistics baseline, investigate the training and evaluation setup before drawing conclusions about the task.
