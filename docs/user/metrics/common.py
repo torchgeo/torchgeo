@@ -7,6 +7,7 @@ index = [
     'TerraTorch',
     'DeepForest',
     'OTB',
+    'openEO',
     'Raster Vision',
     'GeoAI',
     'samgeo',
@@ -30,6 +31,7 @@ index = [
 name_to_github = {
     'SPy': ('spectralpython', 'spectral'),
     'OTB': ('orfeotoolbox', 'OTB'),
+    'openEO': ('Open-EO', 'openeo-python-client'),
     'DeepOSM': ('trailbehind', 'DeepOSM'),
     'Hyperspectral': ('KGPML', 'Hyperspectral'),
     'DeepNetsForEO': ('nshaud', 'DeepNetsForEO'),
@@ -81,6 +83,7 @@ name_to_codecov = {
 hardcoded_coverage = {
     'SPy': 69,
     'OTB': 50,
+    'openEO': 0,
     'Raster Vision': 90,
     'GDL': 7,
     'DeepForest': 87,

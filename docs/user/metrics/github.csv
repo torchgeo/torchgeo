@@ -3,6 +3,7 @@ Library,Contributors,Forks,Watchers,Stars,Issues,PRs,Releases,Commits,Test Cover
 `TerraTorch`_,50,161,25,843,48,894,51,"3,814",55%,Apache-2.0
 `DeepForest`_,41,260,17,766,108,720,117,"1,317",87%,MIT
 `OTB`_,41,128,39,389,4,25,129,"34,712",50%,Apache-2.0
+`openEO`_,39,56,15,217,209,333,77,"2,983",0%,Apache-2.0
 `Raster Vision`_,32,399,68,"2,237",46,"1,470",25,"3,641",90%,Apache-2.0
 `GeoAI`_,27,464,41,"3,265",3,559,92,587,6%,MIT
 `samgeo`_,27,438,60,"4,107",6,257,63,363,13%,MIT
@@ -20,4 +21,3 @@ Library,Contributors,Forks,Watchers,Stars,Issues,PRs,Releases,Commits,Test Cover
 `rs-embed`_,6,16,1,149,9,86,5,570,61%,Apache-2.0
 `GeoDeep`_,4,56,12,506,2,4,13,106,0%,AGPL-3.0
 `torchange`_,2,21,6,259,9,18,5,200,0%,Apache-2.0
-`openEO`_,41,56,60,217,10,50,30,500,70%,Apache-2.0
