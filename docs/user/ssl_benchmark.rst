@@ -1,9 +1,9 @@
 Self-Supervised Learning Tasks
 ==============================
 
-TorchGeo ships several self-supervised learning (SSL) tasks. Because SSL has no labels, a training loss says very little about whether a task works: the losses are on different scales and measure different things, and a loss that falls steadily is entirely compatible with a representation that has collapsed. It is therefore non-trivial to determine whether an SSL training run is working at all without probing the learned representations over a dataset. A run that is silently producing a degenerate encoder could look, from the loss curve alone, much like a run that is working well. This matters when contributing a new SSL task to TorchGeo: a new task that trains without error, and whose loss decreases, has not yet been shown to do anything useful.
+Self-supervised learning (SSL) trains encoders without labels. To assess the learned features, we use them to classify labeled images. Training loss alone is insufficient: each SSL method optimizes a different objective, and a decreasing loss can accompany representation collapse, where the encoder produces nearly identical features for different images.
 
-This page describes the tasks TorchGeo provides, defines a small benchmark for comparing them, and records the current numbers so that a new task can be judged against them on equal terms.
+This page describes TorchGeo's SSL tasks and a EuroSAT benchmark for comparing them. It includes results and configurations for the existing tasks, along with evaluation guidance for contributors adding a new task.
 
 .. contents::
    :local:
@@ -12,7 +12,7 @@ This page describes the tasks TorchGeo provides, defines a small benchmark for c
 Available tasks
 ---------------
 
-All SSL tasks subclass :class:`~torchgeo.tasks.BaseTask` and take a ``model`` argument naming any `timm <https://huggingface.co/docs/timm/reference/models>`__ encoder, plus ``in_channels`` so they can be used with multispectral imagery.
+The tasks below subclass :class:`~torchgeo.tasks.BaseTask`. The ``model`` argument selects a `timm <https://huggingface.co/docs/timm/reference/models>`__ encoder, subject to the restrictions noted below, and ``in_channels`` sets the number of input bands for multispectral imagery.
 
 .. list-table::
    :header-rows: 1
@@ -22,25 +22,25 @@ All SSL tasks subclass :class:`~torchgeo.tasks.BaseTask` and take a ``model`` ar
      - Approach
      - Notes
    * - :class:`~torchgeo.tasks.SimCLR`
-     - Contrastive. Pulls two augmented views of the same image together and pushes apart views of different images, using NT-Xent over the batch.
-     - ``version`` selects SimCLR v1 or v2. Needs large batches, since negatives come from within the batch.
+     - Uses NT-Xent to bring representations of two augmented views of the same image closer together and separate those of different images.
+     - ``version`` selects SimCLR v1 or v2. Large batches provide more negative examples.
    * - :class:`~torchgeo.tasks.MoCo`
-     - Contrastive with a momentum-updated target encoder, so negatives can come from a queue rather than the current batch.
+     - Uses a momentum-updated target encoder. Versions 1 and 2 store negative examples in a queue.
      - ``version`` selects MoCo v1, v2, or v3. v3 drops the queue and uses a predictor head.
    * - :class:`~torchgeo.tasks.BYOL`
-     - Non-contrastive. Predicts the target network's projection of one view from the online network's projection of another, with no negatives.
-     - Takes no ``size`` or augmentation argument; the input resolution is fixed at 224x224 internally.
+     - Predicts the target network's projection of one view from the online network's projection of another, without negative examples.
+     - Uses a fixed 224x224 input resolution internally and does not expose ``size`` or augmentation arguments.
    * - :class:`~torchgeo.tasks.MAE`
-     - Generative. Masks most patches and reconstructs them.
-     - Vision transformers only, since it operates on patch tokens.
+     - Reconstructs masked image patches.
+     - Supports vision transformers only, since it operates on patch tokens.
 
 
 Benchmarking
 ------------
 
-Our evaluation follows `Corley et al. 2024, "Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters" <https://arxiv.org/abs/2305.13456>`_: pretrain on EuroSAT 13 band multispectral without labels, freeze the encoder, and score the frozen features with a k-nearest-neighbour classifier. kNN is used rather than a linear probe because it has no optimizer, no learning rate, and no regularization of its own, so it measures the representation rather than the tuning of the probe.
+We pretrain on EuroSAT's 13-band multispectral images without labels, then freeze the encoder and evaluate its features with a k-nearest-neighbor (kNN) classifier. This evaluation follows `Corley et al. 2024, "Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters" <https://arxiv.org/abs/2305.13456>`_. Using kNN avoids the optimizer, learning-rate, and regularization choices needed to train a linear probe.
 
-Hold all of the following fixed. Changing any of them makes a number incomparable to the table below.
+Use the following settings when comparing runs with the results below.
 
 .. list-table::
    :header-rows: 1
@@ -58,19 +58,19 @@ Hold all of the following fixed. Changing any of them makes a number incomparabl
      - 60 epochs, batch size 128, mixed precision, one GPU, seed 0
    * - Features
      - ``forward_head(forward_features(x), pre_logits=True)`` on the frozen encoder, evaluated on unaugmented images
-   * - Probe
+   * - Classifier
      - ``sklearn.neighbors.KNeighborsClassifier(n_neighbors=5)``, Euclidean
    * - Scaling
-     - Fit the probe on raw features and on ``StandardScaler`` features, and report whichever is better, as the reference paper does
+     - Evaluate kNN with and without ``StandardScaler`` and report the better accuracy, following the reference paper
    * - Selection
-     - Choose the learning rate on validation accuracy, then read the test set once
+     - Select the learning rate using validation accuracy, then evaluate the selected model once on the test set
 
-Resizing to 224x224 matters more than it looks. The reference paper's central finding is that evaluating at the native 64x64 rather than 224x224 changes the ranking of pretrained models, and normalization has a comparable effect: in our runs, preprocessing alone moved a single ImageNet ResNet-50 across a 0.43 range of kNN accuracy.
+Resizing and normalization affect the comparison. The reference paper reports changes in model rankings when images are evaluated at their native 64x64 resolution instead of 224x224. In our runs, changing preprocessing produced a 0.43 range in kNN accuracy for the same ImageNet-pretrained ResNet-50.
 
 Results
 -------
 
-EuroSAT test-set kNN-5 top-1 accuracy. Every SSL row is the best learning rate for that task and encoder, selected on validation accuracy and then read once on the test set. The baselines involve no SSL pretraining; they bound what a task has to beat before it can be said to have learned anything.
+The table reports EuroSAT test-set top-1 accuracy using kNN with five neighbors. For each SSL task and encoder, we selected the learning rate by validation accuracy and evaluated the selected model once on the test set. The baselines use image statistics or encoder features without SSL pretraining on EuroSAT.
 
 .. list-table::
    :header-rows: 1
@@ -137,25 +137,24 @@ EuroSAT test-set kNN-5 top-1 accuracy. Every SSL row is the best learning rate f
      - 1e-4
      - `byol_vit_small.yaml <https://github.com/torchgeo/torchgeo/blob/main/configs/ssl_benchmarking/byol_vit_small.yaml>`__
 
-The configuration behind every row above is committed under `configs/ssl_benchmarking <https://github.com/torchgeo/torchgeo/tree/main/configs/ssl_benchmarking>`__, one file per task and encoder, each holding the learning rate selected for it.
+The image-statistics baseline scores 0.8937, higher than either randomly initialized encoder. The ImageNet-pretrained ViT scores 0.9178. Compare against these baselines as well as random initialization when assessing whether SSL improves classification accuracy.
 
-Reading the table:
+The selected learning rate depends on both the task and the encoder. The rates in this table span four orders of magnitude: MoCo v3 uses 1e-2 with ResNet-50 and 1e-4 with ViT-S/16. Sweep learning rates for each combination rather than assuming one setting will work for all of them.
 
-* **Beat the floors, not just random init.** 52 hand-computed per-band image statistics, with no network at all, score 0.8937. A task that lands below that has not learned anything a mean and a standard deviation do not already capture. Supervised ImageNet transfer on a ViT is a harder floor at 0.9178.
-* **The learning rate is a property of the task and encoder together.** The selected rates span four orders of magnitude, and the optimum moves with the encoder: MoCo v3 prefers 1e-2 on a ResNet but 1e-4 on a ViT. A new task needs its own sweep, not a borrowed default.
-* **A task can fail without failing.** Three of the sixteen MoCo and SimCLR runs finished all 60 epochs and wrote checkpoints whose features are entirely NaN, and one collapsed to a near-constant embedding while its loss stayed flat. ``torchgeo fit`` exits successfully in both cases. Check the diagnostics in the next section rather than trusting exit status.
-* **Differences of a few thousandths are not meaningful.** Every number comes from a single seed, so treat gaps below roughly 0.005 as noise.
+Three of the sixteen MoCo and SimCLR runs completed all 60 epochs but produced checkpoints with entirely NaN features. Another run collapsed to a near-constant embedding while its loss stayed flat. ``torchgeo fit`` exited successfully in each case. The feature checks described below help identify these failures.
+
+All results use a single seed. Differences of a few thousandths, such as 0.005, need repeated runs before they can support a reliable ranking.
 
 .. rubric:: Footnotes
 
-.. [#floor] Per-band mean, standard deviation, minimum, and maximum of each image, concatenated into a 52-dimensional vector and fed to the same kNN probe. No network and no training.
+.. [#floor] The image-statistics baseline concatenates each image's per-band mean, standard deviation, minimum, and maximum into a 52-dimensional vector and uses the same kNN classifier. It does not use a neural network.
 
-.. [#imagenet] These encoders are ImageNet-pretrained but were built with ``in_chans=13``, so timm adapts the pretrained 3-channel stem rather than reinitializing it: ``timm.models.adapt_input_conv`` tiles the RGB filters ``ceil(13 / 3) = 5`` times, truncates to 13 channels, and rescales by ``3 / 13`` to preserve the activation magnitude. The remaining layers are the unmodified ImageNet weights.
+.. [#imagenet] These ImageNet-pretrained encoders use ``in_chans=13``. To adapt the pretrained input convolution, ``timm.models.adapt_input_conv`` tiles the RGB filters ``ceil(13 / 3) = 5`` times, truncates to 13 channels, and rescales by ``3 / 13`` to preserve the activation magnitude. The remaining layers retain their ImageNet weights.
 
 Running the benchmark
 ---------------------
 
-Pretraining runs from a configuration file using the shipped tasks and :class:`~torchgeo.datamodules.EuroSATDataModule`, whose default normalization is exactly the per-band standardization this protocol requires. For example, MoCo v3 on a ResNet-50:
+Pretrain using a TorchGeo task and :class:`~torchgeo.datamodules.EuroSATDataModule`, which applies the per-band standardization used in this benchmark. Save the following configuration as ``moco_resnet50.yaml`` to train MoCo v3 with a ResNet-50 encoder:
 
 .. code-block:: yaml
 
@@ -186,9 +185,9 @@ Pretraining runs from a configuration file using the shipped tasks and :class:`~
 
    $ python -m torchgeo fit --config moco_resnet50.yaml
 
-The other runs differ only in ``model.init_args``: the task's ``class_path``, its ``model``, and its ``lr``. The selected configuration for each task and encoder is committed under `configs/ssl_benchmarking <https://github.com/torchgeo/torchgeo/tree/main/configs/ssl_benchmarking>`__ and can be run directly. Each learning rate there was chosen by sweeping four rates and selecting on validation accuracy; every configuration uses ``in_channels: 13`` and the same ``trainer`` and ``data`` blocks as above.
+The complete configurations for the six SSL runs are in `configs/ssl_benchmarking <https://github.com/torchgeo/torchgeo/tree/main/configs/ssl_benchmarking>`__. They include each task's options, along with logging and checkpoint settings. Each learning rate was selected from a four-rate sweep using validation accuracy.
 
-Scoring is not part of ``torchgeo fit``: training writes a checkpoint, and the kNN probe is applied afterwards. The :doc:`/tutorials/ssl_knn_eval` tutorial walks through the whole procedure on a small dataset, from pretraining a task to reading an accuracy off a frozen encoder. In outline, the probe is:
+After training, load the checkpoint and evaluate the frozen encoder. ``torchgeo fit`` does not run the kNN evaluation. The :doc:`/tutorials/ssl_knn_eval` tutorial shows how to load the encoder, preprocess the images, and fit the classifier. The functions below extract features and evaluate them with kNN:
 
 .. code-block:: python
 
@@ -219,18 +218,20 @@ Scoring is not part of ``torchgeo fit``: training writes a checkpoint, and the k
            scores.append(probe.score(b, test_y))
        return max(scores)
 
-Features are extracted from unaugmented images, so pass the datamodule's validation or test loader rather than the training loader. The encoder itself lives at a different attribute depending on the task: ``backbone`` for :class:`~torchgeo.tasks.SimCLR` and :class:`~torchgeo.tasks.MoCo`, but ``model.backbone.model`` for :class:`~torchgeo.tasks.BYOL`, which nests it inside a wrapper.
+Extract features without random augmentations, using the normalization and input size specified above. The encoder is available as ``backbone`` for :class:`~torchgeo.tasks.SimCLR` and :class:`~torchgeo.tasks.MoCo`, and as ``model.backbone.model`` for :class:`~torchgeo.tasks.BYOL`.
 
-Because none of the SSL tasks implement a meaningful ``validation_step``, this probe is the only thing standing between a collapsed encoder and a published number. Alongside accuracy, check that the representation has not degenerated: the standard deviation of the L2-normalized embeddings should stay well away from zero, and their mean pairwise cosine similarity well away from one.
+For each checkpoint, check that the features are finite and examine the L2-normalized embeddings. Near-zero standard deviation across images and a mean pairwise cosine similarity near one indicate representation collapse. Report these checks alongside accuracy.
 
 Adding a new task
 -----------------
 
-A new SSL task should arrive with the same pieces as any other TorchGeo task:
+When adding an SSL task, include:
 
 #. ``torchgeo/tasks/foo.py``, subclassing :class:`~torchgeo.tasks.BaseTask`.
 #. An entry in ``torchgeo/tasks/__init__.py``.
-#. Tests: TODO
-#. ``docs/api/tasks.rst``.
+#. Tests in ``tests/tasks/test_foo.py``.
+#. An API documentation entry in ``docs/api/tasks.rst``.
 
-Before claiming it works, sweep at least three or four learning rates and evaluate these checkpoints on the EuroSAT val set using the methodology described above. Do not borrow a library default: the shipped defaults follow the linear scaling rule at batch 4096, so MoCo v3's ``lr=9.6`` is ``0.6 x 4096 / 256`` and SimCLR's ``lr=4.8`` is ``0.3 x 4096 / 256``, both far too large at the batch size of 128 used here. Evaluate the best on additionally on the EuroSAT test split and compare the published numbers above. If it doesn't beat image-statistics, then something is likely wrong. Check that the representation has not collapsed: the standard deviation of the embeddings should stay well away from zero, and the mean pairwise cosine similarity well away from one. Report all of this in your PR!
+Evaluate the task using the benchmark settings above, trying at least three or four learning rates on the EuroSAT validation split. The current MoCo v3 and SimCLR defaults are scaled for a batch size of 4096: ``lr=9.6`` is ``0.6 x 4096 / 256`` for MoCo v3, and ``lr=4.8`` is ``0.3 x 4096 / 256`` for SimCLR. These defaults were too large for the batch size of 128 used here.
+
+Select the learning rate using validation accuracy, then evaluate the selected model once on the test split. Include the configuration, kNN accuracy, and checks for collapse in the pull request so reviewers can compare the result with the baselines. If accuracy is below the image-statistics baseline, investigate the training and evaluation setup before drawing conclusions about the task.
