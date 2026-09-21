@@ -10,7 +10,7 @@ import pytest
 import rasterio
 from affine import Affine
 
-from torchgeo.callbacks.writer import GeoTIFFWriter
+from torchgeo.callbacks import GeoTIFFWriter
 
 
 class TestGeoTIFFWriter:
@@ -219,8 +219,10 @@ class TestGeoTIFFWriter:
             transform=transform,
         )
 
+        cog_tmp = output.with_suffix('.cog.tmp.tif')
+
         def failing_copy(*args: object, **kwargs: object) -> None:
-            output.touch()
+            cog_tmp.touch()
             raise RuntimeError('COG translation failed')
 
         monkeypatch.setattr('rasterio.shutil.copy', failing_copy)
@@ -229,7 +231,70 @@ class TestGeoTIFFWriter:
             writer.write_chunk(np.ones((64, 64), dtype=np.uint8), 0, 0)
 
         assert not writer.tmp_path.exists()
+        assert not cog_tmp.exists()
         assert not output.exists()
+
+    def test_failed_cog_preserves_existing(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Test a failed COG translation preserves an existing output file."""
+        output = tmp_path / 'test.tif'
+        output.write_text('original')
+        transform = Affine(1, 0, 0, 0, -1, 100)
+
+        writer = GeoTIFFWriter(
+            output_path=output,
+            width=64,
+            height=64,
+            num_bands=1,
+            crs='EPSG:32631',
+            transform=transform,
+            overwrite=True,
+        )
+
+        def failing_copy(*args: object, **kwargs: object) -> None:
+            raise RuntimeError('COG translation failed')
+
+        monkeypatch.setattr('rasterio.shutil.copy', failing_copy)
+
+        with pytest.raises(RuntimeError, match='COG translation failed'), writer:
+            writer.write_chunk(np.ones((64, 64), dtype=np.uint8), 0, 0)
+
+        assert output.read_text() == 'original'
+
+    def test_write_chunk_outside_context(self) -> None:
+        """Test write_chunk raises outside the context manager."""
+        transform = Affine(1, 0, 0, 0, -1, 100)
+        writer = GeoTIFFWriter(
+            output_path='unused.tif',
+            width=64,
+            height=64,
+            num_bands=1,
+            crs='EPSG:32631',
+            transform=transform,
+        )
+        with pytest.raises(RuntimeError, match='context manager'):
+            writer.write_chunk(np.ones((64, 64), dtype=np.uint8), 0, 0)
+
+    def test_bigtiff_kwarg(self, tmp_path: Path) -> None:
+        """Test that BIGTIFF can be overridden via kwargs."""
+        output = tmp_path / 'test.tif'
+        transform = Affine(1, 0, 0, 0, -1, 100)
+
+        writer = GeoTIFFWriter(
+            output_path=output,
+            width=64,
+            height=64,
+            num_bands=1,
+            crs='EPSG:32631',
+            transform=transform,
+            BIGTIFF='YES',
+        )
+
+        with writer:
+            writer.write_chunk(np.ones((64, 64), dtype=np.uint8), 0, 0)
+
+        assert output.exists()
 
     def test_output_path_exists(self, tmp_path: Path) -> None:
         """Test that entering the writer raises if output_path already exists."""
