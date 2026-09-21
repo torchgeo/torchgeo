@@ -120,6 +120,9 @@ class GeoTIFFWriter(contextlib.AbstractContextManager['GeoTIFFWriter']):
                 multi-band.
             y_offset: Row offset in output.
             x_offset: Column offset in output.
+
+        Raises:
+            RuntimeError: If called outside the context manager.
         """
         if self.dataset is None:
             msg = 'GeoTIFFWriter must be used as a context manager'
@@ -160,7 +163,7 @@ class GeoTIFFWriter(contextlib.AbstractContextManager['GeoTIFFWriter']):
         overviews so it validates as a COG, without loading the full resolution
         image into memory.
         """
-        excluded = {'compress', 'overview_resampling', 'BIGTIFF'}
+        excluded = {'compress', 'overview_resampling', 'BIGTIFF', 'bigtiff'}
         extra = {k: v for k, v in self.kwargs.items() if k not in excluded}
         cog_tmp = self.output_path.with_suffix('.cog.tmp.tif')
         try:
