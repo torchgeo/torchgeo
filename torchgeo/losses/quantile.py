@@ -43,7 +43,19 @@ class PinballLoss(nn.Module):
 
         Returns:
             Mean pinball loss.
+
+        Raises:
+            ValueError: If prediction channels or target shape do not match.
         """
+        if (
+            predictions.ndim < 2
+            or predictions.shape[1] != self.quantiles.numel()
+            or target.shape != (predictions.shape[0], 1, *predictions.shape[2:])
+        ):
+            raise ValueError(
+                'Expected predictions of shape (B, Q, ...) and target of shape '
+                '(B, 1, ...), with Q matching the number of quantiles.'
+            )
         quantiles = self.quantiles.to(dtype=predictions.dtype).view(
             1, -1, *([1] * (predictions.ndim - 2))
         )

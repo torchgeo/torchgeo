@@ -28,6 +28,24 @@ class TestPinballLoss:
         with pytest.raises(ValueError, match='nonempty and between 0 and 1'):
             PinballLoss(quantiles)
 
+    @pytest.mark.parametrize(
+        ('prediction_shape', 'target_shape'),
+        [
+            ((3,), (3,)),
+            ((2, 1), (2, 1)),
+            ((3, 3), (3,)),
+            ((2, 3), (1, 1)),
+            ((2, 3, 2, 4), (2, 1, 1, 4)),
+        ],
+    )
+    def test_invalid_shapes(
+        self, prediction_shape: tuple[int, ...], target_shape: tuple[int, ...]
+    ) -> None:
+        with pytest.raises(ValueError, match='Expected predictions of shape'):
+            PinballLoss([0.2, 0.5, 0.8])(
+                torch.zeros(prediction_shape), torch.zeros(target_shape)
+            )
+
     def test_quantile_buffer(self) -> None:
         criterion = PinballLoss([0.125, 0.5, 0.875]).double()
         quantiles = dict(criterion.named_buffers())['quantiles']
