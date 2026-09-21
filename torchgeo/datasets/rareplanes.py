@@ -37,10 +37,19 @@ class RarePlanes(NonGeoDataset):
 
     Dataset format:
 
-    * real images are georeferenced PNG tiles with GeoJSON annotations
-    * synthetic images are PNGs with XML annotations
+    * real images are georeferenced PNG tiles with GeoJSON polygon annotations
+    * synthetic images are PNGs with XML ``bndbox2D`` annotations in pixel XYXY format
+
+    Both variants return axis-aligned pixel boxes in ``bbox_xyxy`` as
+    ``(xmin, ymin, xmax, ymax)``, with the origin at the image's upper-left corner.
+    Real GeoJSON coordinates are transformed into pixels and enclosed by each box;
+    synthetic boxes retain the XML coordinates.
 
     The dataset must be downloaded manually from the dataset website.
+
+    If you use this dataset in your research, please cite the following paper:
+
+    * https://arxiv.org/abs/2006.02963
 
     .. versionadded:: 0.11
     """
