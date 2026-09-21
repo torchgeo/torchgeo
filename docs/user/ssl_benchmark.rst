@@ -110,32 +110,32 @@ The table reports EuroSAT test-set top-1 accuracy using kNN with five neighbors.
      - ResNet-50
      - **0.9494**
      - 1e-2
-     - `moco_resnet50.yaml <https://github.com/torchgeo/torchgeo/blob/main/configs/ssl_benchmarking/moco_resnet50.yaml>`__
+     - `moco_resnet50.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/configs/ssl_benchmarking/moco_resnet50.yaml>`__
    * - :class:`~torchgeo.tasks.MoCo` v3
      - ViT-S/16
      - 0.9413
      - 1e-4
-     - `moco_vit_small.yaml <https://github.com/torchgeo/torchgeo/blob/main/configs/ssl_benchmarking/moco_vit_small.yaml>`__
+     - `moco_vit_small.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/configs/ssl_benchmarking/moco_vit_small.yaml>`__
    * - :class:`~torchgeo.tasks.SimCLR`
      - ResNet-50
      - 0.9356
      - 1.5
-     - `simclr_resnet50.yaml <https://github.com/torchgeo/torchgeo/blob/main/configs/ssl_benchmarking/simclr_resnet50.yaml>`__
+     - `simclr_resnet50.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/configs/ssl_benchmarking/simclr_resnet50.yaml>`__
    * - :class:`~torchgeo.tasks.SimCLR`
      - ViT-S/16
      - 0.9296
      - 1.5
-     - `simclr_vit_small.yaml <https://github.com/torchgeo/torchgeo/blob/main/configs/ssl_benchmarking/simclr_vit_small.yaml>`__
+     - `simclr_vit_small.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/configs/ssl_benchmarking/simclr_vit_small.yaml>`__
    * - :class:`~torchgeo.tasks.BYOL`
      - ResNet-50
      - 0.9294
      - 1e-3
-     - `byol_resnet50.yaml <https://github.com/torchgeo/torchgeo/blob/main/configs/ssl_benchmarking/byol_resnet50.yaml>`__
+     - `byol_resnet50.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/configs/ssl_benchmarking/byol_resnet50.yaml>`__
    * - :class:`~torchgeo.tasks.BYOL`
      - ViT-S/16
      - 0.9241
      - 1e-4
-     - `byol_vit_small.yaml <https://github.com/torchgeo/torchgeo/blob/main/configs/ssl_benchmarking/byol_vit_small.yaml>`__
+     - `byol_vit_small.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/configs/ssl_benchmarking/byol_vit_small.yaml>`__
 
 The image-statistics baseline scores 0.8937, higher than either randomly initialized encoder. The ImageNet-pretrained ViT scores 0.9178. Compare against these baselines as well as random initialization when assessing whether SSL improves classification accuracy.
 
@@ -148,7 +148,7 @@ The selected learning rate depends on both the task and the encoder. The rates i
 Running the benchmark
 ---------------------
 
-Use the configurations in `configs/ssl_benchmarking <https://github.com/torchgeo/torchgeo/tree/main/configs/ssl_benchmarking>`__ to reproduce the six SSL runs. I.e. run `torchgeo fit --config configs/ssl_benchmarking/byol_resnet50.yaml`.
+Use the configurations in `tests/configs/ssl_benchmarking <https://github.com/torchgeo/torchgeo/tree/main/tests/configs/ssl_benchmarking>`__ to reproduce the six SSL runs. I.e. run `torchgeo fit --config tests/configs/ssl_benchmarking/byol_resnet50.yaml`.
 
 See :doc:`/tutorials/ssl_knn_eval` for evaluation code and checks for collapse. The tutorial uses EuroSAT100 for a short demonstration; use the full EuroSAT dataset and the settings above for this benchmark.
 
