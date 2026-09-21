@@ -72,6 +72,9 @@ nitpick_ignore = [
     ('py:class', 'torchvision.models._api.WeightsEnum'),
     ('py:class', 'torchvision.models.resnet.ResNet'),
     ('py:class', 'torchvision.models.swin_transformer.SwinTransformer'),
+    # Tokenizers' main API docs are placeholders without these inventory entries.
+    ('py:class', 'tokenizers.models.BPE'),
+    ('py:class', 'tokenizers.models.Model'),
     # Internal type aliases we don't yet want to expose
     ('py:class', 'torchgeo.datasets.openstreetmap.OSMClassConfig'),
 ]
