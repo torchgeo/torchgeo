@@ -18,6 +18,8 @@ class PinballLoss(nn.Module):
     .. versionadded:: 0.11
     """
 
+    quantiles: Tensor
+
     def __init__(self, quantiles: Sequence[float]) -> None:
         """Initialize a new PinballLoss instance.
 
@@ -30,7 +32,7 @@ class PinballLoss(nn.Module):
         super().__init__()
         if not quantiles or any(not 0 < q < 1 for q in quantiles):
             raise ValueError('Quantiles must be nonempty and between 0 and 1.')
-        self.quantiles = tuple(quantiles)
+        self.register_buffer('quantiles', torch.tensor(quantiles))
 
     def forward(self, predictions: Tensor, target: Tensor) -> Tensor:
         """Compute the pinball loss.
@@ -42,7 +44,7 @@ class PinballLoss(nn.Module):
         Returns:
             Mean pinball loss.
         """
-        quantiles = predictions.new_tensor(self.quantiles).view(
+        quantiles = self.quantiles.to(dtype=predictions.dtype).view(
             1, -1, *([1] * (predictions.ndim - 2))
         )
         error = target - predictions

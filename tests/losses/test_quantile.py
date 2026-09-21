@@ -27,3 +27,13 @@ class TestPinballLoss:
     def test_invalid_quantiles(self, quantiles: list[float]) -> None:
         with pytest.raises(ValueError, match='nonempty and between 0 and 1'):
             PinballLoss(quantiles)
+
+    def test_quantile_buffer(self) -> None:
+        criterion = PinballLoss([0.125, 0.5, 0.875]).double()
+        quantiles = dict(criterion.named_buffers())['quantiles']
+        torch.testing.assert_close(
+            quantiles, torch.tensor([0.125, 0.5, 0.875], dtype=torch.float64)
+        )
+        predictions = torch.zeros(2, 3, dtype=torch.float64)
+        loss = criterion(predictions, torch.ones(2, 1, dtype=torch.float64))
+        torch.testing.assert_close(loss, torch.tensor(0.5, dtype=torch.float64))

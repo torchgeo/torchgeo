@@ -61,7 +61,8 @@ class Regression(RegressionMixin, BaseTask):
                 representation of a weight enum, True for ImageNet weights, False
                 or None for random weights, or the path to a saved model state dict.
             in_channels: Number of input channels to model.
-            num_outputs: Number of prediction outputs.
+            num_outputs: Number of regression targets, distinct from the number
+                of quantile prediction channels.
             labels: List of feature names.
             num_filters: Number of filters. Only applicable when model='fcn'.
             loss: One of 'mse', 'mae', or 'pinball'. Quantile regression with
@@ -98,7 +99,7 @@ class Regression(RegressionMixin, BaseTask):
         .. versionadded:: 0.11
            The *quantiles* parameter and 'pinball' loss.
         """
-        self.median_index = None
+        self.median_index = 0
         if loss == 'pinball':
             if num_outputs != 1 or 0.5 not in quantiles:
                 raise ValueError(
@@ -116,7 +117,7 @@ class Regression(RegressionMixin, BaseTask):
             self.hparams['model'],
             num_classes=(
                 len(self.hparams['quantiles'])
-                if self.median_index is not None
+                if self.hparams['loss'] == 'pinball'
                 else self.hparams['num_outputs']
             ),
             in_chans=self.hparams['in_channels'],
@@ -173,7 +174,7 @@ class Regression(RegressionMixin, BaseTask):
             y = y.unsqueeze(dim=1)
         loss: Tensor = self.criterion(y_hat, y)
         self.log('train_loss', loss, batch_size=batch_size)
-        if self.median_index is not None:
+        if self.hparams['loss'] == 'pinball':
             y_hat = y_hat[:, self.median_index : self.median_index + 1].contiguous()
         self.train_metrics(y_hat, y)
 
@@ -198,7 +199,7 @@ class Regression(RegressionMixin, BaseTask):
             y = y.unsqueeze(dim=1)
         loss = self.criterion(y_hat, y)
         self.log('val_loss', loss, batch_size=batch_size)
-        if self.median_index is not None:
+        if self.hparams['loss'] == 'pinball':
             y_hat = y_hat[:, self.median_index : self.median_index + 1].contiguous()
         self.val_metrics(y_hat, y)
 
@@ -255,7 +256,7 @@ class Regression(RegressionMixin, BaseTask):
             y = y.unsqueeze(dim=1)
         loss = self.criterion(y_hat, y)
         self.log('test_loss', loss, batch_size=batch_size)
-        if self.median_index is not None:
+        if self.hparams['loss'] == 'pinball':
             y_hat = y_hat[:, self.median_index : self.median_index + 1].contiguous()
         self.test_metrics(y_hat, y)
 
@@ -293,8 +294,8 @@ class PixelwiseRegression(Regression):
         model = self.hparams['model']
         backbone = self.hparams['backbone']
         in_channels = self.hparams['in_channels']
-        num_outputs = (
-            len(self.hparams['quantiles']) if self.median_index is not None else 1
+        num_channels = (
+            len(self.hparams['quantiles']) if self.hparams['loss'] == 'pinball' else 1
         )
 
         match model:
@@ -303,19 +304,19 @@ class PixelwiseRegression(Regression):
                     encoder_name=backbone,
                     encoder_weights='imagenet' if weights is True else None,
                     in_channels=in_channels,
-                    classes=num_outputs,
+                    classes=num_channels,
                 )
             case 'deeplabv3+':
                 self.model = smp.DeepLabV3Plus(
                     encoder_name=backbone,
                     encoder_weights='imagenet' if weights is True else None,
                     in_channels=in_channels,
-                    classes=num_outputs,
+                    classes=num_channels,
                 )
             case 'fcn':
                 self.model = FCN(
                     in_channels=in_channels,
-                    classes=num_outputs,
+                    classes=num_channels,
                     num_filters=self.hparams['num_filters'],
                 )
             case 'upernet':
@@ -323,21 +324,21 @@ class PixelwiseRegression(Regression):
                     encoder_name=backbone,
                     encoder_weights='imagenet' if weights is True else None,
                     in_channels=in_channels,
-                    classes=num_outputs,
+                    classes=num_channels,
                 )
             case 'segformer':
                 self.model = smp.Segformer(
                     encoder_name=backbone,
                     encoder_weights='imagenet' if weights is True else None,
                     in_channels=in_channels,
-                    classes=num_outputs,
+                    classes=num_channels,
                 )
             case 'dpt':
                 self.model = smp.DPT(
                     encoder_name=backbone,
                     encoder_weights='imagenet' if weights is True else None,
                     in_channels=in_channels,
-                    classes=num_outputs,
+                    classes=num_channels,
                 )
 
         if model != 'fcn' and weights and weights is not True:
