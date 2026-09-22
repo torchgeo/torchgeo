@@ -1679,12 +1679,14 @@ class UnionDataset(GeoDataset):
         Raises:
             TypeError: if any dataset is not a :class:`GeoDataset`
 
-        .. versionadded:: 0.11
-           The *datasets* parameter.
+        .. versionchanged:: 0.11
+           The *dataset1* and *dataset2* parameters were replaced by *datasets*.
 
         .. versionadded:: 0.4
            The *transforms* parameter.
         """
+        assert len(datasets) > 0
+
         self.datasets = datasets
         self.collate_fn = collate_fn
         self.transforms = transforms
@@ -1744,7 +1746,7 @@ class UnionDataset(GeoDataset):
 
     @property
     def crs(self) -> PROJ_CRS:
-        """:term:`coordinate reference system (CRS)` of both datasets.
+        """:term:`coordinate reference system (CRS)` of all datasets.
 
         Returns:
             The :term:`coordinate reference system (CRS)`.
@@ -1753,7 +1755,7 @@ class UnionDataset(GeoDataset):
 
     @crs.setter
     def crs(self, new_crs: PROJ_CRS) -> None:
-        """Change the :term:`coordinate reference system (CRS)` of both datasets.
+        """Change the :term:`coordinate reference system (CRS)` of all datasets.
 
         Args:
             new_crs: New :term:`coordinate reference system (CRS)`.
@@ -1764,16 +1766,16 @@ class UnionDataset(GeoDataset):
 
     @property
     def res(self) -> tuple[float, float]:
-        """Resolution of both datasets in units of CRS.
+        """Resolution of all datasets in units of CRS.
 
         Returns:
-            The resolution of both datasets.
+            The resolution of all datasets.
         """
         return self.datasets[0].res
 
     @res.setter
     def res(self, new_res: float | tuple[float, float]) -> None:
-        """Change the resolution of both datasets.
+        """Change the resolution of all datasets.
 
         Args:
             new_res: New resolution.
