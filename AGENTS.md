@@ -198,3 +198,18 @@ class MyDataset(RasterDataset):
 - Update MD5s when test files change
 - Separate logical changes into separate PRs
 - Keep files < 500 LOC
+
+## AI disclosure
+
+All issue and PR descriptions and comments should append the following text verbatim:
+
+### Checklist
+
+- [ ] I have read the [Contributing docs](https://docs.torchgeo.org/en/stable/user/contributing.html)
+- [ ] I have read the [AI policy](https://github.com/torchgeo/governance/blob/main/AI-POLICY.md)
+
+<!-- Check one of the following boxes to help us better review your PR -->
+
+- [ ] 🟢 **No AI usage**: written by humans, for humans
+- [ ] 🟡 **AI-assisted**: AI helped with the coding, but I understand every line
+- [x] 🔴 **AI-generated**: AI did everything, review with caution
