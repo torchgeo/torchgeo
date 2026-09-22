@@ -38,7 +38,7 @@ class GeoTIFFWriter(contextlib.AbstractContextManager['GeoTIFFWriter']):
             for chunk_y, chunk_x, chunk_data in chunks:
                 writer.write_chunk(chunk_data, chunk_y, chunk_x)
 
-    .. versionadded:: 0.10
+    .. versionadded:: 0.11
     """
 
     def __init__(
