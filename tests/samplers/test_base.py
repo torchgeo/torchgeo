@@ -211,6 +211,24 @@ class TestSpatioTemporalSampler:
         assert 0 <= y.start == y.stop <= 100
         assert TMIN <= t.start < t.stop <= TMAX
 
+    @pytest.mark.filterwarnings('ignore:random_sampler @ sequential_sampler')
+    def test_len(self, sampler: SpatioTemporalSampler) -> None:
+        # __len__ is memoized: a second call must return the cached value
+        # instead of recomputing it.
+        length = len(sampler)
+        assert len(sampler) == length
+
+        # random/random and sequential/random compute length analytically:
+        # __iter__ takes exactly one item per location (it never drains a
+        # location's full temporal subset), so the yielded count is fixed
+        # at the analytic length regardless of which locations are
+        # sampled. The other two combinations fall back to brute-force
+        # counting (a location can contribute a variable number of
+        # samples), so there is no independent count to compare against.
+        strategies = sampler.spatial_sampler.strategy, sampler.temporal_sampler.strategy
+        if strategies in {('random', 'random'), ('sequential', 'random')}:
+            assert sum(1 for _ in sampler) == length
+
     def test_plot(self, sampler: SpatioTemporalSampler, tmp_path: Path) -> None:
         ani = sampler.plot()
         ani.save(tmp_path / 'out.gif')

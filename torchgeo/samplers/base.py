@@ -338,7 +338,10 @@ class SpatioTemporalSampler(GeoSampler):
                     location = next(spatial_iter)
                     for index in self.temporal_sampler._iter_subset(location):
                         yield index
-            case 'sequential', 'random':
+            case 'sequential', 'random':  # pragma: no branch
+                # The four cases above are exhaustive over the two Literal[
+                # 'random', 'sequential'] strategies, so this case cannot
+                # fail to match once the other three have been ruled out.
                 for location in self.spatial_sampler:
                     for _ in range(len(self.temporal_sampler)):
                         yield next(self.temporal_sampler._iter_subset(location))
