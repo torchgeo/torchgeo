@@ -193,20 +193,19 @@ class BioMassters(NonGeoDataset):
                     sensor_images[sensor] = self._load_input(filenames)[0]
 
             reference = next(iter(sensor_images.values()))
-            _, height, width = reference.shape
             channels = []
             for sensor in self.sensors:
-                channels.append(
-                    sensor_images.get(
-                        sensor,
-                        torch.zeros(
-                            self.channel_counts[sensor],
-                            height,
-                            width,
-                            dtype=reference.dtype,
-                        ),
+                if sensor in sensor_images:
+                    channels.append(sensor_images[sensor])
+                else:
+                    # Every chip has monthly S1 data, but S2 has acquisition gaps
+                    # from September through March. Zero-fill those S2 channels to
+                    # preserve a consistent channel layout across the time series.
+                    channels.append(
+                        reference.new_zeros(
+                            (self.channel_counts[sensor], *reference.shape[-2:])
+                        )
                     )
-                )
             frames.append(torch.cat(channels, dim=0))
 
         return torch.stack(frames)
