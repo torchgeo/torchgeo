@@ -21,7 +21,7 @@ class BioMasstersDataModule(NonGeoDataModule):
     Samples have the fused spatiotemporal regression format
     ``{'image': (T, C, H, W), 'mask': (H, W)}``.
 
-    .. versionadded:: 0.10
+    .. versionadded:: 0.11
     """
 
     target_mean = 0
