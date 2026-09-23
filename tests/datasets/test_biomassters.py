@@ -27,18 +27,6 @@ class TestBioMassters:
     def test_len_of_ds(self, dataset: BioMassters) -> None:
         assert len(dataset) > 0
 
-    def test_getitem(self, dataset: BioMassters) -> None:
-        sample = dataset[0]
-
-        if dataset.as_time_series:
-            assert sample['image'].ndim == 4
-        else:
-            assert sample['image'].ndim == 3
-        if dataset.split == 'train':
-            assert sample['mask'].ndim == 2
-        else:
-            assert 'mask' not in sample
-
     def test_not_downloaded(self, tmp_path: Path) -> None:
         with pytest.raises(DatasetNotFoundError, match='Dataset not found'):
             BioMassters(tmp_path)

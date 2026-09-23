@@ -145,64 +145,29 @@ class BioMassters(NonGeoDataset):
         Raises:
             IndexError: if index is out of range of the dataset
         """
-        sample_df = self.df[self.df['num_index'] == index].copy()
+        sample_df = self.df[self.df['num_index'] == index]
 
-        if self.as_time_series:
-            image = self._load_time_series(sample_df)
-        else:
-            images = []
-            for sensor in self.sensors:
-                filenames = sample_df[sample_df['satellite'] == sensor][
-                    'filename'
-                ].tolist()
-                images.append(self._load_input(filenames))
-            image = torch.cat(images, dim=0)
+        images = []
+        for sensor in self.sensors:
+            sensor_df = sample_df[sample_df['satellite'] == sensor].sort_values(
+                'num_month'
+            )
+            image = self._load_input(sensor_df['filename'].tolist())
+            if self.as_time_series:
+                padded = image.new_zeros((12, *image.shape[1:]))
+                padded[sensor_df['num_month'].tolist()] = image
+                image = padded
+            images.append(image)
 
-        sample: Sample = {'image': image}
+        sample: Sample = {
+            'image': torch.cat(images, dim=1 if self.as_time_series else 0)
+        }
         if self.split == 'train':
             sample['mask'] = self._load_target(
                 sample_df['corresponding_agbm'].unique()[0]
             ).squeeze(dim=0)
 
         return sample
-
-    def _load_time_series(self, sample_df: pd.DataFrame) -> Tensor:
-        """Load and fuse sensor imagery into a time series.
-
-        Args:
-            sample_df: Metadata rows for a single chip.
-
-        Returns:
-            Image tensor with shape ``(T, C, H, W)``.
-        """
-        frames = []
-        for month in sorted(sample_df['num_month'].unique()):
-            month_df = sample_df[sample_df['num_month'] == month]
-            sensor_images: dict[str, Tensor] = {}
-            for sensor in self.sensors:
-                filenames = month_df[month_df['satellite'] == sensor][
-                    'filename'
-                ].tolist()
-                if filenames:
-                    sensor_images[sensor] = self._load_input(filenames)[0]
-
-            reference = next(iter(sensor_images.values()))
-            channels = []
-            for sensor in self.sensors:
-                if sensor in sensor_images:
-                    channels.append(sensor_images[sensor])
-                else:
-                    # Every chip has monthly S1 data, but S2 has acquisition gaps
-                    # from September through March. Zero-fill those S2 channels to
-                    # preserve a consistent channel layout across the time series.
-                    channels.append(
-                        reference.new_zeros(
-                            (self.channel_counts[sensor], *reference.shape[-2:])
-                        )
-                    )
-            frames.append(torch.cat(channels, dim=0))
-
-        return torch.stack(frames)
 
     def __len__(self) -> int:
         """Return the length of the dataset.
@@ -276,12 +241,8 @@ class BioMassters(NonGeoDataset):
         Returns:
             a matplotlib Figure with the rendered sample
         """
-        ncols = len(self.sensors)
         showing_predictions = 'prediction' in sample
-        if showing_predictions:
-            ncols += 1
-        if 'mask' in sample:
-            ncols += 1
+        ncols = len(self.sensors) + showing_predictions + ('mask' in sample)
 
         fig, axs_array = plt.subplots(
             1, ncols=ncols, figsize=(5 * ncols, 10), squeeze=False
@@ -291,11 +252,10 @@ class BioMassters(NonGeoDataset):
         if self.as_time_series:
             image = image[-1]
 
-        channel_start = 0
-        for idx, sens in enumerate(self.sensors):
-            channel_end = channel_start + self.channel_counts[sens]
-            img = image[channel_start:channel_end]
-            channel_start = channel_end
+        channel_counts = [self.channel_counts[sensor] for sensor in self.sensors]
+        for idx, (sens, img) in enumerate(
+            zip(self.sensors, torch.split(image, channel_counts))
+        ):
             if sens == 'S2':
                 img = img[[2, 1, 0], ...]
                 img = quantile_normalization(einops.rearrange(img, 'c h w -> h w c'))
@@ -317,11 +277,10 @@ class BioMassters(NonGeoDataset):
                 axs[idx].set_title(sens)
 
         if showing_predictions:
-            prediction = sample['prediction']
-            if prediction.ndim == 3:
-                prediction = prediction.squeeze(dim=0)
             prediction_idx = len(self.sensors)
-            pred = axs[prediction_idx].imshow(prediction, cmap='YlGn')
+            pred = axs[prediction_idx].imshow(
+                sample['prediction'].squeeze(), cmap='YlGn'
+            )
             plt.colorbar(pred, ax=axs[prediction_idx], fraction=0.046, pad=0.04)
             axs[prediction_idx].axis('off')
             if show_titles:
