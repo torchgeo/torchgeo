@@ -24,9 +24,6 @@ class BioMasstersDataModule(NonGeoDataModule):
     .. versionadded:: 0.11
     """
 
-    target_mean = 0
-    target_std = 1
-
     def __init__(
         self,
         batch_size: int = 32,
