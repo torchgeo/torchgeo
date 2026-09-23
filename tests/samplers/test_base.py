@@ -176,6 +176,7 @@ class TestTemporalSampler:
             continue
 
 
+@pytest.mark.filterwarnings('ignore:random_sampler @ sequential_sampler')
 class TestSpatioTemporalSampler:
     @pytest.fixture(scope='class', params=['random', 'sequential'])
     @classmethod
@@ -204,7 +205,6 @@ class TestSpatioTemporalSampler:
     ) -> SpatioTemporalSampler:
         return spatial_sampler @ temporal_sampler
 
-    @pytest.mark.filterwarnings('ignore:random_sampler @ sequential_sampler')
     def test_iter(self, sampler: SpatioTemporalSampler) -> None:
         x, y, t = next(iter(sampler))
         assert 0 <= x.start == x.stop <= 100
