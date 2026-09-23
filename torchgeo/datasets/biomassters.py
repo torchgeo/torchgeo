@@ -174,9 +174,6 @@ class BioMassters(NonGeoDataset):
 
         Returns:
             Image tensor with shape ``(T, C, H, W)``.
-
-        Raises:
-            ValueError: If a sensor has multiple acquisitions in the same month.
         """
         frames = []
         for month in sorted(sample_df['num_month'].unique()):
@@ -187,9 +184,6 @@ class BioMassters(NonGeoDataset):
                     'filename'
                 ].tolist()
                 if filenames:
-                    if len(filenames) != 1:
-                        msg = f'Expected one {sensor} acquisition per month.'
-                        raise ValueError(msg)
                     sensor_images[sensor] = self._load_input(filenames)[0]
 
             reference = next(iter(sensor_images.values()))
