@@ -3,9 +3,8 @@
 
 """BioMassters datamodule."""
 
-from collections.abc import Sequence
 from functools import partial
-from typing import Any, Literal
+from typing import Any
 
 import torch
 from torch.utils.data import random_split
@@ -31,7 +30,6 @@ class BioMasstersDataModule(NonGeoDataModule):
         val_split_pct: float = 0.2,
         test_split_pct: float = 0.2,
         padding_length: int = 12,
-        sensors: Sequence[Literal['S1', 'S2']] = ('S1', 'S2'),
         **kwargs: Any,
     ) -> None:
         """Initialize a new BioMasstersDataModule instance.
@@ -42,14 +40,12 @@ class BioMasstersDataModule(NonGeoDataModule):
             val_split_pct: Percentage of the labeled train split used for validation.
             test_split_pct: Percentage of the labeled train split used for testing.
             padding_length: Padding length of the time series.
-            sensors: Sensors to include in the fused time series.
             **kwargs: Additional keyword arguments passed to the dataset.
         """
         super().__init__(
             BioMassters,
             batch_size=batch_size,
             num_workers=num_workers,
-            sensors=sensors,
             as_time_series=True,
             **kwargs,
         )
