@@ -9,7 +9,6 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
-import torch
 from _pytest.fixtures import SubRequest
 
 from torchgeo.datasets import BioMassters, DatasetNotFoundError
@@ -56,10 +55,6 @@ class TestBioMassters:
         plt.close()
         dataset.plot(sample, show_titles=False)
         plt.close()
-
-    def test_plot_invalid_image_shape(self, dataset: BioMassters) -> None:
-        with pytest.raises(ValueError, match='Expected image tensor'):
-            dataset.plot({'image': torch.zeros(1)})
 
     def test_duplicate_monthly_acquisition(self) -> None:
         root = os.path.join('tests', 'data', 'biomassters')

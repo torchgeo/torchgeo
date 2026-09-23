@@ -295,10 +295,6 @@ class BioMassters(NonGeoDataset):
         )
         axs = axs_array[0]
         image = sample['image'].float()
-        expected_ndim = 4 if self.as_time_series else 3
-        if image.ndim != expected_ndim:
-            msg = f'Expected image tensor with {expected_ndim} dimensions.'
-            raise ValueError(msg)
         if self.as_time_series:
             image = image[-1]
 
