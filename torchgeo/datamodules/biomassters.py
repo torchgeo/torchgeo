@@ -21,7 +21,9 @@ class BioMasstersDataModule(NonGeoDataModule):
     .. versionadded:: 0.11
     """
 
-    target_mean, target_std = 0, 1
+    # The task uses these to denormalize predictions; masks remain unnormalized.
+    target_mean = 0.0
+    target_std = 1.0
 
     def __init__(
         self,
