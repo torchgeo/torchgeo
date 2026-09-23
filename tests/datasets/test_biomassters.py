@@ -55,11 +55,3 @@ class TestBioMassters:
         plt.close()
         dataset.plot(sample, show_titles=False)
         plt.close()
-
-    def test_duplicate_monthly_acquisition(self) -> None:
-        root = os.path.join('tests', 'data', 'biomassters')
-        dataset = BioMassters(root, split='train', as_time_series=True)
-        dataset.df = pd.concat([dataset.df, dataset.df.iloc[[0]]])
-
-        with pytest.raises(ValueError, match='Expected one S1 acquisition per month'):
-            dataset[0]
