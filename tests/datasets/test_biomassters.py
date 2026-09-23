@@ -37,7 +37,7 @@ class TestBioMassters:
 
         sample = dataset[0]
         if dataset.split == 'train':
-            sample['prediction'] = sample['mask'].unsqueeze(dim=0)
+            sample['prediction'] = sample['mask']
         dataset.plot(sample)
         plt.close()
         dataset.plot(sample, show_titles=False)
