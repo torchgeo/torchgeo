@@ -8,6 +8,7 @@ from .aurora import Aurora_Weights, aurora_swin_unet
 from .btc import BTC
 from .changestar import ChangeMixin, ChangeStar, ChangeStarFarSeg
 from .changevit import ChangeViT
+from .cmavit import CMAViT
 from .convlstm import ConvLSTM
 from .copernicusfm import CopernicusFM, CopernicusFM_Base_Weights, copernicusfm_base
 from .croma import CROMA, CROMABase_Weights, CROMALarge_Weights, croma_base, croma_large
@@ -78,6 +79,7 @@ __all__ = (
     'MOSAIKS',
     'RCF',
     'Aurora_Weights',
+    'CMAViT',
     'CROMABase_Weights',
     'CROMALarge_Weights',
     'ChangeMixin',

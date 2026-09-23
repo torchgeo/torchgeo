@@ -63,6 +63,7 @@ See `torchange <https://github.com/Z-Zheng/pytorch-change-models>`__ for additio
 .. toctree::
    :maxdepth: 1
 
+   models/cmavit
    models/convlstm
 
 4D Ocean and Atmosphere (:math:`\scriptstyle B \times T \times C \times Z \times Y \times X`)
