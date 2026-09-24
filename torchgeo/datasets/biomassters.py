@@ -250,7 +250,7 @@ class BioMassters(NonGeoDataset):
         ncols = len(self.sensors) + showing_predictions + ('mask' in sample)
 
         fig, axs_array = plt.subplots(
-            1, ncols=ncols, figsize=(5 * ncols, 10), squeeze=False
+            1, ncols=ncols, figsize=(5 * ncols, 5), squeeze=False, layout='constrained'
         )
         axs = axs_array[0]
         image = sample['image'].float()
