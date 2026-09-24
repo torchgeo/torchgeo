@@ -28,7 +28,10 @@ class TestBioMassters:
         assert len(dataset) > 0
 
     def test_getitem(self, dataset: BioMassters) -> None:
-        assert 'mask' in dataset[0]
+        dataset.target_max = 1.0
+        mask = dataset[0]['mask']
+        assert mask.min() == dataset.target_min
+        assert mask.max() == dataset.target_max
 
     def test_not_downloaded(self, tmp_path: Path) -> None:
         with pytest.raises(DatasetNotFoundError, match='Dataset not found'):
