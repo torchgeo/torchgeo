@@ -29,12 +29,9 @@ class TestBioMassters:
         assert len(dataset) > 0
 
     def test_getitem(self, dataset: BioMassters) -> None:
-        dataset.target_max = 1.0
         sample = dataset[0]
         assert sample['image'].dtype == torch.float32
-        mask = sample['mask']
-        assert mask.min() == dataset.target_min
-        assert mask.max() == dataset.target_max
+        assert sample['mask'].dtype == torch.float32
 
     def test_not_downloaded(self, tmp_path: Path) -> None:
         with pytest.raises(DatasetNotFoundError, match='Dataset not found'):

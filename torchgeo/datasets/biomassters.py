@@ -58,9 +58,6 @@ class BioMassters(NonGeoDataset):
     valid_splits = ('train', 'test')
     valid_sensors = ('S1', 'S2')
     channel_counts: ClassVar[dict[str, int]] = {'S1': 4, 'S2': 11}
-    # Computed using the reference implementation's 0.1 and 99.9 percentiles.
-    target_min = 0.0
-    target_max = 425.7
 
     metadata_filename = 'biomassters_features_metadata.csv'
 
@@ -216,7 +213,7 @@ class BioMassters(NonGeoDataset):
             arr: np.typing.NDArray[np.float64] = src.read()
 
         target = torch.from_numpy(arr).float()
-        return target.clamp_(self.target_min, self.target_max)
+        return target
 
     def _verify(self) -> None:
         """Verify the integrity of the dataset."""

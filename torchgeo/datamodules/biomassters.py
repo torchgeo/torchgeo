@@ -22,12 +22,43 @@ class BioMasstersDataModule(NonGeoDataModule):
     .. versionadded:: 0.11
     """
 
-    # The task uses these to denormalize predictions; masks remain unnormalized.
-    target_mean = 0.0
-    target_std = 1.0
     # Training statistics published by https://github.com/quqixun/BioMassters.
+    target_min = 0.0
+    target_max = 425.7
+    target_mean = target_min
+    target_std = target_max - target_min
     s1_mean = torch.tensor([-11.440976, -18.056156, -12.975023, -24.132893])
     s1_std = torch.tensor([3.167056, 4.362354, 5.392603, 17.264702])
+    s2_mean = torch.tensor(
+        [
+            1632.9535,
+            1614.6424,
+            1604.3299,
+            1922.9699,
+            2486.8020,
+            2598.9652,
+            2746.6709,
+            2693.6549,
+            1029.6661,
+            700.2439,
+            12.9415,
+        ]
+    )
+    s2_std = torch.tensor(
+        [
+            2497.8896,
+            2310.3364,
+            2387.0741,
+            2387.0709,
+            2206.2938,
+            2099.7614,
+            2189.8070,
+            2025.5849,
+            927.4433,
+            753.5097,
+            24.5869,
+        ]
+    )
 
     def __init__(
         self,
@@ -50,8 +81,8 @@ class BioMasstersDataModule(NonGeoDataModule):
         self.lengths = (1 - val_split_pct, val_split_pct)
 
         sensors = kwargs.get('sensors', BioMassters.valid_sensors)
-        means = {'S1': self.s1_mean, 'S2': torch.zeros(11)}
-        stds = {'S1': self.s1_std, 'S2': torch.ones(11)}
+        means = {'S1': self.s1_mean, 'S2': self.s2_mean}
+        stds = {'S1': self.s1_std, 'S2': self.s2_std}
         mean = torch.cat([means[sensor] for sensor in sensors])
         std = torch.cat([stds[sensor] for sensor in sensors])
         self.aug = K.AugmentationSequential(
@@ -75,3 +106,20 @@ class BioMasstersDataModule(NonGeoDataModule):
             self.test_dataset = BioMassters(split='test', **self.kwargs)
         if stage == 'predict':
             self.predict_dataset = BioMassters(split='test', **self.kwargs)
+
+    def on_after_batch_transfer(
+        self, batch: dict[str, torch.Tensor], dataloader_idx: int
+    ) -> dict[str, torch.Tensor]:
+        """Normalize target masks.
+
+        Args:
+            batch: A batch of data.
+            dataloader_idx: Index of the dataloader producing the batch.
+
+        Returns:
+            A batch with normalized imagery and target masks.
+        """
+        batch = super().on_after_batch_transfer(batch, dataloader_idx)
+        batch['mask'] = batch['mask'].clamp(self.target_min, self.target_max)
+        batch['mask'] = (batch['mask'] - self.target_mean) / self.target_std
+        return batch
