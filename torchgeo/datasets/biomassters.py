@@ -199,7 +199,7 @@ class BioMassters(NonGeoDataset):
             arr = np.stack(arr_list, axis=0)
         else:
             arr = np.concatenate(arr_list, axis=0)
-        return torch.tensor(arr.astype(np.int32))
+        return torch.from_numpy(arr).float()
 
     def _load_target(self, filename: Path) -> Tensor:
         """Load the target mask at the index.

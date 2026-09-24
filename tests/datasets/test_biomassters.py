@@ -8,6 +8,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pytest
+import torch
 from _pytest.fixtures import SubRequest
 
 from torchgeo.datasets import BioMassters, DatasetNotFoundError
@@ -29,7 +30,9 @@ class TestBioMassters:
 
     def test_getitem(self, dataset: BioMassters) -> None:
         dataset.target_max = 1.0
-        mask = dataset[0]['mask']
+        sample = dataset[0]
+        assert sample['image'].dtype == torch.float32
+        mask = sample['mask']
         assert mask.min() == dataset.target_min
         assert mask.max() == dataset.target_max
 
