@@ -162,10 +162,9 @@ class BioMassters(NonGeoDataset):
         sample: Sample = {
             'image': torch.cat(images, dim=1 if self.as_time_series else 0)
         }
-        if self.split == 'train':
-            sample['mask'] = self._load_target(
-                sample_df['corresponding_agbm'].unique()[0]
-            ).squeeze(dim=0)
+        sample['mask'] = self._load_target(
+            sample_df['corresponding_agbm'].unique()[0]
+        ).squeeze(dim=0)
 
         return sample
 
@@ -208,7 +207,9 @@ class BioMassters(NonGeoDataset):
         Returns:
             target mask
         """
-        with rasterio.open(os.path.join(self.root, 'train_agbm', filename), 'r') as src:
+        with rasterio.open(
+            os.path.join(self.root, f'{self.split}_agbm', filename), 'r'
+        ) as src:
             arr: np.typing.NDArray[np.float64] = src.read()
 
         target = torch.from_numpy(arr).float()
@@ -219,7 +220,11 @@ class BioMassters(NonGeoDataset):
         # Check if the extracted files already exist
         exists = []
 
-        filenames = [f'{self.split}_features', self.metadata_filename]
+        filenames = [
+            f'{self.split}_features',
+            f'{self.split}_agbm',
+            self.metadata_filename,
+        ]
         for filename in filenames:
             pathname = os.path.join(self.root, filename)
             exists.append(os.path.exists(pathname))

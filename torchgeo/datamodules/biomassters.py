@@ -29,8 +29,7 @@ class BioMasstersDataModule(NonGeoDataModule):
         self,
         batch_size: int = 32,
         num_workers: int = 0,
-        val_split_pct: float = 0.2,
-        test_split_pct: float = 0.2,
+        val_split_pct: float = 0.3,
         **kwargs: Any,
     ) -> None:
         """Initialize a new BioMasstersDataModule instance.
@@ -39,17 +38,12 @@ class BioMasstersDataModule(NonGeoDataModule):
             batch_size: Size of each mini-batch.
             num_workers: Number of workers for parallel data loading.
             val_split_pct: Percentage of the labeled train split used for validation.
-            test_split_pct: Percentage of the labeled train split used for testing.
             **kwargs: Additional keyword arguments passed to the dataset.
         """
         super().__init__(
             BioMassters, batch_size, num_workers, as_time_series=True, **kwargs
         )
-        self.lengths = (
-            1 - val_split_pct - test_split_pct,
-            val_split_pct,
-            test_split_pct,
-        )
+        self.lengths = (1 - val_split_pct, val_split_pct)
         self.aug = torch.nn.Identity()
 
     def setup(self, stage: str) -> None:
@@ -58,10 +52,12 @@ class BioMasstersDataModule(NonGeoDataModule):
         Args:
             stage: Either 'fit', 'validate', 'test', or 'predict'.
         """
-        if stage == 'predict':
-            self.predict_dataset = BioMassters(split='test', **self.kwargs)
-        else:
+        if stage in ['fit', 'validate']:
             self.dataset = BioMassters(split='train', **self.kwargs)
-            self.train_dataset, self.val_dataset, self.test_dataset = random_split(
+            self.train_dataset, self.val_dataset = random_split(
                 self.dataset, self.lengths, torch.Generator().manual_seed(0)
             )
+        if stage == 'test':
+            self.test_dataset = BioMassters(split='test', **self.kwargs)
+        if stage == 'predict':
+            self.predict_dataset = BioMassters(split='test', **self.kwargs)

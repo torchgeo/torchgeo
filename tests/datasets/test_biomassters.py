@@ -27,6 +27,9 @@ class TestBioMassters:
     def test_len_of_ds(self, dataset: BioMassters) -> None:
         assert len(dataset) > 0
 
+    def test_getitem(self, dataset: BioMassters) -> None:
+        assert 'mask' in dataset[0]
+
     def test_not_downloaded(self, tmp_path: Path) -> None:
         with pytest.raises(DatasetNotFoundError, match='Dataset not found'):
             BioMassters(tmp_path)
@@ -36,8 +39,7 @@ class TestBioMassters:
         plt.close()
 
         sample = dataset[0]
-        if dataset.split == 'train':
-            sample['prediction'] = sample['mask']
+        sample['prediction'] = sample['mask']
         dataset.plot(sample)
         plt.close()
         dataset.plot(sample, show_titles=False)
