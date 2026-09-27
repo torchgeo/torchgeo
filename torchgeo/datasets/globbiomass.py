@@ -227,6 +227,7 @@ class GlobBiomass(RasterDataset):
         sample = {
             'mask': mask,
             'bounds': self._slice_to_tensor(index),
+            'crs_index': self._crs_index(self.crs),
             'transform': torch.tensor(transform),
         }
 

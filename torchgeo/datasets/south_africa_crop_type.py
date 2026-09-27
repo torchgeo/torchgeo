@@ -254,6 +254,7 @@ class SouthAfricaCropType(RasterDataset):
         transform = rasterio.transform.from_origin(x.start, y.stop, x.step, y.step)
         sample = {
             'bounds': self._slice_to_tensor(index),
+            'crs_index': self._crs_index(self.crs),
             'image': image.float(),
             'mask': mask.long(),
             'transform': torch.tensor(transform),

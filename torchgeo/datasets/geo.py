@@ -295,6 +295,17 @@ class GeoDataset(Dataset[Sample], abc.ABC, PlottingMixin):
         """
         return [self.crs]
 
+    def _crs_index(self, crs: PROJ_CRS) -> Tensor:
+        """Registry index of *crs*, for a sample's ``crs_index``.
+
+        Args:
+            crs: :term:`coordinate reference system (CRS)` the sample is read in.
+
+        Returns:
+            The index of *crs* in :attr:`crs_registry` as a 0-d tensor.
+        """
+        return torch.tensor(self.crs_registry.index(crs))
+
     @property
     def res(self) -> tuple[float, float]:
         """Resolution of the dataset in units of CRS.
@@ -590,7 +601,7 @@ class RasterDataset(GeoDataset):
         transform = rasterio.transform.from_origin(x.start, y.stop, x.step, y.step)
         sample: Sample = {
             'bounds': self._slice_to_tensor(index),
-            'crs_index': torch.tensor(self.crs_registry.index(out_crs)),
+            'crs_index': self._crs_index(out_crs),
             'transform': torch.tensor(transform),
         }
 
@@ -983,7 +994,7 @@ class XarrayDataset(GeoDataset):
         transform = rasterio.transform.from_origin(x.start, y.stop, x.step, y.step)
         sample: Sample = {
             'bounds': self._slice_to_tensor(index),
-            'crs_index': torch.tensor(self.crs_registry.index(out_crs)),
+            'crs_index': self._crs_index(out_crs),
             'image': image,
             'transform': torch.tensor(transform),
         }
@@ -1316,7 +1327,7 @@ class VectorDataset(GeoDataset):
         transform = rasterio.transform.from_origin(x.start, y.stop, x.step, y.step)
         sample: Sample = {
             'bounds': self._slice_to_tensor(index),
-            'crs_index': torch.tensor(self.crs_registry.index(out_crs)),
+            'crs_index': self._crs_index(out_crs),
             'transform': torch.tensor(transform),
         }
 
@@ -1601,7 +1612,7 @@ class IntersectionDataset(GeoDataset):
         for s in samples:
             s.pop('crs_index', None)
         sample = self.collate_fn(samples)
-        sample['crs_index'] = torch.tensor(self.crs_registry.index(self.crs))
+        sample['crs_index'] = self._crs_index(self.crs)
 
         if self.transforms is not None:
             sample = self.transforms(sample)
@@ -1750,7 +1761,7 @@ class UnionDataset(GeoDataset):
         for s in samples:
             s.pop('crs_index', None)
         sample = self.collate_fn(samples)
-        sample['crs_index'] = torch.tensor(self.crs_registry.index(self.crs))
+        sample['crs_index'] = self._crs_index(self.crs)
 
         if self.transforms is not None:
             sample = self.transforms(sample)
