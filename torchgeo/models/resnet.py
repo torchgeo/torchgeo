@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 import timm
 import torchvision.transforms.v2 as T
-from torch import nn
+from torch import Tensor, nn
 from torchvision.models._api import Weights, WeightsEnum
 
 from .swin import (
@@ -135,16 +135,17 @@ _ssl4eo_s12_transforms_s2_stats = nn.Sequential(
 
 # Normalization only available for RGB dataset, defined here:
 # https://github.com/ServiceNow/seasonal-contrast/blob/8285173ec205b64bc3e53b880344dd6c3f79fa7a/datasets/seco_dataset.py
-_min = [3, 2, 0]
-_max = [88, 103, 129]
+_min = [0, 2, 3]
+_max = [129, 103, 88]
 _mean = [0.485, 0.456, 0.406]
 _std = [0.229, 0.224, 0.225]
 _denom = (np.array(_max) - np.array(_min)).tolist()
 _seco_transforms = nn.Sequential(
     T.Resize((256, 256)),
     T.CenterCrop(224),
+    T.Normalize(mean=[0], std=[10000 / 255], inplace=True),
     T.Normalize(mean=_min, std=_denom, inplace=True),
-    T.Normalize(mean=[0], std=[1 / 255], inplace=True),
+    T.Lambda(lambda x: x.clamp(0, 1), Tensor),
     T.Normalize(mean=_mean, std=_std, inplace=True),
 )
 
