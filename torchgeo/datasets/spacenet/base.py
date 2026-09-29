@@ -107,12 +107,12 @@ class SpaceNet(NonGeoDataset, ABC):
         self,
         root: Path = 'data',
         split: Literal['train', 'test'] = 'train',
-        aois: list[int] = [],
+        aois: list[int] | None = None,
         image: str | None = None,
         mask: str | None = None,
         transforms: Callable[[Sample], Sample] | None = None,
         download: bool = False,
-        checksum: bool = False,
+        checksum: bool = True,
     ) -> None:
         """Initialize a new SpaceNet Dataset instance.
 
@@ -131,6 +131,8 @@ class SpaceNet(NonGeoDataset, ABC):
             AssertionError: If any invalid arguments are passed.
             DatasetNotFoundError: If dataset is not found and *download* is False.
         """
+        if aois is None:
+            aois = []
         self.root = root
         self.split = split
         self.aois = aois or self.valid_aois[split]
@@ -173,7 +175,10 @@ class SpaceNet(NonGeoDataset, ABC):
                 out_shape = (img.count, *self.chip_size[self.image])
             array = img.read(out_shape=out_shape, resampling=Resampling.bilinear)
             tensor = torch.from_numpy(array.astype(np.float32))
-            return tensor, img.transform, img.crs
+            # https://pyproj4.github.io/pyproj/stable/crs_compatibility.html#rasterio
+            with rio.Env(OSR_WKT_FORMAT='WKT2_2018'):
+                crs = CRS.from_user_input(img.crs)
+            return tensor, img.transform, crs
 
     def _load_mask(
         self, path: Path, tfm: Affine, raster_crs: CRS, shape: tuple[int, int]
@@ -325,8 +330,9 @@ class SpaceNet(NonGeoDataset, ABC):
             for tarball, md5 in zip(
                 self.tarballs[self.split][aoi], self.md5s[self.split][aoi]
             ):
-                if os.path.exists(os.path.join(root, tarball)):
-                    extract_archive(os.path.join(root, tarball), root)
+                path = os.path.join(root, os.path.basename(tarball))
+                if os.path.exists(path):
+                    extract_archive(path, root)
                     continue
 
                 # Check if the user requested to download the dataset
@@ -336,11 +342,9 @@ class SpaceNet(NonGeoDataset, ABC):
                 # Download the dataset
                 url = self.url.format(dataset_id=self.dataset_id, tarball=tarball)
                 aws = which('aws')
-                aws('s3', 'cp', url, root)
-                check_integrity(
-                    os.path.join(root, tarball), md5 if self.checksum else None
-                )
-                extract_archive(os.path.join(root, tarball), root)
+                aws('s3', 'cp', '--no-sign-request', url, path)
+                check_integrity(path, md5 if self.checksum else None)
+                extract_archive(path, root)
                 images, masks = self._list_files(aoi)
                 self.images.extend(images)
                 self.masks.extend(masks)

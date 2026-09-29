@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
 import torch
-import torch.nn as nn
+from torch import nn
 
 from torchgeo.datasets import (
     DatasetNotFoundError,
@@ -45,6 +45,8 @@ class TestEnMAP:
     def test_plot(self, dataset: EnMAP) -> None:
         x = dataset[dataset.bounds]
         dataset.plot(x, suptitle='Test')
+        plt.close()
+        dataset.plot(x, show_titles=False)
         plt.close()
 
     def test_plot_wrong_bands(self, dataset: EnMAP) -> None:

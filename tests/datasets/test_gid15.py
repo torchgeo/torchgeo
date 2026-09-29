@@ -7,9 +7,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pytest
 import torch
-import torch.nn as nn
 from _pytest.fixtures import SubRequest
 from pytest import MonkeyPatch
+from torch import nn
 
 from torchgeo.datasets import GID15, DatasetNotFoundError
 
@@ -50,6 +50,8 @@ class TestGID15:
 
     def test_plot(self, dataset: GID15) -> None:
         dataset.plot(dataset[0], suptitle='Test')
+        plt.close()
+        dataset.plot(dataset[0], show_titles=False)
         plt.close()
 
         if dataset.split != 'test':

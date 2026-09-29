@@ -18,16 +18,18 @@ from torch.utils.data import DataLoader
 from torchgeo.datasets import GeoDataset, stack_samples
 from torchgeo.datasets.utils import GeoSlice, Sample
 from torchgeo.samplers import (
-    GeoSampler,
     GridGeoSampler,
     PreChippedGeoSampler,
     RandomGeoSampler,
     Units,
     tile_to_chips,
 )
+from torchgeo.samplers.single import GeoSampler
 
 MINT = pd.Timestamp(2025, 4, 24)
 MAXT = pd.Timestamp(2025, 4, 25)
+
+pytestmark = pytest.mark.filterwarnings('ignore:Use .* instead:DeprecationWarning')
 
 
 class CustomGeoSampler(GeoSampler):
@@ -52,7 +54,8 @@ class CustomGeoDataset(GeoDataset):
 
 class TestGeoSampler:
     @pytest.fixture(scope='class')
-    def dataset(self) -> CustomGeoDataset:
+    @classmethod
+    def dataset(cls) -> CustomGeoDataset:
         geometry = [shapely.box(0, 0, 100, 100)]
         return CustomGeoDataset(geometry)
 
@@ -81,7 +84,8 @@ class TestGeoSampler:
 
 class TestRandomGeoSampler:
     @pytest.fixture(scope='class')
-    def dataset(self) -> CustomGeoDataset:
+    @classmethod
+    def dataset(cls) -> CustomGeoDataset:
         geometry = [shapely.box(0, 0, 100, 100), shapely.box(0, 0, 100, 100)]
         return CustomGeoDataset(geometry)
 
@@ -166,7 +170,8 @@ class TestRandomGeoSampler:
 
 class TestGridGeoSampler:
     @pytest.fixture(scope='class')
-    def dataset(self) -> CustomGeoDataset:
+    @classmethod
+    def dataset(cls) -> CustomGeoDataset:
         geometry = [shapely.box(0, 0, 100, 100), shapely.box(0, 0, 100, 100)]
         return CustomGeoDataset(geometry)
 
@@ -201,6 +206,7 @@ class TestGridGeoSampler:
 
     def test_len(self, sampler: GridGeoSampler) -> None:
         bounds = tuple(sampler.index.total_bounds)
+        assert len(bounds) == 4
         rows, cols = tile_to_chips(bounds, sampler.size, sampler.stride)
         length = rows * cols * 2  # two items in dataset
         assert len(sampler) == length
@@ -264,7 +270,8 @@ class TestGridGeoSampler:
 
 class TestPreChippedGeoSampler:
     @pytest.fixture(scope='class')
-    def dataset(self) -> CustomGeoDataset:
+    @classmethod
+    def dataset(cls) -> CustomGeoDataset:
         geometry = [shapely.box(0, 0, 20, 20), shapely.box(0, 0, 30, 30)]
         return CustomGeoDataset(geometry)
 

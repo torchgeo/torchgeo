@@ -99,10 +99,10 @@ class TreeSatAI(NonGeoDataset):
 
     # https://zenodo.org/records/6780578/files/220629_doc_TreeSatAI_benchmark_archive.pdf
     all_sensors: tuple[Literal['aerial', 's1', 's2'], ...] = ('aerial', 's1', 's2')
-    all_bands: ClassVar[dict[str, list[str]]] = {
-        'aerial': ['IR', 'G', 'B', 'R'],
-        's1': ['VV', 'VH', 'VV/VH'],
-        's2': [
+    all_bands_dict: ClassVar[dict[str, tuple[str, ...]]] = {
+        'aerial': ('IR', 'G', 'B', 'R'),
+        's1': ('VV', 'VH', 'VV/VH'),
+        's2': (
             'B02',
             'B03',
             'B04',
@@ -115,12 +115,12 @@ class TreeSatAI(NonGeoDataset):
             'B12',
             'B01',
             'B09',
-        ],
+        ),
     }
-    rgb_bands: ClassVar[dict[str, list[str]]] = {
-        'aerial': ['R', 'G', 'B'],
-        's1': ['VV', 'VH', 'VV/VH'],
-        's2': ['B04', 'B03', 'B02'],
+    rgb_bands_dict: ClassVar[dict[str, tuple[str, ...]]] = {
+        'aerial': ('R', 'G', 'B'),
+        's1': ('VV', 'VH', 'VV/VH'),
+        's2': ('B04', 'B03', 'B02'),
     }
 
     def __init__(
@@ -130,7 +130,7 @@ class TreeSatAI(NonGeoDataset):
         sensors: Sequence[Literal['aerial', 's1', 's2']] = all_sensors,
         transforms: Callable[[Sample], Sample] | None = None,
         download: bool = False,
-        checksum: bool = False,
+        checksum: bool = True,
     ) -> None:
         """Initialize a new TreeSatAI instance.
 
@@ -239,21 +239,30 @@ class TreeSatAI(NonGeoDataset):
 
         extract_archive(os.path.join(self.root, file), to_path)
 
-    def plot(self, sample: Sample, show_titles: bool = True) -> Figure:
+    def plot(
+        self, sample: Sample, show_titles: bool = True, suptitle: str | None = None
+    ) -> Figure:
         """Plot a sample from the dataset.
 
         Args:
             sample: A sample returned by :meth:`__getitem__`.
             show_titles: Flag indicating whether to show titles above each panel.
+            suptitle: Optional string to use as a suptitle.
 
         Returns:
             A matplotlib Figure with the rendered sample.
+
+        .. versionadded:: 0.11
+            The *suptitle* parameter.
         """
         fig, ax = plt.subplots(ncols=len(self.sensors), squeeze=False)
 
         for i, sensor in enumerate(self.sensors):
             image = sample[f'image_{sensor}']
-            bands = [self.all_bands[sensor].index(b) for b in self.rgb_bands[sensor]]
+            bands = [
+                self.all_bands_dict[sensor].index(b)
+                for b in self.rgb_bands_dict[sensor]
+            ]
             image = rearrange(image[bands], 'c h w -> h w c')
             image = quantile_normalization(image)
             ax[0, i].imshow(image)
@@ -262,15 +271,24 @@ class TreeSatAI(NonGeoDataset):
             if show_titles:
                 ax[0, i].set_title(sensor)
 
+        suptitle_str = ''
+
+        if suptitle is not None:
+            suptitle_str = suptitle
+
         if show_titles:
             label = self._multilabel_to_string(sample['label'])
-            suptitle = f'Label: ({label})'
+            if suptitle_str:
+                suptitle_str += f'\nLabel: ({label})'
+            else:
+                suptitle_str = f'Label: ({label})'
 
             if 'prediction' in sample:
                 prediction = self._multilabel_to_string(sample['prediction'])
-                suptitle += f'\nPrediction: ({prediction})'
+                suptitle_str += f'\nPrediction: ({prediction})'
 
-            fig.suptitle(suptitle)
+        if suptitle_str:
+            plt.suptitle(suptitle_str)
 
         fig.tight_layout()
         return fig
@@ -287,7 +305,7 @@ class TreeSatAI(NonGeoDataset):
         labels: list[tuple[str, float]] = []
         for i, pct in enumerate(multilabel):
             if pct > 0.001:
-                labels.append((self.classes[i], pct))
+                labels.append((self.classes[i], pct.item()))
 
         labels.sort(key=lambda label: label[1], reverse=True)
         return ', '.join([f'{genus}: {pct:.1%}' for genus, pct in labels])

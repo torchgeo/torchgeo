@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 import torch
-import torch.nn as nn
 from _pytest.fixtures import SubRequest
 from matplotlib import pyplot as plt
 from pytest import MonkeyPatch
+from torch import nn
 from torch.utils.data import ConcatDataset
 
 from torchgeo.datasets import DatasetNotFoundError, USAVars
@@ -30,7 +30,7 @@ class TestUSAVars:
     def dataset(
         self, monkeypatch: MonkeyPatch, tmp_path: Path, request: SubRequest
     ) -> USAVars:
-        data_url = os.path.join('tests', 'data', 'usavars', 'uar.zip')
+        data_url = os.path.join('tests', 'data', 'usavars', '{}')
         monkeypatch.setattr(USAVars, 'data_url', data_url)
 
         label_urls = {
@@ -64,7 +64,9 @@ class TestUSAVars:
         split, labels = request.param
         transforms = nn.Identity()
 
-        return USAVars(root, split, labels, transforms=transforms, download=True)
+        return USAVars(
+            root, split, labels, transforms=transforms, download=True, checksum=False
+        )
 
     def test_getitem(self, dataset: USAVars) -> None:
         x = dataset[0]
@@ -120,3 +122,8 @@ class TestUSAVars:
     def test_plot(self, dataset: USAVars) -> None:
         dataset.plot(dataset[0], suptitle='Test')
         plt.close()
+
+    def test_deprecated_warning(self, dataset: USAVars) -> None:
+        match = 'The show_labels parameter is deprecated, use show_titles instead.'
+        with pytest.warns(DeprecationWarning, match=match):
+            dataset.plot(dataset[0], show_labels=True)

@@ -5,7 +5,6 @@
 
 import os
 from collections.abc import Callable, Sequence
-from functools import lru_cache
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -192,7 +191,6 @@ class CV4AKenyaCropType(NonGeoDataset):
         """
         return len(self.chips_metadata)
 
-    @lru_cache(maxsize=128)
     def _load_label_tile(self, tile: str) -> tuple[Tensor, Tensor]:
         """Load a single _tile_ of labels and field_ids.
 
@@ -214,7 +212,6 @@ class CV4AKenyaCropType(NonGeoDataset):
 
         return labels, field_ids
 
-    @lru_cache(maxsize=128)
     def _load_all_image_tiles(self, tile: str) -> Tensor:
         """Load all the imagery (across time) for a single _tile_.
 
@@ -240,7 +237,6 @@ class CV4AKenyaCropType(NonGeoDataset):
 
         return img
 
-    @lru_cache(maxsize=128)
     def _load_single_image_tile(self, tile: str, date: str) -> Tensor:
         """Load the imagery for a single tile for a single date.
 
@@ -286,16 +282,16 @@ class CV4AKenyaCropType(NonGeoDataset):
         self,
         sample: Sample,
         show_titles: bool = True,
-        time_step: int = 0,
         suptitle: str | None = None,
+        time_step: int = 0,
     ) -> Figure:
         """Plot a sample from the dataset.
 
         Args:
             sample: a sample returned by :meth:`__getitem__`
             show_titles: flag indicating whether to show titles above each panel
-            time_step: time step at which to access image, beginning with 0
             suptitle: optional suptitle to use for figure
+            time_step: time step at which to access image, beginning with 0
 
         Returns:
             a matplotlib Figure with the rendered sample

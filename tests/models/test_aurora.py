@@ -1,9 +1,9 @@
 # Copyright (c) TorchGeo Contributors. All rights reserved.
 # Licensed under the MIT License.
 
-from datetime import datetime
 from pathlib import Path
 
+import pandas as pd
 import pytest
 import torch
 from _pytest.fixtures import SubRequest
@@ -14,6 +14,7 @@ from torchgeo.models import Aurora_Weights, aurora_swin_unet
 pytest.importorskip('aurora')
 
 
+@pytest.mark.xdist_group('memory_intensive')
 class TestAurora:
     @pytest.fixture(params=[*Aurora_Weights])
     def weights(self, request: SubRequest) -> Aurora_Weights:
@@ -82,7 +83,7 @@ class TestAurora:
             metadata=Metadata(
                 lat=torch.linspace(90, -90, h),
                 lon=torch.linspace(0, 360, w + 1)[:-1],
-                time=(datetime(2020, 6, 1, 12, 0),),
+                time=(pd.Timestamp(2020, 6, 1, 12, 0),),
                 atmos_levels=(100, 250, 500, 850),
             ),
         )

@@ -5,7 +5,7 @@
 
 import os
 from collections.abc import Callable, Sequence
-from typing import ClassVar
+from typing import ClassVar, Literal
 
 import geopandas as gpd
 import matplotlib.pyplot as plt
@@ -100,28 +100,33 @@ class PASTIS(NonGeoDataset):
         'sorghum',
         'void_label',  # for parcels mostly outside their patch
     )
-    cmap: ClassVar[dict[int, tuple[int, int, int, int]]] = {
-        0: (0, 0, 0, 255),
-        1: (174, 199, 232, 255),
-        2: (255, 127, 14, 255),
-        3: (255, 187, 120, 255),
-        4: (44, 160, 44, 255),
-        5: (152, 223, 138, 255),
-        6: (214, 39, 40, 255),
-        7: (255, 152, 150, 255),
-        8: (148, 103, 189, 255),
-        9: (197, 176, 213, 255),
-        10: (140, 86, 75, 255),
-        11: (196, 156, 148, 255),
-        12: (227, 119, 194, 255),
-        13: (247, 182, 210, 255),
-        14: (127, 127, 127, 255),
-        15: (199, 199, 199, 255),
-        16: (188, 189, 34, 255),
-        17: (219, 219, 141, 255),
-        18: (23, 190, 207, 255),
-        19: (255, 255, 255, 255),
-    }
+    cmap = ListedColormap(
+        np.array(
+            [
+                (0, 0, 0, 255),
+                (174, 199, 232, 255),
+                (255, 127, 14, 255),
+                (255, 187, 120, 255),
+                (44, 160, 44, 255),
+                (152, 223, 138, 255),
+                (214, 39, 40, 255),
+                (255, 152, 150, 255),
+                (148, 103, 189, 255),
+                (197, 176, 213, 255),
+                (140, 86, 75, 255),
+                (196, 156, 148, 255),
+                (227, 119, 194, 255),
+                (247, 182, 210, 255),
+                (127, 127, 127, 255),
+                (199, 199, 199, 255),
+                (188, 189, 34, 255),
+                (219, 219, 141, 255),
+                (23, 190, 207, 255),
+                (255, 255, 255, 255),
+            ]
+        )
+        / 255
+    )
     directory = 'PASTIS-R'
     filename = 'PASTIS-R.zip'
     url = 'https://zenodo.org/records/5735646/files/PASTIS-R.zip?download=1'
@@ -148,21 +153,23 @@ class PASTIS(NonGeoDataset):
     s1a_bands: ClassVar[tuple[str, ...]] = ('S1A_VV', 'S1A_VH', 'S1A_VV_VH')
     s1d_bands: ClassVar[tuple[str, ...]] = ('S1D_VV', 'S1D_VH', 'S1D_VV_VH')
 
+    mode: Literal['semantic', 'instance']
+
     def __init__(
         self,
         root: Path = 'data',
         folds: Sequence[int] = (1, 2, 3, 4, 5),
         bands: Sequence[str] = s2_bands,
-        mode: str = 'semantic',
+        mode: Literal['semantic', 'instance'] = 'semantic',
         transforms: Callable[[Sample], Sample] | None = None,
         download: bool = False,
-        checksum: bool = False,
+        checksum: bool = True,
     ) -> None:
         """Initialize a new PASTIS dataset instance.
 
         Args:
             root: root directory where dataset can be found
-            folds: a sequence of integers from 0 to 4 specifying which of the five
+            folds: a sequence of integers from 1 to 5 specifying which of the five
                 dataset folds to include
             bands: sequence of band names to load. Must be a non-empty subset of
                 ``s2_bands``, ``s1a_bands``, or ``s1d_bands``. All bands must
@@ -207,17 +214,6 @@ class PASTIS(NonGeoDataset):
         self.checksum = checksum
         self._verify()
         self.files = self._load_files()
-
-        colors = []
-        for i in range(len(self.cmap)):
-            colors.append(
-                (
-                    self.cmap[i][0] / 255.0,
-                    self.cmap[i][1] / 255.0,
-                    self.cmap[i][2] / 255.0,
-                )
-            )
-        self._cmap = ListedColormap(colors)
 
     def __getitem__(self, index: int) -> Sample:
         """Return an index within the dataset.
@@ -394,9 +390,11 @@ class PASTIS(NonGeoDataset):
         Returns:
             a matplotlib Figure with the rendered sample
         """
-        # Keep the RGB bands and quantile-normalize the displayed frames.
+        # Keep the RGB bands and quantile-normalize each frame independently.
         rgb_frames = sample['image'][:, [2, 1, 0], :, :]
-        rgb_frames = quantile_normalization(rgb_frames)
+        rgb_frames = torch.stack(
+            [quantile_normalization(frame) for frame in rgb_frames]
+        )
         images = rgb_frames.numpy().transpose(0, 2, 3, 1)
         mask = sample['mask'].numpy()
 
@@ -417,13 +415,13 @@ class PASTIS(NonGeoDataset):
         fig, axs = plt.subplots(1, num_panels, figsize=(num_panels * 4, 4))
         axs[0].imshow(images[0])
         axs[1].imshow(images[1])
-        axs[2].imshow(mask, vmin=0, vmax=19, cmap=self._cmap, interpolation='none')
+        axs[2].imshow(mask, vmin=0, vmax=19, cmap=self.cmap, interpolation='none')
         axs[0].axis('off')
         axs[1].axis('off')
         axs[2].axis('off')
         if showing_predictions:
             axs[3].imshow(
-                predictions, vmin=0, vmax=19, cmap=self._cmap, interpolation='none'
+                predictions, vmin=0, vmax=19, cmap=self.cmap, interpolation='none'
             )
             axs[3].axis('off')
 

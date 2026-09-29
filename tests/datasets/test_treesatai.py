@@ -8,9 +8,8 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pytest
-import torch.nn as nn
 from pytest import MonkeyPatch
-from torch import Tensor
+from torch import Tensor, nn
 
 from torchgeo.datasets import DatasetNotFoundError, TreeSatAI
 
@@ -58,5 +57,5 @@ class TestTreeSatAI:
     def test_plot(self, dataset: TreeSatAI) -> None:
         x = dataset[0]
         x['prediction'] = x['label']
-        dataset.plot(x)
+        dataset.plot(x, suptitle='Test')
         plt.close()
