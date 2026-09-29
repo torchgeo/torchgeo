@@ -27,8 +27,6 @@ updates:
       interval: 'weekly'
     versioning-strategy: 'widen'
   - package-ecosystem: 'uv'
-    allow:
-      - dependency-type: 'all'
     directory: '/'
     groups:
       all:
