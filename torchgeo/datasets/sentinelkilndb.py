@@ -19,7 +19,7 @@ from torch import Tensor
 
 from .errors import DatasetNotFoundError
 from .geo import NonGeoDataset
-from .utils import Path, Sample, download_url, quantile_normalization
+from .utils import Path, Sample, check_integrity, download_url, quantile_normalization
 
 
 class _FileInfo(TypedDict):
@@ -115,6 +115,7 @@ class SentinelKilnDB(NonGeoDataset):
         Raises:
             AssertionError: if *split* or *bbox_orientation* argument is not valid
             DatasetNotFoundError: if dataset is not found and *download* is False
+            RuntimeError: if *checksum* is True and an existing file is corrupted
         """
         assert split in self.valid_splits, (
             f"Split '{split}' not supported, use one of {self.valid_splits}"
@@ -280,10 +281,20 @@ class SentinelKilnDB(NonGeoDataset):
         )
 
     def _verify(self) -> None:
-        """Verify dataset integrity and download if needed."""
-        parquet_path = os.path.join(self.root, self.file_info[self.split]['filename'])
+        """Verify dataset integrity and download if needed.
 
-        if os.path.exists(parquet_path):
+        Raises:
+            DatasetNotFoundError: If dataset is not found and *download* is False.
+            RuntimeError: If an existing file is corrupted.
+        """
+        info = self.file_info[self.split]
+        parquet_path = os.path.join(self.root, info['filename'])
+
+        if os.path.isfile(parquet_path):
+            if self.checksum and not check_integrity(
+                parquet_path, sha256=info['sha256']
+            ):
+                raise RuntimeError('Dataset found, but corrupted.')
             return
 
         if not self.download:
