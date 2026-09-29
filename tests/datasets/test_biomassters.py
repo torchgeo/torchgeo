@@ -69,6 +69,15 @@ class TestBioMassters100:
         assert len(dataset) > 0
         assert dataset[0]
 
+    def test_already_extracted(self, dataset: BioMassters100) -> None:
+        root = Path(dataset.root).parent
+        assert BioMassters100(root, checksum=False)
+
+    def test_extract_archive(self, dataset: BioMassters100) -> None:
+        root = Path(dataset.root).parent
+        shutil.rmtree(dataset.root)
+        assert BioMassters100(root, checksum=False)
+
     def test_not_downloaded(self, tmp_path: Path) -> None:
         with pytest.raises(DatasetNotFoundError, match='Dataset not found'):
             BioMassters100(tmp_path)
