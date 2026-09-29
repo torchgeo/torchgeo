@@ -374,7 +374,7 @@ class SentinelKilnDB(NonGeoDataset):
                         label,
                         color='white',
                         fontsize=6,
-                        bbox=dict(facecolor=color, alpha=box_alpha),
+                        bbox={'facecolor': color, 'alpha': box_alpha},
                     )
             else:
                 # Oriented box: [x1,y1,x2,y2,x3,y3,x4,y4]
@@ -398,7 +398,7 @@ class SentinelKilnDB(NonGeoDataset):
                         label,
                         color='white',
                         fontsize=6,
-                        bbox=dict(facecolor=color, alpha=box_alpha),
+                        bbox={'facecolor': color, 'alpha': box_alpha},
                         ha='center',
                         va='center',
                     )

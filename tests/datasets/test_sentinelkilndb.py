@@ -8,7 +8,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pytest
 import torch
-import torch.nn as nn
+from torch import nn
 from _pytest.fixtures import SubRequest
 from pytest import MonkeyPatch
 
