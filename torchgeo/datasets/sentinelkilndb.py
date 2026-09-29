@@ -240,12 +240,6 @@ class SentinelKilnDB(NonGeoDataset):
             boxes.append([xmin, ymin, xmax, ymax])
             labels.append(class_id)
 
-        if not boxes:
-            return (
-                torch.zeros((0, 4), dtype=torch.float32),
-                torch.zeros(0, dtype=torch.long),
-            )
-
         return torch.tensor(boxes, dtype=torch.float32), torch.tensor(
             labels, dtype=torch.long
         )
@@ -280,12 +274,6 @@ class SentinelKilnDB(NonGeoDataset):
 
             boxes.append(coords)
             labels.append(class_id)
-
-        if not boxes:
-            return (
-                torch.zeros((0, 8), dtype=torch.float32),
-                torch.zeros(0, dtype=torch.long),
-            )
 
         return torch.tensor(boxes, dtype=torch.float32), torch.tensor(
             labels, dtype=torch.long
