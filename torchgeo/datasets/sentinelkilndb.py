@@ -307,13 +307,12 @@ class SentinelKilnDB(NonGeoDataset):
         """Download the dataset."""
         os.makedirs(self.root, exist_ok=True)
 
-        filename = self.file_info[self.split]['filename']
-        kwargs = {}
-        if self.checksum:
-            kwargs['sha256'] = self.file_info[self.split]['sha256']
-
+        info = self.file_info[self.split]
         download_url(
-            url=self.url.format(self.split), root=self.root, filename=filename, **kwargs
+            url=self.url.format(self.split),
+            root=self.root,
+            filename=info['filename'],
+            sha256=info['sha256'] if self.checksum else None,
         )
 
     def plot(

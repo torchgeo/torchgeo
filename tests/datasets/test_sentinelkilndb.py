@@ -89,11 +89,11 @@ class TestSentinelKilnDB:
 
     def test_invalid_split(self, tmp_path: Path) -> None:
         with pytest.raises(AssertionError, match='not supported'):
-            SentinelKilnDB(tmp_path, split='invalid')  # type: ignore[arg-type]
+            SentinelKilnDB(tmp_path, split='invalid')  # ty: ignore[invalid-argument-type]
 
     def test_invalid_bbox_orientation(self, tmp_path: Path) -> None:
         with pytest.raises(AssertionError, match='Bounding box orientation'):
-            SentinelKilnDB(tmp_path, bbox_orientation='invalid')  # type: ignore[arg-type]
+            SentinelKilnDB(tmp_path, bbox_orientation='invalid')  # ty: ignore[invalid-argument-type]
 
     def test_plot(self, dataset: SentinelKilnDB) -> None:
         # Use sample with boxes (index 1 has boxes in test data)
