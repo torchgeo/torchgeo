@@ -2308,7 +2308,7 @@ wheels = [
 
 [[package]]
 name = "olmoearth-pretrain-minimal"
-version = "0.0.7"
+version = "0.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "einops" },
@@ -2317,9 +2317,9 @@ dependencies = [
     { name = "torch" },
     { name = "universal-pathlib" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4b/74/46d2c0f78b27c2ba760fe795b88cba2f1fcf3dc67aa85ef23b7638f33505/olmoearth_pretrain_minimal-0.0.7.tar.gz", hash = "sha256:c200a11dcb504eaf3a8777510c237ed86c97c52887f782e92d07c74761f93241", size = 81239, upload-time = "2026-08-17T23:22:26.419Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5a/5c/1a0ee66893190bf34fd579c8482c158ec66240707cbe348d89c17dc59b4f/olmoearth_pretrain_minimal-0.1.0.tar.gz", hash = "sha256:c30d330d64080be22721e495daae2b1e8a60fbeead22de9173255f88c0c86731", size = 92408, upload-time = "2026-09-25T15:19:55.411Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f0/cc/1eb2da483688c4295fd4d2f37d4f9c9146ed4ee63792d9641585bdca86a9/olmoearth_pretrain_minimal-0.0.7-py3-none-any.whl", hash = "sha256:e1d9daa4d4aeaba3356679c913cb89d3346ca6df00e88964c0fe530678d8320e", size = 81892, upload-time = "2026-08-17T23:22:24.796Z" },
+    { url = "https://files.pythonhosted.org/packages/f8/21/e934dbebe694589611f43bbbe6251032d06dccd91fd1ed503c2852aafe2a/olmoearth_pretrain_minimal-0.1.0-py3-none-any.whl", hash = "sha256:968dd72b9ac698e7d922f075f91d7cc5bc772a9383c0ae4c54972788964418ab", size = 92421, upload-time = "2026-09-25T15:19:54.155Z" },
 ]
 
 [[package]]
