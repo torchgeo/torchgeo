@@ -24,6 +24,7 @@ import rasterio.features
 import rasterio.merge
 import shapely
 import torch
+import torch.nn.functional as F
 from geopandas import GeoDataFrame
 from matplotlib.colors import ListedColormap
 from PIL.Image import Image
@@ -56,6 +57,9 @@ from .utils import (
     lazy_import,
     merge_samples,
 )
+
+# Creating PROJ transformers is slow, so reuse them across samples
+_transformer = functools.lru_cache(pyproj.Transformer.from_crs)
 
 
 class GeoDataset(Dataset[Sample], abc.ABC, PlottingMixin):
@@ -382,6 +386,15 @@ class RasterDataset(GeoDataset):
     #: Nodata value for the dataset. If None, the source files' nodata value is used.
     nodata: float | None = None
 
+    #: Device used to reproject and resample data with PyTorch (e.g., ``'cuda'``).
+    #: If None, reprojection and resampling are done on the CPU by rasterio (GDAL).
+    #: Supports nearest, bilinear, and cubic :attr:`~RasterDataset.resampling`. To use
+    #: CUDA in :class:`~torch.utils.data.DataLoader` workers, use the ``'spawn'`` or
+    #: ``'forkserver'`` *multiprocessing_context*.
+    #:
+    #: .. versionadded:: 0.11
+    device: torch.device | str | None = None
+
     @property
     def dtype(self) -> torch.dtype:
         """The dtype of the dataset (overrides the dtype of the data file via a cast).
@@ -659,6 +672,9 @@ class RasterDataset(GeoDataset):
             image/mask at that index
         """
         out_crs = out_crs or self.crs
+        if self.device is not None:
+            return self._grid_sample(filepaths, index, band_indexes, out_crs)
+
         if self.cache:
             vrt_fhs = [self._cached_load_warp_file(fp, out_crs) for fp in filepaths]
         else:
@@ -681,23 +697,108 @@ class RasterDataset(GeoDataset):
         tensor = array_to_tensor(dest)
         return tensor
 
+    def _grid_sample(
+        self,
+        filepaths: Sequence[str],
+        index: GeoSlice,
+        band_indexes: Sequence[int] | None,
+        out_crs: PROJ_CRS,
+    ) -> Tensor:
+        """Load, reproject, and resample files on :attr:`~RasterDataset.device`.
+
+        Source pixel coordinates are computed exactly at control points spaced every
+        32 output pixels and interpolated in between, similar to GDAL's approximate
+        transformer. Files are merged with the same rule as :func:`rasterio.merge.merge`,
+        where the first valid pixel wins.
+
+        Args:
+            filepaths: one or more files to load and merge
+            index: [xmin:xmax:xres, ymin:ymax:yres, tmin:tmax:tres] coordinates to index.
+            band_indexes: indexes of bands to be used
+            out_crs: :term:`coordinate reference system (CRS)` to warp to
+
+        Returns:
+            image/mask at that index
+        """
+        x, y, _ = self._disambiguate_slice(index)
+        w = round((x.stop - x.start) / x.step)
+        h = round((y.stop - y.start) / y.step)
+        xs = x.start + (np.linspace(0, w - 1, w // 32 + 2) + 0.5) * x.step
+        ys = y.stop - (np.linspace(0, h - 1, h // 32 + 2) + 0.5) * y.step
+        xs, ys = np.meshgrid(xs, ys)
+        mode = {'cubic': 'bicubic'}.get(self.resampling.name, self.resampling.name)
+        outs: list[Tensor] = []
+        for filepath in filepaths:
+            if self.cache:
+                src = self._cached_load_warp_file(filepath, out_crs, False)
+            else:
+                src = self._load_warp_file(filepath, out_crs, False)
+            src_crs, transform = src.crs, src.transform
+            if transform.is_identity:
+                src_crs, transform = self._compute_affine_georeferencing(src)
+            nodata = self.nodata if self.nodata is not None else src.nodata
+            if self.time_series or not outs:
+                fill = nodata or 0.0
+                shape = (len(band_indexes or src.indexes), h, w)
+                outs.append(torch.full(shape, fill, device=self.device))
+
+            # Source pixel coordinates of the output pixel centers
+            xy = _transformer(out_crs, src_crs, always_xy=True).transform(xs, ys)
+            cols, rows = ~transform * xy
+            c0, r0 = max(int(cols.min()) - 2, 0), max(int(rows.min()) - 2, 0)
+            c1 = min(int(cols.max()) + 3, src.width)
+            r1 = min(int(rows.max()) + 3, src.height)
+            if c0 >= c1 or r0 >= r1:
+                continue
+
+            array = src.read(band_indexes, window=((r0, r1), (c0, c1)))
+            data = torch.from_numpy(array.astype(np.float32)).to(self.device)
+            valid = ~data.isnan()
+            if nodata is not None:
+                valid &= data != nodata
+            grid = np.stack([(cols - c0) / (c1 - c0), (rows - r0) / (r1 - r0)])
+            grid = torch.tensor(grid * 2 - 1, device=self.device).float()[None]
+            grid = F.interpolate(grid, (h, w), mode='bilinear', align_corners=True)
+            sample = functools.partial(
+                F.grid_sample, grid=grid.permute(0, 2, 3, 1), align_corners=False
+            )
+
+            # Exclude nodata from the weights and keep pixels whose source pixel is
+            # valid. Box blur first when downsampling by 2x or more to avoid aliasing.
+            data = torch.cat([data.where(valid, 0), valid.float()])[None]
+            k = round(np.ptp(rows[:, 0]) / h) | 1, round(np.ptp(cols[0]) / w) | 1
+            if mode != 'nearest' and k != (1, 1):
+                data = F.avg_pool2d(data, k, 1, (k[0] // 2, k[1] // 2))
+            value, weight = sample(data, mode=mode)[0].chunk(2)
+            value = value / weight
+            if array.dtype.kind in 'iu':
+                value = (value + 0.5).floor()
+
+            dest = outs[-1]
+            keep = sample(valid[None].float(), mode='nearest')[0] > 0
+            keep &= dest.isnan() | (dest == fill)
+            outs[-1] = torch.where(keep, value, dest)
+
+        return torch.stack(outs) if self.time_series else outs[0]
+
     @functools.lru_cache(maxsize=128)  # noqa: B019
     def _cached_load_warp_file(
-        self, filepath: Path, crs: PROJ_CRS
+        self, filepath: Path, crs: PROJ_CRS, warp: bool = True
     ) -> DatasetReader | WarpedVRT:
         """Cached version of :meth:`_load_warp_file`.
 
         Args:
             filepath: file to load and warp
             crs: :term:`coordinate reference system (CRS)` to warp to
+            warp: if False, return the unwarped file handle
 
         Returns:
             file handle of warped VRT
         """
-        return self._load_warp_file(filepath, crs)
+        return self._load_warp_file(filepath, crs, warp)
 
     def _load_warp_file(
-        self, filepath: Path, crs: PROJ_CRS | None = None
+        self, filepath: Path, crs: PROJ_CRS | None = None, warp: bool = True
     ) -> DatasetReader | WarpedVRT:
         """Load and warp a file to the correct CRS and resolution.
 
@@ -708,6 +809,7 @@ class RasterDataset(GeoDataset):
             filepath: file to load and warp
             crs: Optionally specify which CRS to reproject to. This is used in __init__
                 as self.index.crs is not defined at this point.
+            warp: if False, return the unwarped file handle
 
         Returns:
             file handle of warped VRT
@@ -716,6 +818,8 @@ class RasterDataset(GeoDataset):
             ValueError: If dataset has no usable affine CRS/transform and no GCP CRS.
         """
         src = rasterio.open(filepath)
+        if not warp:
+            return src
 
         has_meaningful_affine = (
             src.transform is not None and not src.transform.is_identity

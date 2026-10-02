@@ -2,9 +2,11 @@
 # Licensed under the MIT License.
 
 import itertools
+import json
 import math
 import os
 import pickle
+import urllib.request
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import Any
@@ -17,9 +19,12 @@ import shapely
 import torch
 from _pytest.fixtures import SubRequest
 from geopandas import GeoDataFrame
-from pyproj import CRS
+from pyproj import CRS, Transformer
 from rasterio.enums import Resampling
+from rasterio.transform import Affine
 from rasterio.vrt import WarpedVRT
+from rasterio.warp import reproject
+from rasterio.windows import Window
 from torch import Tensor, nn
 from torch.utils.data import ConcatDataset
 
@@ -37,9 +42,92 @@ from torchgeo.datasets import (
     XarrayDataset,
 )
 from torchgeo.datasets.utils import GeoSlice, Sample
+from torchgeo.samplers import GridGeoSampler
 
 MINT = pd.Timestamp(2025, 4, 24)
 MAXT = pd.Timestamp(2025, 4, 25)
+
+# Overlapping Sentinel-2 tiles in UTM zones 31 and 32 from the same datatake
+SENTINEL2_URL = 'https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/'
+SENTINEL2_FILES = [
+    '31/U/GT/2023/09/09/S2A_MSIL2A_20230909T103631_N0509_R008_T31UGT_20230909T181814.SAFE/GRANULE/L2A_T31UGT_A042905_20230909T104403/IMG_DATA/R10m/T31UGT_20230909T103631_B04_10m.tif',
+    '32/U/LC/2023/09/09/S2A_MSIL2A_20230909T103631_N0509_R008_T32ULC_20230909T181400.SAFE/GRANULE/L2A_T32ULC_A042905_20230909T104403/IMG_DATA/R10m/T32ULC_20230909T103631_B04_10m.tif',
+    '32/U/LC/2023/09/09/S2A_MSIL2A_20230909T103631_N0509_R008_T32ULC_20230909T181400.SAFE/GRANULE/L2A_T32ULC_A042905_20230909T104403/IMG_DATA/R20m/T32ULC_20230909T103631_B05_20m.tif',
+]
+
+
+@pytest.fixture(scope='module')
+def sentinel2_utm(tmp_path_factory: pytest.TempPathFactory) -> list[Path]:
+    """Download 2.56 km crops of Sentinel-2 tiles from Planetary Computer."""
+    token_url = (
+        'https://planetarycomputer.microsoft.com/api/sas/v1/token/sentinel-2-l2a'
+    )
+    with urllib.request.urlopen(token_url) as f:
+        token = json.load(f)['token']
+
+    root = tmp_path_factory.mktemp('sentinel2_utm')
+    for file in SENTINEL2_FILES:
+        path = root / file
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with rasterio.open(f'{SENTINEL2_URL}{file}?{token}') as src:
+            x, y = Transformer.from_crs(4326, src.crs, always_xy=True).transform(
+                6.8, 51.8
+            )
+            row, col = src.index(x, y)
+            size = round(2560 / src.res[0])
+            row, col = row - size // 2, col - size // 2
+            window = Window.from_slices((row, row + size), (col, col + size))
+            profile = {k: src.profile[k] for k in ['driver', 'dtype', 'count', 'crs']}
+            profile |= {'width': size, 'height': size, 'nodata': src.nodata}
+            profile['transform'] = src.window_transform(window)
+            with rasterio.open(path, 'w', **profile) as dst:
+                dst.write(src.read(window=window))
+
+    return [root / file.split('/GRANULE')[0] for file in SENTINEL2_FILES[:2]]
+
+
+def warp_reference(dataset: GeoDataset, query: GeoSlice) -> Tensor:
+    """Warp each file directly onto the query grid with GDAL in a single pass."""
+    if isinstance(dataset, IntersectionDataset | UnionDataset):
+        samples = [{'image': warp_reference(ds, query)} for ds in dataset.datasets]
+        return dataset.collate_fn(samples)['image']
+
+    assert isinstance(dataset, RasterDataset)
+    x, y, _ = dataset._disambiguate_slice(query)
+    shape = (round((y.stop - y.start) / y.step), round((x.stop - x.start) / x.step))
+    kwargs: dict[str, Any] = {
+        'dst_transform': rasterio.transform.from_origin(
+            x.start, y.stop, x.step, y.step
+        ),
+        'dst_crs': dataset.crs,
+        'resampling': dataset.resampling,
+        # Plain 4-tap bilinear, without GDAL widening the kernel for tiny scales
+        'XSCALE': 1,
+        'YSCALE': 1,
+    }
+    out = np.zeros(shape)
+    for filepath in dataset.index.cx[x.start : x.stop, y.start : y.stop].filepath:
+        with rasterio.open(filepath) as src:
+            band = np.zeros(shape)
+            reproject(rasterio.band(src, 1), band, **kwargs)
+            out = np.where(out == 0, np.floor(band + 0.5), out)
+    return torch.tensor(out, dtype=torch.float32)[None]
+
+
+def assert_device_matches(dataset: GeoDataset, device: GeoDataset) -> None:
+    """Compare the PyTorch backend with GDAL and the rasterio backend."""
+    actual, expected, reference = [], [], []
+    for query in GridGeoSampler(dataset, size=64, stride=64):
+        actual.append(device[query]['image'].cpu())
+        expected.append(dataset[query]['image'])
+        reference.append(warp_reference(dataset, query))
+    a, e, r = torch.stack(actual), torch.stack(expected), torch.stack(reference)
+
+    # Within rounding of a single-pass GDAL warp
+    assert (a - r).abs().max() <= 1
+    # Close to the rasterio backend, which resamples warped files twice
+    assert ((a == 0) != (e == 0)).float().mean() < 0.01
+    assert (a - e).abs().mean() < 0.05 * e.mean()
 
 
 class CustomGeoDataset(GeoDataset):
@@ -424,13 +512,20 @@ class TestRasterDataset:
     @pytest.mark.parametrize('cache', [True, False])
     @pytest.mark.parametrize('time_series', [True, False])
     @pytest.mark.parametrize('is_image', [True, False])
+    @pytest.mark.parametrize('device', [None, 'cpu'])
     def test_getitem_single(
-        self, bands: tuple[str] | None, cache: bool, time_series: bool, is_image: bool
+        self,
+        bands: tuple[str] | None,
+        cache: bool,
+        time_series: bool,
+        is_image: bool,
+        device: str | None,
     ) -> None:
         paths = self.naip_dir
         transforms = nn.Identity()
         ds = NAIP(paths, None, None, bands, transforms, cache, time_series)
         ds.is_image = is_image
+        ds.device = device
         x = ds[ds.bounds]
         key = 'image' if is_image else 'mask'
         expected_ndim = 4 if time_series else 3
@@ -449,13 +544,20 @@ class TestRasterDataset:
     @pytest.mark.parametrize('cache', [True, False])
     @pytest.mark.parametrize('time_series', [True, False])
     @pytest.mark.parametrize('is_image', [True, False])
+    @pytest.mark.parametrize('device', [None, 'cpu'])
     def test_getitem_separate(
-        self, bands: tuple[str], cache: bool, time_series: bool, is_image: bool
+        self,
+        bands: tuple[str],
+        cache: bool,
+        time_series: bool,
+        is_image: bool,
+        device: str | None,
     ) -> None:
         paths = os.path.join('tests', 'data', 'sentinel2')
         transforms = nn.Identity()
         ds = Sentinel2(paths, None, None, bands, transforms, cache, time_series)
         ds.is_image = is_image
+        ds.device = device
         x = ds[ds.bounds]
         key = 'image' if is_image else 'mask'
         expected_ndim = 4 if time_series else 3
@@ -580,16 +682,78 @@ class TestRasterDataset:
         with ds_override._load_warp_file(ds_override.files[0]) as vrt:
             assert (vrt.dataset_mask() == 0).sum() > 1
 
+        # The PyTorch backend respects both
+        for dataset in [ds, ds_override]:
+            expected = dataset[dataset.bounds]['image']
+            dataset.device = 'cpu'
+            torch.testing.assert_close(dataset[dataset.bounds]['image'], expected)
+
+    @pytest.mark.parametrize('dtype,nodata', [('uint16', 0), ('float32', np.nan)])
+    @pytest.mark.parametrize('epsg', [32631, 32632])
+    @pytest.mark.parametrize('scale', [1, 4])
+    def test_device(
+        self, tmp_path: Path, dtype: str, nodata: float, epsg: int, scale: int
+    ) -> None:
+        # Bilinear resampling and box blurs preserve a linear ramp, so the output is
+        # exact, even if rotated, reprojected, or downsampled
+        transform = Affine.translation(7e5, 5.8e6) * Affine.rotation(30)
+        transform *= Affine.scale(10, -10)
+        profile: dict[str, Any] = {
+            'driver': 'GTiff',
+            'height': 64,
+            'width': 64,
+            'count': 1,
+            'dtype': dtype,
+            'crs': CRS.from_epsg(32631),
+            'transform': transform,
+            'nodata': nodata,
+        }
+        i, j = np.mgrid[:64, :64]
+        with rasterio.open(tmp_path / 'ramp.tif', 'w', **profile) as f:
+            f.write((1000 + 10 * i + 7 * j).astype(dtype), 1)
+
+        ds = RasterDataset(tmp_path, crs=CRS.from_epsg(epsg))
+        ds.res = (ds.res[0] * scale, ds.res[1] * scale)
+        expected = ds[ds.bounds]['image'][0]
+        ds.device = 'cpu'
+        actual = ds[ds.bounds]['image'][0]
+
+        # Interior pixels match the ramp at the output pixel centers
+        x, y, _ = ds.bounds
+        h, w = actual.shape
+        xs = x.start + (np.arange(w) + 0.5) * x.step
+        ys = y.stop - (np.arange(h) + 0.5) * y.step
+        transformer = Transformer.from_crs(ds.crs, profile['crs'], always_xy=True)
+        cols, rows = ~transform * transformer.transform(*np.meshgrid(xs, ys))
+        ramp = torch.tensor(1000 + 10 * rows + 7 * cols - 8.5, dtype=torch.float32)
+        m = 1 + 2 * scale
+        interior = torch.tensor(
+            (cols > m) & (cols < 64 - m) & (rows > m) & (rows < 64 - m)
+        )
+        torch.testing.assert_close(actual[interior], ramp[interior], atol=0.5, rtol=0)
+
+        # Nodata matches the rasterio backend, including in the corners of the
+        # footprint's bounding box, where no source pixels are read
+        if scale == 1:
+            invalid = actual.isnan() | (actual == 0)
+            assert torch.equal(invalid, expected.isnan() | (expected == 0))
+        corner = ds[x.start : x.start + 100, y.start : y.start + 100]
+        assert (corner['image'].isnan() | (corner['image'] == 0)).all()
+
     @pytest.mark.parametrize('x,y', [(-2, 2), (2, -2), (-2, -2)])
-    def test_malformed_res(self, x: int, y: int) -> None:
+    @pytest.mark.parametrize('device', [None, 'cpu'])
+    def test_malformed_res(self, x: int, y: int, device: str | None) -> None:
         root = os.path.join('tests', 'data', 'raster', f'res_{x}-{y}_epsg_4087')
         ds = RasterDataset(root)
+        ds.device = device
         sample = ds[ds.bounds]
         assert torch.all(sample['image'] == 1)
 
-    def test_gcps_no_affine_transform(self) -> None:
+    @pytest.mark.parametrize('device', [None, 'cpu'])
+    def test_gcps_no_affine_transform(self, device: str | None) -> None:
         root = os.path.join('tests', 'data', 'raster_no_affine', 'gcps_true')
         ds = RasterDataset(root)
+        ds.device = device
         sample = ds[ds.bounds]
         assert torch.all(sample['image'] == 1)
 
@@ -1214,6 +1378,30 @@ class TestIntersectionDataset:
         ):
             dataset[-1:-1, -1:-1, pd.Timestamp.min : pd.Timestamp.min]
 
+    @pytest.mark.parametrize('path', ['res_2-2_epsg_32631', 'res_4-4_epsg_4326'])
+    def test_device(self, path: str) -> None:
+        images = []
+        for device in [None, 'cpu']:
+            ds1 = RasterDataset(
+                os.path.join('tests', 'data', 'raster', 'res_2-2_epsg_4087')
+            )
+            ds2 = RasterDataset(os.path.join('tests', 'data', 'raster', path))
+            ds1.device = ds2.device = device
+            ds = ds1 & ds2
+            images.append(ds[ds.bounds]['image'])
+        assert torch.equal(*images)
+
+    @pytest.mark.slow
+    def test_device_sentinel2(self, sentinel2_utm: list[Path]) -> None:
+        # 10 m UTM 31 & 20 m UTM 32: reproject and upsample the second dataset
+        datasets = []
+        for device in [None, 'cuda' if torch.cuda.is_available() else 'cpu']:
+            ds1 = Sentinel2(sentinel2_utm[0], bands=['B04'])
+            ds2 = Sentinel2(sentinel2_utm[1], bands=['B05'], res=20)
+            ds1.device = ds2.device = device
+            datasets.append(ds1 & ds2)
+        assert_device_matches(*datasets)
+
 
 class TestUnionDataset:
     @pytest.fixture(scope='class')
@@ -1378,3 +1566,27 @@ class TestUnionDataset:
             IndexError, match=r'index: .* not found in dataset with bounds:'
         ):
             dataset[-1:-1, -1:-1, pd.Timestamp.min : pd.Timestamp.min]
+
+    @pytest.mark.parametrize('path', ['res_2-2_epsg_32631', 'res_4-4_epsg_4326'])
+    def test_device(self, path: str) -> None:
+        images = []
+        for device in [None, 'cpu']:
+            ds1 = RasterDataset(
+                os.path.join('tests', 'data', 'raster', 'res_2-2_epsg_4087')
+            )
+            ds2 = RasterDataset(os.path.join('tests', 'data', 'raster', path))
+            ds1.device = ds2.device = device
+            ds = ds1 | ds2
+            images.append(ds[ds.bounds]['image'])
+        assert torch.equal(*images)
+
+    @pytest.mark.slow
+    def test_device_sentinel2(self, sentinel2_utm: list[Path]) -> None:
+        # UTM 31 | UTM 32: reproject the second dataset
+        datasets = []
+        for device in [None, 'cuda' if torch.cuda.is_available() else 'cpu']:
+            ds1 = Sentinel2(sentinel2_utm[0], bands=['B04'])
+            ds2 = Sentinel2(sentinel2_utm[1], bands=['B04'])
+            ds1.device = ds2.device = device
+            datasets.append(ds1 | ds2)
+        assert_device_matches(*datasets)
