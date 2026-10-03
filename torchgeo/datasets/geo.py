@@ -1200,7 +1200,7 @@ class VectorDataset(GeoDataset):
 
         out_crs = self.crs
 
-        shapes = []
+        shapes: list[tuple[Polygon | MultiPolygon, int]] = []
         for filepath in df.filepath:
             if pathlib.Path(filepath).suffix.lower() == '.parquet':
                 src = gpd.read_parquet(filepath)
@@ -1220,7 +1220,7 @@ class VectorDataset(GeoDataset):
                 [self.get_label(row) for _, row in src.iterrows()]
             ).astype(np.int32)
 
-            shapes.extend(list(zip(src.geometry, labels)))
+            shapes.extend(list(zip(src.geometry, labels)))  # ty: ignore[invalid-argument-type]
 
         # Rasterize geometries
         width = (x.stop - x.start) / x.step
@@ -1417,7 +1417,7 @@ class NonGeoClassificationDataset(NonGeoDataset, ImageFolder):
         # Avoid conflict between ImageFolder.transforms and our transforms
         self.tg_transforms = transforms
 
-    def __getitem__(self, index: int) -> Sample:
+    def __getitem__(self, index: int) -> Sample:  # ty: ignore[invalid-method-override]
         """Return an index within the dataset.
 
         Args:
