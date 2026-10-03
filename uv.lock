@@ -3963,7 +3963,7 @@ requires-dist = [
     { name = "torchmetrics", extras = ["detection"], specifier = ">=1.5" },
     { name = "torchvision", specifier = ">=0.17" },
     { name = "tqdm", specifier = ">=4.57" },
-    { name = "ty", marker = "extra == 'style'", specifier = ">=0.0.62" },
+    { name = "ty", marker = "extra == 'style'", specifier = ">=0.0.82" },
     { name = "types-geopandas", marker = "extra == 'style'", specifier = ">=1.0" },
     { name = "types-rasterio", marker = "extra == 'style'", specifier = ">=1.5.1" },
     { name = "types-requests", marker = "extra == 'style'", specifier = ">=2.25" },
