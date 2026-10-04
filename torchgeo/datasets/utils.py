@@ -686,6 +686,8 @@ def concat_samples(samples: Iterable[Sample]) -> Sample:
     """Concatenate a list of samples along an existing axis.
 
     Useful for joining samples in a :class:`torchgeo.datasets.IntersectionDataset`.
+    Drops ``crs_index``, as indices into different datasets' registries can't be
+    combined.
 
     Args:
         samples: list of samples
@@ -694,10 +696,15 @@ def concat_samples(samples: Iterable[Sample]) -> Sample:
         a single sample
 
     .. versionadded:: 0.2
+
+    .. versionchanged:: 0.11
+       Drops ``crs_index``.
     """
     uncollated = _list_dict_to_dict_list(samples)
     collated = {}
     for key, value in uncollated.items():
+        if key == 'crs_index':
+            continue
         collated[key] = torch.cat(value)
     return collated
 
@@ -706,6 +713,8 @@ def merge_samples(samples: Iterable[Sample]) -> Sample:
     """Merge a list of samples.
 
     Useful for joining samples in a :class:`torchgeo.datasets.UnionDataset`.
+    Drops ``crs_index``, as indices into different datasets' registries can't be
+    combined.
 
     Args:
         samples: list of samples
@@ -714,10 +723,15 @@ def merge_samples(samples: Iterable[Sample]) -> Sample:
         a single sample
 
     .. versionadded:: 0.2
+
+    .. versionchanged:: 0.11
+       Drops ``crs_index``.
     """
     collated = {}
     for sample in samples:
         for key, value in sample.items():
+            if key == 'crs_index':
+                continue
             if key in collated:
                 # Take the maximum so that nodata values (zeros) get replaced
                 # by data values whenever possible
