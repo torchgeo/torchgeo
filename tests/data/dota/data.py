@@ -96,8 +96,6 @@ def create_test_data(root: Path) -> None:
             print(f"        '{type_}': {{")
 
             for version in versions:
-                tar_name = f'dotav{version}_{type_}_{split}.tar.gz'
-
                 # version 1.0 and 1.5 have the same images
                 if version == '1.5' and type_ == 'images':
                     version_filename = '1.0'
