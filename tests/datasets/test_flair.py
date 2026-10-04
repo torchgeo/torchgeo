@@ -187,7 +187,7 @@ class TestFLAIRHUB:
             _TEST_DATA / 'FLAIR-HUB_TOY_DATASET.zip',
             tmp_path / 'FLAIR-HUB_TOY_DATASET.zip',
         )
-        dataset = FLAIRHUBToy(
+        FLAIRHUBToy(
             root=tmp_path,
             split='train',
             bands=['AERIAL_RGBI'],
