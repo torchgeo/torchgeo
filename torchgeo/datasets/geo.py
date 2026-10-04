@@ -1608,8 +1608,8 @@ class IntersectionDataset(GeoDataset):
         # All datasets are guaranteed to have a valid index
         samples = [ds[index] for ds in self.datasets]
 
-        # We don't yet resolve the combined CRS from the child samples, so use self.crs.
-        # Each child's crs_index refers to its own registry, so drop it.
+        # Every child is read in self.crs. A child's crs_index points into its own
+        # registry, so drop it and stamp an index into this combiner's registry.
         for s in samples:
             s.pop('crs_index', None)
         sample = self.collate_fn(samples)
@@ -1757,8 +1757,8 @@ class UnionDataset(GeoDataset):
                 f'index: {index} not found in dataset with bounds: {self.bounds}'
             )
 
-        # We don't yet resolve the combined CRS from the child samples, so use self.crs.
-        # Each child's crs_index refers to its own registry, so drop it.
+        # Every child is read in self.crs. A child's crs_index points into its own
+        # registry, so drop it and stamp an index into this combiner's registry.
         for s in samples:
             s.pop('crs_index', None)
         sample = self.collate_fn(samples)
