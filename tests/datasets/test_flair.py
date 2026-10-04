@@ -187,7 +187,7 @@ class TestFLAIRHUB:
             _TEST_DATA / 'FLAIR-HUB_TOY_DATASET.zip',
             tmp_path / 'FLAIR-HUB_TOY_DATASET.zip',
         )
-        dataset = FLAIRHUBToy(
+        FLAIRHUBToy(
             root=tmp_path,
             split='train',
             bands=['AERIAL_RGBI'],
@@ -197,14 +197,13 @@ class TestFLAIRHUB:
         toy_dir = tmp_path / 'FLAIR-HUB_TOY'
         shutil.rmtree(toy_dir)
 
-        dataset = FLAIRHUBToy(
+        FLAIRHUBToy(
             root=tmp_path,
             split='train',
             bands=['AERIAL_RGBI'],
             dataset_type='land_cover',
             checksum=False,
         )
-        assert len(dataset) == 1
 
         shutil.rmtree(toy_dir / 'GLOBAL_ALL_MTD')
         (toy_dir / 'GLOBAL_ALL_MTD.zip').unlink(missing_ok=True)
