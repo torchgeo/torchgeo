@@ -286,7 +286,8 @@ class GeoDataset(Dataset[Sample], abc.ABC, PlottingMixin):
 
         A sample's ``crs_index`` is an integer index into this list, so the per-sample
         CRS travels as a tensor. A dataset currently reads every query in :attr:`crs`,
-        so the registry holds only that single CRS.
+        so the registry holds only that single CRS. Follows :attr:`crs`, so changing it
+        re-points earlier ``crs_index`` values.
 
         Returns:
             The CRSs this dataset can emit, in index order.
