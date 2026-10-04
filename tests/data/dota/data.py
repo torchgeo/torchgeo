@@ -114,7 +114,7 @@ def create_test_data(root: Path) -> None:
     print('}')
 
 
-def create_sample_df(root: Path) -> pd.DataFrame:
+def create_sample_df(root: Path) -> None:
     """Create sample DataFrame for test data."""
     rows = []
     splits = ['train', 'val']
@@ -139,10 +139,9 @@ def create_sample_df(root: Path) -> pd.DataFrame:
 
     df = pd.DataFrame(rows)
     df.to_csv(root / 'samples.csv')
-    return df
 
 
 if __name__ == '__main__':
     root = Path('.')
     create_test_data(root)
-    df = create_sample_df(root)
+    create_sample_df(root)
