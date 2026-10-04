@@ -304,8 +304,15 @@ class GeoDataset(Dataset[Sample], abc.ABC, PlottingMixin):
 
         Returns:
             The index of *crs* in :attr:`crs_registry` as a 0-d tensor.
+
+        Raises:
+            ValueError: If *crs* is not in :attr:`crs_registry`.
         """
-        return torch.tensor(self.crs_registry.index(crs))
+        registry = self.crs_registry
+        if crs not in registry:
+            msg = f'{crs.name} is not in the crs_registry of {type(self).__name__}'
+            raise ValueError(msg)
+        return torch.tensor(registry.index(crs))
 
     @property
     def res(self) -> tuple[float, float]:

@@ -471,6 +471,8 @@ class TestRasterDataset:
         assert x['crs_index'] == 0
         assert x['crs_index'].dtype == torch.long
         assert x['crs_index'].ndim == 0
+        with pytest.raises(ValueError, match='UTM zone 31N is not in the crs_registry'):
+            ds._crs_index(CRS.from_epsg(32631))
 
     def test_reprojection(self) -> None:
         naip1 = NAIP(self.naip_dir, crs=CRS.from_epsg(4087))
