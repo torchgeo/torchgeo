@@ -281,10 +281,10 @@ class GeoDataset(Dataset[Sample], abc.ABC, PlottingMixin):
         self.index.to_crs(new_crs, inplace=True)
 
     @property
-    def crs_registry(self) -> list[PROJ_CRS]:
+    def crs_registry(self) -> tuple[PROJ_CRS, ...]:
         """Ordered registry of the CRSs a sample's ``crs_index`` refers to.
 
-        A sample's ``crs_index`` is an integer index into this list, so the per-sample
+        A sample's ``crs_index`` is an integer index into this tuple, so the per-sample
         CRS travels as a tensor. A dataset currently reads every query in :attr:`crs`,
         so the registry holds only that single CRS. Follows :attr:`crs`, so changing it
         re-points earlier ``crs_index`` values.
@@ -294,7 +294,7 @@ class GeoDataset(Dataset[Sample], abc.ABC, PlottingMixin):
 
         .. versionadded:: 0.11
         """
-        return [self.crs]
+        return (self.crs,)
 
     def _crs_index(self, crs: PROJ_CRS) -> Tensor:
         """Registry index of *crs*, for a sample's ``crs_index``.
