@@ -963,6 +963,11 @@ class TestIntersectionDataset:
         sample = dataset[dataset.bounds]
         assert isinstance(sample['image'], torch.Tensor)
 
+    def test_getitem_child_without_crs_index(self) -> None:
+        ds = IntersectionDataset(CustomGeoDataset(), CustomGeoDataset())
+        sample = ds[ds.bounds]
+        assert sample['crs_index'] == 0
+
     def test_len(self, dataset: IntersectionDataset) -> None:
         assert len(dataset) == 1
 
@@ -1239,6 +1244,11 @@ class TestUnionDataset:
     def test_getitem(self, dataset: UnionDataset) -> None:
         sample = dataset[dataset.bounds]
         assert isinstance(sample['image'], torch.Tensor)
+
+    def test_getitem_child_without_crs_index(self) -> None:
+        ds = UnionDataset(CustomGeoDataset(), CustomGeoDataset())
+        sample = ds[ds.bounds]
+        assert sample['crs_index'] == 0
 
     def test_len(self, dataset: UnionDataset) -> None:
         assert len(dataset) == 2
