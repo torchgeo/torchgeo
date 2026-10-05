@@ -45,7 +45,7 @@ class TestEverWatch:
     def test_not_extracted(self, tmp_path: Path) -> None:
         url = os.path.join('tests', 'data', 'everwatch', 'everwatch-benchmark.zip')
         shutil.copy(url, tmp_path)
-        EverWatch(root=tmp_path)
+        EverWatch(root=tmp_path, checksum=False)
 
     def test_corrupted(self, tmp_path: Path) -> None:
         with open(os.path.join(tmp_path, 'everwatch-benchmark.zip'), 'w') as f:
@@ -60,4 +60,6 @@ class TestEverWatch:
     def test_plot(self, dataset: EverWatch) -> None:
         x = dataset[0].copy()
         dataset.plot(x, suptitle='Test')
+        plt.close()
+        dataset.plot(x, show_titles=False)
         plt.close()

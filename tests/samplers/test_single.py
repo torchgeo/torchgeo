@@ -68,7 +68,7 @@ class TestGeoSampler:
 
     def test_abstract(self, dataset: CustomGeoDataset) -> None:
         with pytest.raises(TypeError, match="Can't instantiate abstract class"):
-            GeoSampler(dataset)
+            GeoSampler(dataset)  # ty: ignore[call-non-callable]
 
     @pytest.mark.slow
     @pytest.mark.parametrize('num_workers', [0, 1, 2])
@@ -206,6 +206,7 @@ class TestGridGeoSampler:
 
     def test_len(self, sampler: GridGeoSampler) -> None:
         bounds = tuple(sampler.index.total_bounds)
+        assert len(bounds) == 4
         rows, cols = tile_to_chips(bounds, sampler.size, sampler.stride)
         length = rows * cols * 2  # two items in dataset
         assert len(sampler) == length

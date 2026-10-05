@@ -90,7 +90,7 @@ class EverWatch(NonGeoDataset):
         split: Literal['train', 'val', 'test'] = 'train',
         transforms: Callable[[Sample], Sample] | None = None,
         download: bool = False,
-        checksum: bool = False,
+        checksum: bool = True,
     ) -> None:
         """Initialize a new EverWatch dataset instance.
 
@@ -130,7 +130,7 @@ class EverWatch(NonGeoDataset):
 
         # group per image path to get all annotations for one sample
         self.annot_df['sample_index'] = pd.factorize(self.annot_df['image_path'])[0]
-        self.annot_df = self.annot_df.set_index(['sample_index', self.annot_df.index])
+        self.annot_df = self.annot_df.set_index(['sample_index', self.annot_df.index])  # ty: ignore[invalid-argument-type]
 
         self.class2idx: dict[str, int] = {c: i for i, c in enumerate(self.classes)}
 
@@ -243,17 +243,25 @@ class EverWatch(NonGeoDataset):
         )
 
     def plot(
-        self, sample: Sample, suptitle: str | None = None, box_alpha: float = 0.7
+        self,
+        sample: Sample,
+        show_titles: bool = True,
+        suptitle: str | None = None,
+        box_alpha: float = 0.7,
     ) -> Figure:
         """Plot a sample from the dataset.
 
         Args:
             sample: a sample returned by :meth:`__getitem__`
+            show_titles: flag indicating whether to show titles above each panel
             suptitle: optional string to use as a suptitle
             box_alpha: alpha value for boxes
 
         Returns:
             a matplotlib Figure with the rendered sample
+
+        .. versionadded:: 0.11
+            The *show_titles* parameter.
         """
         image = sample['image'].permute((1, 2, 0)).numpy()
         boxes = sample['bbox_xyxy'].numpy()
@@ -284,14 +292,15 @@ class EverWatch(NonGeoDataset):
             )
             axs.add_patch(rect)
             # Add label above box
-            axs.text(
-                x1,
-                y1 - 5,
-                label,
-                color='white',
-                fontsize=8,
-                bbox={'facecolor': color, 'alpha': box_alpha},
-            )
+            if show_titles:
+                axs.text(
+                    x1,
+                    y1 - 5,
+                    label,
+                    color='white',
+                    fontsize=8,
+                    bbox={'facecolor': color, 'alpha': box_alpha},
+                )
 
         if suptitle is not None:
             plt.suptitle(suptitle)

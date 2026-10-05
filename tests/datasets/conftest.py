@@ -11,7 +11,7 @@ from _pytest.fixtures import SubRequest
 from _pytest.tmpdir import TempPathFactory
 from pytest import MonkeyPatch
 
-import torchgeo.datasets.utils
+import torchgeo
 from torchgeo.datasets.utils import Executable, Path, which
 
 

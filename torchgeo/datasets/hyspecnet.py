@@ -30,7 +30,7 @@ from .utils import (
 class HySpecNet11k(NonGeoDataset):
     """HySpecNet-11k dataset.
 
-    `HySpecNet-11k <https://doi.org/10.5061/dryad.fttdz08zh>`__ is a large-scale
+    `HySpecNet-11k <https://hyspecnet.rsim.berlin/>`__ is a large-scale
     benchmark dataset for hyperspectral image compression and self-supervised learning.
     It is made up of 11,483 nonoverlapping image patches acquired by the
     `EnMAP satellite <https://www.enmap.org/>`_. Each patch is a portion of 128 x 128
@@ -92,7 +92,7 @@ class HySpecNet11k(NonGeoDataset):
         bands: Sequence[str] | None = None,
         transforms: Callable[[Sample], Sample] | None = None,
         download: bool = False,
-        checksum: bool = False,
+        checksum: bool = True,
     ) -> None:
         """Initialize a new HySpecNet11k instance.
 
@@ -194,11 +194,14 @@ class HySpecNet11k(NonGeoDataset):
 
             raise DatasetNotFoundError(self)
 
-    def plot(self, sample: Sample, suptitle: str | None = None) -> Figure:
+    def plot(
+        self, sample: Sample, show_titles: bool = True, suptitle: str | None = None
+    ) -> Figure:
         """Plot a sample from the dataset.
 
         Args:
             sample: A sample returned by :meth:`__getitem__`.
+            show_titles: flag indicating whether to show titles above each panel
             suptitle: optional string to use as a suptitle
 
         Returns:
@@ -206,6 +209,9 @@ class HySpecNet11k(NonGeoDataset):
 
         Raises:
             RGBBandsMissingError: If *bands* does not include all RGB bands.
+
+        .. versionadded:: 0.11
+            The *show_titles* parameter.
         """
         rgb_indices = []
         for band in self.rgb_bands:
@@ -221,6 +227,9 @@ class HySpecNet11k(NonGeoDataset):
         fig, ax = plt.subplots()
         ax.imshow(image)
         ax.axis('off')
+
+        if show_titles:
+            ax.set_title('Image')
 
         if suptitle:
             fig.suptitle(suptitle)

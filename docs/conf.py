@@ -57,6 +57,7 @@ needs_sphinx = '8.0'
 nitpicky = True
 nitpick_ignore = [
     # Undocumented classes
+    ('py:class', 'affine.Affine'),
     ('py:class', 'kornia.augmentation._2d.intensity.base.IntensityAugmentationBase2D'),
     ('py:class', 'kornia.augmentation._3d.geometric.base.GeometricAugmentationBase3D'),
     ('py:class', 'kornia.augmentation.base._AugmentationBase'),
@@ -72,6 +73,8 @@ nitpick_ignore = [
     ('py:class', 'torchvision.models._api.WeightsEnum'),
     ('py:class', 'torchvision.models.resnet.ResNet'),
     ('py:class', 'torchvision.models.swin_transformer.SwinTransformer'),
+    ('py:class', 'tokenizers.models.BPE'),
+    ('py:class', 'tokenizers.models.Model'),
     # Internal type aliases we don't yet want to expose
     ('py:class', 'torchgeo.datasets.openstreetmap.OSMClassConfig'),
 ]
@@ -150,6 +153,43 @@ html_favicon = os.path.join('_static', 'logo', 'favicon.ico')
 html_static_path = ['_static']
 html_css_files = ['custom.css']
 
+# -- Options for linkcheck output -------------------------------------------------
+
+# Expected redirects
+linkcheck_allowed_redirects = {
+    'https://badge.fury.io/.*': '.*',
+    'https://doi.org/.*': '.*',
+    'https://hf.co/.*': 'https://huggingface.co/.*',
+    '.*': 'https://img.shields.io/.*',
+}
+
+# Expected missing anchors
+linkcheck_anchors_ignore_for_url = [
+    'https://docs.pytorch.org/.*',
+    'https://github.com/.*',
+]
+
+# URLs that require login or block bots
+linkcheck_ignore = [
+    'https://ai.meta.com/.*',
+    'https://code.earthengine.google.com/.*',
+    'https://console.cloud.google.com/.*',
+    'https://dl.acm.org/.*',
+    'https://esaopenarchive.org/.*',
+    'https://github.com/login',
+    'https://localhost:6006',
+    'https://medium.com/.*',
+    'https://www.gbif.org/.*',
+    'https://www.grss-ieee.org/.*',
+    'https://www.mdpi.com/.*',
+    'https://www.researchgate.net/.*',
+    'https://www.sciencedirect.com/.*',
+    'https://www.tandfonline.com/.*',
+    'https://www.youtube.com/.*',
+    'https://.*.onlinelibrary.wiley.com/.*',
+    'https://.*.slack.com/.*',
+]
+
 # -- Extension configuration -------------------------------------------------
 
 # sphinx.ext.autodoc
@@ -185,7 +225,7 @@ intersphinx_mapping = {
 }
 
 # myst-parser
-suppress_warnings = ['myst.header']
+suppress_warnings = ['myst.header', 'ref.ref']
 
 # nbsphinx
 nbsphinx_execute = 'never'
