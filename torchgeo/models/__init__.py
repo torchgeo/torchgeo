@@ -25,7 +25,7 @@ from .earthloc import EarthLoc, EarthLoc_Weights, earthloc
 from .farseg import FarSeg
 from .fcn import FCN
 from .fcsiam import FCSiamConc, FCSiamDiff
-from .ltae import LTAE
+from .ltae import LTAE, LTAE2d
 from .olmoearth import (
     OlmoEarthBase_Weights,
     OlmoEarthLarge_Weights,
@@ -113,6 +113,7 @@ __all__ = (
     'FCSiamConc',
     'FCSiamDiff',
     'FarSeg',
+    'LTAE2d',
     'OlmoEarthBase_Weights',
     'OlmoEarthLarge_Weights',
     'OlmoEarthNano_Weights',
