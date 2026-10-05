@@ -9,6 +9,7 @@ from functools import partial
 from typing import Any
 
 import kornia.augmentation as K
+import torch
 
 from ..datasets import PASTIS, PASTIS100
 from ..datasets.utils import pad_across_batches
@@ -22,6 +23,10 @@ class PASTISDataModule(NonGeoDataModule):
     """
 
     _dataset_cls: type[PASTIS] = PASTIS
+
+    # https://github.com/torchgeo/torchgeo/issues/4061
+    mean = torch.tensor(0)
+    std = torch.tensor(10000)
 
     def __init__(
         self,

@@ -51,13 +51,7 @@ TorchGeo is licensed under the MIT License. If your pull request adds any new fi
 AI Policy
 ---------
 
-The TorchGeo project follows the TorchGeo organization's `AI policy <https://github.com/torchgeo/governance/blob/main/AI-POLICY.md>`__. In particular, this means:
-
-* **Responsibility**: human-in-the-loop, must understand every line of code you contribute
-* **Copyright**: no agentic AI, must own copyright of your contributions
-* **Communication**: all issue/PR descriptions/comments must be written in your own words
-* **Conciseness**: PRs should be simple and concise, no defensive coding or unnecessary tests
-* **Disclosure**: disclose any usage of AI via our disclosure templates
+The TorchGeo project does not currently allow the use of LLMs. See the `AI policy <https://github.com/torchgeo/torchgeo/blob/main/.github/AI-POLICY.md>`__ for details.
 
 .. _tests:
 
