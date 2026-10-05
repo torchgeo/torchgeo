@@ -9,7 +9,6 @@ import torch
 from pytest import MonkeyPatch
 
 import torchgeo
-import torchgeo.models
 from torchgeo.models import BTC
 from torchgeo.models.btc import SwinBackbone
 
