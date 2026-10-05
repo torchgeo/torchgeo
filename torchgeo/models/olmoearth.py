@@ -9,6 +9,7 @@ from typing import Any
 import torch
 from torch import nn
 from torchvision.models._api import Weights, WeightsEnum
+from typing_extensions import deprecated
 
 from ..datasets.utils import lazy_import
 
@@ -430,6 +431,112 @@ def olmoearth_large(
     """
     kwargs.setdefault('model_version', 'v1')
     return _olmoearth(weights, 'large', kwargs.pop('model_version'), **kwargs)
+
+
+_olmoearth_v1_meta = {
+    'dataset': 'Major TOM',
+    'model': 'OlmoEarthPretrain_v1',
+    'architecture': 'Vision Transformer',
+    'publication': 'https://arxiv.org/abs/2506.10890',
+    'repo': 'https://github.com/allenai/olmoearth_pretrain',
+    'license': 'OlmoEarth Artifact License',
+    'model_size': None,
+    'hf_repo': None,
+}
+
+
+class OlmoEarthV1_Weights(WeightsEnum):
+    """OlmoEarth v1 pre-trained weights.
+
+    If you use this model in your research, please cite the following paper:
+
+    * https://arxiv.org/abs/2511.13655
+
+    .. versionadded:: 0.10
+
+    .. deprecated:: 0.11
+       Will be removed in 1.0. Use :class:`OlmoEarthNano_Weights`,
+       :class:`OlmoEarthTiny_Weights`, :class:`OlmoEarthBase_Weights` or
+       :class:`OlmoEarthLarge_Weights` instead.
+    """
+
+    NANO = Weights(
+        url='https://huggingface.co/allenai/OlmoEarth-v1-Nano/resolve/529248a4dc3c54014c56b7504641cec98de31d1c/weights-795c68419a658fd22ccf8f2e020607675f963e9ef3b93d8e368bb17646765347.pth',
+        transforms=_olmoearth_transforms,
+        meta=_olmoearth_v1_meta
+        | {'model_size': 'nano', 'hf_repo': 'allenai/OlmoEarth-v1-Nano'},
+    )
+    TINY = Weights(
+        url='https://huggingface.co/allenai/OlmoEarth-v1-Tiny/resolve/885784437d4e2d632b7bf51b4233426c6f4479dc/weights-66b9827af383bc444d7909a406a5b62c072bb08d6804ff47a247c2dce8fad9a4.pth',
+        transforms=_olmoearth_transforms,
+        meta=_olmoearth_v1_meta
+        | {'model_size': 'tiny', 'hf_repo': 'allenai/OlmoEarth-v1-Tiny'},
+    )
+    BASE = Weights(
+        url='https://huggingface.co/allenai/OlmoEarth-v1-Base/resolve/4bd1392a4539404d2c74276c39f3cb4cfff466cc/weights-551c1cc53337c6faaddead88071d7ebd2bd53ec271600fa6f0ee0a518c8b6e11.pth',
+        transforms=_olmoearth_transforms,
+        meta=_olmoearth_v1_meta
+        | {'model_size': 'base', 'hf_repo': 'allenai/OlmoEarth-v1-Base'},
+    )
+    LARGE = Weights(
+        url='https://huggingface.co/allenai/OlmoEarth-v1-Large/resolve/b2c9f41de3d8454cb37f0cd9cc3e79ec7c4af435/weights-1adb5026bd520c54bc415a1282386954927623bab81d01be2f5b6379cc039035.pth',
+        transforms=_olmoearth_transforms,
+        meta=_olmoearth_v1_meta
+        | {'model_size': 'large', 'hf_repo': 'allenai/OlmoEarth-v1-Large'},
+    )
+
+
+@deprecated(
+    'Use torchgeo.models.olmoearth_nano, olmoearth_tiny, olmoearth_base or '
+    'olmoearth_large instead'
+)
+def olmoearth_v1(
+    weights: OlmoEarthV1_Weights | None = None, **kwargs: Any
+) -> nn.Module:
+    """OlmoEarth v1 model.
+
+    If you use this model in your research, please cite the following paper:
+
+    * https://arxiv.org/abs/2511.13655
+
+    This model requires the following additional library to be installed:
+
+    * `olmoearth-pretrain-minimal <https://pypi.org/project/olmoearth-pretrain-minimal/>`_:
+      to load the models.
+
+    .. versionadded:: 0.10
+
+    .. deprecated:: 0.11
+       Will be removed in 1.0. Use :func:`olmoearth_nano`, :func:`olmoearth_tiny`,
+       :func:`olmoearth_base` or :func:`olmoearth_large` instead.
+
+    Args:
+        weights: Pre-trained weights. If ``None``, model is randomly initialized.
+        **kwargs: Passed to
+            ``olmoearth_pretrain_minimal.OlmoEarthPretrain_v1``
+            (e.g. ``model_size``, ``max_patch_size``).
+
+    Returns:
+        An OlmoEarth v1 model.
+    """
+    olmoearth = lazy_import('olmoearth_pretrain_minimal')
+
+    model_size = kwargs.pop('model_size', 'nano')
+    if weights is not None:
+        model_size = weights.meta.get('model_size', model_size)
+    model: nn.Module = olmoearth.OlmoEarthPretrain_v1(
+        model_size=model_size, model_version='v1', **kwargs
+    )
+    if weights is not None:
+        state_dict = weights.get_state_dict(
+            progress=True, check_hash=True, weights_only=True
+        )
+        state_dict = {f'model.{key}': value for key, value in state_dict.items()}
+        missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
+
+        assert not missing_keys
+        assert not unexpected_keys
+    return model
 
 
 def olmoearth_v1_unet_decoder(

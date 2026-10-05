@@ -23,6 +23,7 @@ from torchgeo.models import (
     OlmoEarthNano_Weights,
     OlmoEarthSmall_Weights,
     OlmoEarthTiny_Weights,
+    OlmoEarthV1_Weights,
     Panopticon_Weights,
     Presto_Weights,
     ResNet18_Weights,
@@ -63,6 +64,7 @@ from torchgeo.models import (
     olmoearth_nano,
     olmoearth_small,
     olmoearth_tiny,
+    olmoearth_v1,
     olmoearth_v1_unet_decoder,
     panopticon_vitb14,
     presto,
@@ -88,6 +90,9 @@ from torchgeo.models import (
 )
 
 memory_intensive = pytest.mark.xdist_group('memory_intensive')
+deprecated = pytest.mark.filterwarnings(
+    'ignore:Use torchgeo.models.olmoearth_nano.* instead:DeprecationWarning'
+)
 
 builders = [
     pytest.param(aurora_swin_unet, marks=memory_intensive),
@@ -105,6 +110,7 @@ builders = [
     olmoearth_nano,
     olmoearth_small,
     olmoearth_tiny,
+    pytest.param(olmoearth_v1, marks=deprecated),
     olmoearth_v1_unet_decoder,
     panopticon_vitb14,
     presto,
@@ -142,6 +148,7 @@ enums = [
     OlmoEarthNano_Weights,
     OlmoEarthSmall_Weights,
     OlmoEarthTiny_Weights,
+    OlmoEarthV1_Weights,
     Panopticon_Weights,
     Presto_Weights,
     ResNet18_Weights,
@@ -176,6 +183,7 @@ def test_get_model(builder: Callable[..., nn.Module]) -> None:
         olmoearth_nano,
         olmoearth_small,
         olmoearth_tiny,
+        olmoearth_v1,
         olmoearth_v1_unet_decoder,
     ):
         pytest.importorskip('olmoearth_pretrain_minimal')
