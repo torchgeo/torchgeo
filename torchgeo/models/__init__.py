@@ -113,7 +113,6 @@ __all__ = (
     'FCSiamConc',
     'FCSiamDiff',
     'FarSeg',
-    'LTAE',
     'OlmoEarthBase_Weights',
     'OlmoEarthLarge_Weights',
     'OlmoEarthNano_Weights',
