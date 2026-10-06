@@ -39,7 +39,7 @@ class OlmoEarthNano_Weights(WeightsEnum):
     If you use this model in your research, please cite the following papers:
 
     * https://arxiv.org/abs/2511.13655
-    * https://arxiv.org/html/2605.20804v1
+    * https://arxiv.org/abs/2605.20804v1
     * https://arxiv.org/abs/2605.20804
 
     .. versionadded:: 0.11
@@ -89,7 +89,7 @@ class OlmoEarthTiny_Weights(WeightsEnum):
     If you use this model in your research, please cite the following papers:
 
     * https://arxiv.org/abs/2511.13655
-    * https://arxiv.org/html/2605.20804v1
+    * https://arxiv.org/abs/2605.20804v1
     * https://arxiv.org/abs/2605.20804
 
     .. versionadded:: 0.11
@@ -163,7 +163,7 @@ class OlmoEarthBase_Weights(WeightsEnum):
     If you use this model in your research, please cite the following papers:
 
     * https://arxiv.org/abs/2511.13655
-    * https://arxiv.org/html/2605.20804v1
+    * https://arxiv.org/abs/2605.20804v1
     * https://arxiv.org/abs/2605.20804
 
     .. versionadded:: 0.11
@@ -290,7 +290,7 @@ def olmoearth_nano(
     If you use this model in your research, please cite the following papers:
 
     * https://arxiv.org/abs/2511.13655
-    * https://arxiv.org/html/2605.20804v1
+    * https://arxiv.org/abs/2605.20804v1
     * https://arxiv.org/abs/2605.20804
 
     This model requires the following additional library to be installed:
@@ -321,7 +321,7 @@ def olmoearth_tiny(
     If you use this model in your research, please cite the following papers:
 
     * https://arxiv.org/abs/2511.13655
-    * https://arxiv.org/html/2605.20804v1
+    * https://arxiv.org/abs/2605.20804v1
     * https://arxiv.org/abs/2605.20804
 
     This model requires the following additional library to be installed:
@@ -381,7 +381,7 @@ def olmoearth_base(
     If you use this model in your research, please cite the following papers:
 
     * https://arxiv.org/abs/2511.13655
-    * https://arxiv.org/html/2605.20804v1
+    * https://arxiv.org/abs/2605.20804v1
     * https://arxiv.org/abs/2605.20804
 
     This model requires the following additional library to be installed:

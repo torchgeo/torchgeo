@@ -29,42 +29,27 @@ from torchgeo.models import (
 olmoearth_pretrain_minimal = pytest.importorskip('olmoearth_pretrain_minimal')
 
 
-class TestOlmoEarthPinnedDownload:
-    @pytest.fixture
-    def downloads(self, monkeypatch: MonkeyPatch) -> list[str]:
-        urls: list[str] = []
+@pytest.fixture
+def mock_download(monkeypatch: MonkeyPatch) -> list[str]:
+    """Stand in for the pinned config.json + weights.pth download and load."""
+    urls: list[str] = []
 
-        def download_url_to_file(
-            url: str, dst: str, hash_prefix: str | None = None
-        ) -> None:
-            urls.append(url)
-            Path(dst).touch()
+    def download_url_to_file(
+        url: str, dst: str, hash_prefix: str | None = None
+    ) -> None:
+        urls.append(url)
+        Path(dst).touch()
 
-        def load_model_from_path(path: str) -> nn.Module:
-            assert os.path.exists(os.path.join(path, 'config.json'))
-            assert os.path.exists(os.path.join(path, 'weights.pth'))
-            return nn.Identity()
+    def load_model_from_path(path: str) -> nn.Module:
+        assert os.path.exists(os.path.join(path, 'config.json'))
+        assert os.path.exists(os.path.join(path, 'weights.pth'))
+        return nn.Identity()
 
-        monkeypatch.setattr(torch.hub, 'download_url_to_file', download_url_to_file)
-        monkeypatch.setattr(
-            olmoearth_pretrain_minimal, 'load_model_from_path', load_model_from_path
-        )
-        return urls
-
-    def test_download(self, downloads: list[str]) -> None:
-        weights = OlmoEarthNano_Weights.V1
-        model = olmoearth_nano(weights=weights)
-        assert isinstance(model, nn.Identity)
-        prefix = (
-            f'https://huggingface.co/{weights.meta["hf_repo"]}'
-            f'/resolve/{weights.meta["revision"]}'
-        )
-        assert downloads == [f'{prefix}/config.json', f'{prefix}/weights.pth']
-
-    def test_cached(self, downloads: list[str]) -> None:
-        olmoearth_nano(weights=OlmoEarthNano_Weights.V1)
-        olmoearth_nano(weights=OlmoEarthNano_Weights.V1)
-        assert len(downloads) == 2
+    monkeypatch.setattr(torch.hub, 'download_url_to_file', download_url_to_file)
+    monkeypatch.setattr(
+        olmoearth_pretrain_minimal, 'load_model_from_path', load_model_from_path
+    )
+    return urls
 
 
 class TestOlmoEarthNano:
@@ -72,8 +57,24 @@ class TestOlmoEarthNano:
     def weights(self, request: SubRequest) -> OlmoEarthNano_Weights:
         return request.param
 
+    @pytest.fixture
+    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthNano_Weights:
+        return OlmoEarthNano_Weights.V1_2
+
     def test_olmoearth(self) -> None:
         olmoearth_nano()
+
+    def test_olmoearth_weights(self, mocked_weights: OlmoEarthNano_Weights) -> None:
+        olmoearth_nano(weights=mocked_weights)
+
+    def test_olmoearth_weights_cached(
+        self, mocked_weights: OlmoEarthNano_Weights, mock_download: list[str]
+    ) -> None:
+        olmoearth_nano(weights=mocked_weights)
+        olmoearth_nano(weights=mocked_weights)
+        meta = mocked_weights.meta
+        prefix = f'https://huggingface.co/{meta["hf_repo"]}/resolve/{meta["revision"]}'
+        assert mock_download == [f'{prefix}/config.json', f'{prefix}/weights.pth']
 
     @pytest.mark.slow
     def test_olmoearth_download(self, weights: OlmoEarthNano_Weights) -> None:
@@ -85,8 +86,15 @@ class TestOlmoEarthTiny:
     def weights(self, request: SubRequest) -> OlmoEarthTiny_Weights:
         return request.param
 
+    @pytest.fixture
+    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthTiny_Weights:
+        return OlmoEarthTiny_Weights.V1_2
+
     def test_olmoearth(self) -> None:
         olmoearth_tiny()
+
+    def test_olmoearth_weights(self, mocked_weights: OlmoEarthTiny_Weights) -> None:
+        olmoearth_tiny(weights=mocked_weights)
 
     @pytest.mark.slow
     def test_olmoearth_download(self, weights: OlmoEarthTiny_Weights) -> None:
@@ -98,8 +106,15 @@ class TestOlmoEarthSmall:
     def weights(self, request: SubRequest) -> OlmoEarthSmall_Weights:
         return request.param
 
+    @pytest.fixture
+    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthSmall_Weights:
+        return OlmoEarthSmall_Weights.V1_2
+
     def test_olmoearth(self) -> None:
         olmoearth_small()
+
+    def test_olmoearth_weights(self, mocked_weights: OlmoEarthSmall_Weights) -> None:
+        olmoearth_small(weights=mocked_weights)
 
     @pytest.mark.slow
     def test_olmoearth_download(self, weights: OlmoEarthSmall_Weights) -> None:
@@ -111,8 +126,15 @@ class TestOlmoEarthBase:
     def weights(self, request: SubRequest) -> OlmoEarthBase_Weights:
         return request.param
 
+    @pytest.fixture
+    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthBase_Weights:
+        return OlmoEarthBase_Weights.V1_2
+
     def test_olmoearth(self) -> None:
         olmoearth_base()
+
+    def test_olmoearth_weights(self, mocked_weights: OlmoEarthBase_Weights) -> None:
+        olmoearth_base(weights=mocked_weights)
 
     @pytest.mark.slow
     def test_olmoearth_download(self, weights: OlmoEarthBase_Weights) -> None:
@@ -124,8 +146,15 @@ class TestOlmoEarthLarge:
     def weights(self, request: SubRequest) -> OlmoEarthLarge_Weights:
         return request.param
 
+    @pytest.fixture
+    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthLarge_Weights:
+        return OlmoEarthLarge_Weights.V1
+
     def test_olmoearth(self) -> None:
         olmoearth_large()
+
+    def test_olmoearth_weights(self, mocked_weights: OlmoEarthLarge_Weights) -> None:
+        olmoearth_large(weights=mocked_weights)
 
     @pytest.mark.slow
     def test_olmoearth_download(self, weights: OlmoEarthLarge_Weights) -> None:
