@@ -227,7 +227,7 @@ def random_grid_cell_assignment(
                 if geom := shapely.intersection(row.geometry, geom):
                     left.append(index.left)
                     right.append(index.right)
-                    rows.append(row)
+                    rows.append(row.filepath)
                     geometry.append(geom)
 
     lengths = _fractions_to_lengths(fractions, len(rows))
@@ -235,7 +235,7 @@ def random_grid_cell_assignment(
     indexes_sr = pd.IntervalIndex.from_arrays(
         left, right, closed='both', name='datetime'
     )
-    rows_df = pd.DataFrame(rows)
+    rows_sr = pd.Series(rows)
     geometry_sr = pd.Series(geometry)
 
     # Randomly assign cells to each new index
@@ -244,8 +244,9 @@ def random_grid_cell_assignment(
     new_datasets = []
     for offset, length in zip(itertools.accumulate(lengths), lengths):
         ds = deepcopy(dataset)
+        filepaths = rows_sr.iloc[indices[offset - length : offset].tolist()].values  # ty: ignore[invalid-argument-type]
         ds.index = GeoDataFrame(
-            data=rows_df.iloc[indices[offset - length : offset].tolist()].values,
+            data={'filepath': filepaths},
             index=indexes_sr[indices[offset - length : offset].tolist()],
             geometry=geometry_sr[indices[offset - length : offset].tolist()].values,
             crs=dataset.crs,
