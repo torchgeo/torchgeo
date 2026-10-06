@@ -33,19 +33,17 @@ _olmoearth_meta = {
 }
 
 
-class OlmoEarthNano_Weights(WeightsEnum):
-    """OlmoEarth Nano weights.
+class OlmoEarthV1_Nano_Weights(WeightsEnum):
+    """OlmoEarth v1 Nano weights.
 
-    If you use this model in your research, please cite the following papers:
+    If you use this model in your research, please cite the following paper:
 
     * https://arxiv.org/abs/2511.13655
-    * https://arxiv.org/abs/2605.20804v1
-    * https://arxiv.org/abs/2605.20804
 
     .. versionadded:: 0.11
     """
 
-    V1 = Weights(
+    OLMOEARTH = Weights(
         url='https://huggingface.co/allenai/OlmoEarth-v1-Nano/resolve/529248a4dc3c54014c56b7504641cec98de31d1c/weights.pth',
         transforms=_olmoearth_transforms,
         meta=_olmoearth_meta
@@ -57,7 +55,92 @@ class OlmoEarthNano_Weights(WeightsEnum):
             'weights_sha256': '795c68419a658fd22ccf8f2e020607675f963e9ef3b93d8e368bb17646765347',
         },
     )
-    V1_1 = Weights(
+
+
+class OlmoEarthV1_Tiny_Weights(WeightsEnum):
+    """OlmoEarth v1 Tiny weights.
+
+    If you use this model in your research, please cite the following paper:
+
+    * https://arxiv.org/abs/2511.13655
+
+    .. versionadded:: 0.11
+    """
+
+    OLMOEARTH = Weights(
+        url='https://huggingface.co/allenai/OlmoEarth-v1-Tiny/resolve/885784437d4e2d632b7bf51b4233426c6f4479dc/weights.pth',
+        transforms=_olmoearth_transforms,
+        meta=_olmoearth_meta
+        | {
+            'model_version': 'v1',
+            'hf_repo': 'allenai/OlmoEarth-v1-Tiny',
+            'revision': '885784437d4e2d632b7bf51b4233426c6f4479dc',
+            'config_sha256': '975dc2d755688c3010f9fecb662b62784d335731d701d8dda3f9ea0ccec88781',
+            'weights_sha256': '66b9827af383bc444d7909a406a5b62c072bb08d6804ff47a247c2dce8fad9a4',
+        },
+    )
+
+
+class OlmoEarthV1_Base_Weights(WeightsEnum):
+    """OlmoEarth v1 Base weights.
+
+    If you use this model in your research, please cite the following paper:
+
+    * https://arxiv.org/abs/2511.13655
+
+    .. versionadded:: 0.11
+    """
+
+    OLMOEARTH = Weights(
+        url='https://huggingface.co/allenai/OlmoEarth-v1-Base/resolve/4bd1392a4539404d2c74276c39f3cb4cfff466cc/weights.pth',
+        transforms=_olmoearth_transforms,
+        meta=_olmoearth_meta
+        | {
+            'model_version': 'v1',
+            'hf_repo': 'allenai/OlmoEarth-v1-Base',
+            'revision': '4bd1392a4539404d2c74276c39f3cb4cfff466cc',
+            'config_sha256': 'bd7759b9185f3d51607ca8d554c9be6ca87d932bc46fbc0f75524b0c3d5512bf',
+            'weights_sha256': '551c1cc53337c6faaddead88071d7ebd2bd53ec271600fa6f0ee0a518c8b6e11',
+        },
+    )
+
+
+class OlmoEarthV1_Large_Weights(WeightsEnum):
+    """OlmoEarth v1 Large weights.
+
+    If you use this model in your research, please cite the following paper:
+
+    * https://arxiv.org/abs/2511.13655
+
+    .. versionadded:: 0.11
+    """
+
+    OLMOEARTH = Weights(
+        url='https://huggingface.co/allenai/OlmoEarth-v1-Large/resolve/b2c9f41de3d8454cb37f0cd9cc3e79ec7c4af435/weights.pth',
+        transforms=_olmoearth_transforms,
+        meta=_olmoearth_meta
+        | {
+            'model_version': 'v1',
+            'hf_repo': 'allenai/OlmoEarth-v1-Large',
+            'revision': 'b2c9f41de3d8454cb37f0cd9cc3e79ec7c4af435',
+            'config_sha256': 'bd5f0fe3f571cf8beed64072d6c0029d6072223e6dce0b84b689c34d6638bbf1',
+            'weights_sha256': '1adb5026bd520c54bc415a1282386954927623bab81d01be2f5b6379cc039035',
+        },
+    )
+
+
+class OlmoEarthV1_1_Nano_Weights(WeightsEnum):
+    """OlmoEarth v1.1 Nano weights.
+
+    If you use this model in your research, please cite the following papers:
+
+    * https://arxiv.org/abs/2511.13655
+    * https://arxiv.org/abs/2605.20804v1
+
+    .. versionadded:: 0.11
+    """
+
+    OLMOEARTH = Weights(
         url='https://huggingface.co/allenai/OlmoEarth-v1_1-Nano/resolve/6c16c7da0d05a1c4f32c2a7f9233e07c9ebfa61a/weights.pth',
         transforms=_olmoearth_transforms,
         meta=_olmoearth_meta
@@ -69,7 +152,70 @@ class OlmoEarthNano_Weights(WeightsEnum):
             'weights_sha256': '883561154dd4eb874a3e28bb0559c15aa06bd8a2e4ffb54a0d6bc4bc15777eb3',
         },
     )
-    V1_2 = Weights(
+
+
+class OlmoEarthV1_1_Tiny_Weights(WeightsEnum):
+    """OlmoEarth v1.1 Tiny weights.
+
+    If you use this model in your research, please cite the following papers:
+
+    * https://arxiv.org/abs/2511.13655
+    * https://arxiv.org/abs/2605.20804v1
+
+    .. versionadded:: 0.11
+    """
+
+    OLMOEARTH = Weights(
+        url='https://huggingface.co/allenai/OlmoEarth-v1_1-Tiny/resolve/74fab5714f763d6b94f8b1536bdd3300d77f45e8/weights.pth',
+        transforms=_olmoearth_transforms,
+        meta=_olmoearth_meta
+        | {
+            'model_version': 'v1.1',
+            'hf_repo': 'allenai/OlmoEarth-v1_1-Tiny',
+            'revision': '74fab5714f763d6b94f8b1536bdd3300d77f45e8',
+            'config_sha256': '01dcb438144d8f70647ab2d11aef656a1632f3b5af1fdf9263c111127ad7bbc3',
+            'weights_sha256': '2a3fe8132adf9ff2ca96d00c9e376b8925bfe430fda6140749b3b92764c67ae1',
+        },
+    )
+
+
+class OlmoEarthV1_1_Base_Weights(WeightsEnum):
+    """OlmoEarth v1.1 Base weights.
+
+    If you use this model in your research, please cite the following papers:
+
+    * https://arxiv.org/abs/2511.13655
+    * https://arxiv.org/abs/2605.20804v1
+
+    .. versionadded:: 0.11
+    """
+
+    OLMOEARTH = Weights(
+        url='https://huggingface.co/allenai/OlmoEarth-v1_1-Base/resolve/4ef31d45f80c1d4fcce18f9cde40c1b5e4d96cf4/weights.pth',
+        transforms=_olmoearth_transforms,
+        meta=_olmoearth_meta
+        | {
+            'model_version': 'v1.1',
+            'hf_repo': 'allenai/OlmoEarth-v1_1-Base',
+            'revision': '4ef31d45f80c1d4fcce18f9cde40c1b5e4d96cf4',
+            'config_sha256': 'c74db2ea8c80b7568da926826e4f6cbca7e8cd1a2d0af45568f94af82722d336',
+            'weights_sha256': '37fc73d542618f28357583fd17307002a4bdfb5321142c08e928102341105989',
+        },
+    )
+
+
+class OlmoEarthV1_2_Nano_Weights(WeightsEnum):
+    """OlmoEarth v1.2 Nano weights.
+
+    If you use this model in your research, please cite the following papers:
+
+    * https://arxiv.org/abs/2511.13655
+    * https://arxiv.org/abs/2605.20804
+
+    .. versionadded:: 0.11
+    """
+
+    OLMOEARTH = Weights(
         url='https://huggingface.co/allenai/OlmoEarth-v1_2-Nano/resolve/e1f693ae2a7d5b57871a978e9d09e22d05206747/weights.pth',
         transforms=_olmoearth_transforms,
         meta=_olmoearth_meta
@@ -83,43 +229,18 @@ class OlmoEarthNano_Weights(WeightsEnum):
     )
 
 
-class OlmoEarthTiny_Weights(WeightsEnum):
-    """OlmoEarth Tiny weights.
+class OlmoEarthV1_2_Tiny_Weights(WeightsEnum):
+    """OlmoEarth v1.2 Tiny weights.
 
     If you use this model in your research, please cite the following papers:
 
     * https://arxiv.org/abs/2511.13655
-    * https://arxiv.org/abs/2605.20804v1
     * https://arxiv.org/abs/2605.20804
 
     .. versionadded:: 0.11
     """
 
-    V1 = Weights(
-        url='https://huggingface.co/allenai/OlmoEarth-v1-Tiny/resolve/885784437d4e2d632b7bf51b4233426c6f4479dc/weights.pth',
-        transforms=_olmoearth_transforms,
-        meta=_olmoearth_meta
-        | {
-            'model_version': 'v1',
-            'hf_repo': 'allenai/OlmoEarth-v1-Tiny',
-            'revision': '885784437d4e2d632b7bf51b4233426c6f4479dc',
-            'config_sha256': '975dc2d755688c3010f9fecb662b62784d335731d701d8dda3f9ea0ccec88781',
-            'weights_sha256': '66b9827af383bc444d7909a406a5b62c072bb08d6804ff47a247c2dce8fad9a4',
-        },
-    )
-    V1_1 = Weights(
-        url='https://huggingface.co/allenai/OlmoEarth-v1_1-Tiny/resolve/74fab5714f763d6b94f8b1536bdd3300d77f45e8/weights.pth',
-        transforms=_olmoearth_transforms,
-        meta=_olmoearth_meta
-        | {
-            'model_version': 'v1.1',
-            'hf_repo': 'allenai/OlmoEarth-v1_1-Tiny',
-            'revision': '74fab5714f763d6b94f8b1536bdd3300d77f45e8',
-            'config_sha256': '01dcb438144d8f70647ab2d11aef656a1632f3b5af1fdf9263c111127ad7bbc3',
-            'weights_sha256': '2a3fe8132adf9ff2ca96d00c9e376b8925bfe430fda6140749b3b92764c67ae1',
-        },
-    )
-    V1_2 = Weights(
+    OLMOEARTH = Weights(
         url='https://huggingface.co/allenai/OlmoEarth-v1_2-Tiny/resolve/12a9fdbfeff905d7e147e7497f9f7a95c518eefc/weights.pth',
         transforms=_olmoearth_transforms,
         meta=_olmoearth_meta
@@ -133,17 +254,18 @@ class OlmoEarthTiny_Weights(WeightsEnum):
     )
 
 
-class OlmoEarthSmall_Weights(WeightsEnum):
-    """OlmoEarth Small weights.
+class OlmoEarthV1_2_Small_Weights(WeightsEnum):
+    """OlmoEarth v1.2 Small weights.
 
     If you use this model in your research, please cite the following papers:
 
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804
 
     .. versionadded:: 0.11
     """
 
-    V1_2 = Weights(
+    OLMOEARTH = Weights(
         url='https://huggingface.co/allenai/OlmoEarth-v1_2-Small/resolve/a207c9a789483f95de1e9fb06acadb3da3775863/weights.pth',
         transforms=_olmoearth_transforms,
         meta=_olmoearth_meta
@@ -157,43 +279,18 @@ class OlmoEarthSmall_Weights(WeightsEnum):
     )
 
 
-class OlmoEarthBase_Weights(WeightsEnum):
-    """OlmoEarth Base weights.
+class OlmoEarthV1_2_Base_Weights(WeightsEnum):
+    """OlmoEarth v1.2 Base weights.
 
     If you use this model in your research, please cite the following papers:
 
     * https://arxiv.org/abs/2511.13655
-    * https://arxiv.org/abs/2605.20804v1
     * https://arxiv.org/abs/2605.20804
 
     .. versionadded:: 0.11
     """
 
-    V1 = Weights(
-        url='https://huggingface.co/allenai/OlmoEarth-v1-Base/resolve/4bd1392a4539404d2c74276c39f3cb4cfff466cc/weights.pth',
-        transforms=_olmoearth_transforms,
-        meta=_olmoearth_meta
-        | {
-            'model_version': 'v1',
-            'hf_repo': 'allenai/OlmoEarth-v1-Base',
-            'revision': '4bd1392a4539404d2c74276c39f3cb4cfff466cc',
-            'config_sha256': 'bd7759b9185f3d51607ca8d554c9be6ca87d932bc46fbc0f75524b0c3d5512bf',
-            'weights_sha256': '551c1cc53337c6faaddead88071d7ebd2bd53ec271600fa6f0ee0a518c8b6e11',
-        },
-    )
-    V1_1 = Weights(
-        url='https://huggingface.co/allenai/OlmoEarth-v1_1-Base/resolve/4ef31d45f80c1d4fcce18f9cde40c1b5e4d96cf4/weights.pth',
-        transforms=_olmoearth_transforms,
-        meta=_olmoearth_meta
-        | {
-            'model_version': 'v1.1',
-            'hf_repo': 'allenai/OlmoEarth-v1_1-Base',
-            'revision': '4ef31d45f80c1d4fcce18f9cde40c1b5e4d96cf4',
-            'config_sha256': 'c74db2ea8c80b7568da926826e4f6cbca7e8cd1a2d0af45568f94af82722d336',
-            'weights_sha256': '37fc73d542618f28357583fd17307002a4bdfb5321142c08e928102341105989',
-        },
-    )
-    V1_2 = Weights(
+    OLMOEARTH = Weights(
         url='https://huggingface.co/allenai/OlmoEarth-v1_2-Base/resolve/581aa9baaa7aed4348c0903617eb92ee9f89e2ec/weights.pth',
         transforms=_olmoearth_transforms,
         meta=_olmoearth_meta
@@ -203,30 +300,6 @@ class OlmoEarthBase_Weights(WeightsEnum):
             'revision': '581aa9baaa7aed4348c0903617eb92ee9f89e2ec',
             'config_sha256': '0d531a67ad3e477e7011efabcceb01ed80f430aa0a0a3d344fe18cec0f229b8a',
             'weights_sha256': '57f7b66faf206db1307670673839e639d3a19c305f6ad968c62392ad3e88deec',
-        },
-    )
-
-
-class OlmoEarthLarge_Weights(WeightsEnum):
-    """OlmoEarth Large weights.
-
-    If you use this model in your research, please cite the following papers:
-
-    * https://arxiv.org/abs/2511.13655
-
-    .. versionadded:: 0.11
-    """
-
-    V1 = Weights(
-        url='https://huggingface.co/allenai/OlmoEarth-v1-Large/resolve/b2c9f41de3d8454cb37f0cd9cc3e79ec7c4af435/weights.pth',
-        transforms=_olmoearth_transforms,
-        meta=_olmoearth_meta
-        | {
-            'model_version': 'v1',
-            'hf_repo': 'allenai/OlmoEarth-v1-Large',
-            'revision': 'b2c9f41de3d8454cb37f0cd9cc3e79ec7c4af435',
-            'config_sha256': 'bd5f0fe3f571cf8beed64072d6c0029d6072223e6dce0b84b689c34d6638bbf1',
-            'weights_sha256': '1adb5026bd520c54bc415a1282386954927623bab81d01be2f5b6379cc039035',
         },
     )
 
@@ -282,16 +355,127 @@ def _olmoearth(
     return pretrained
 
 
-def olmoearth_nano(
-    weights: OlmoEarthNano_Weights | None = None, **kwargs: Any
+def olmoearth_v1_nano(
+    weights: OlmoEarthV1_Nano_Weights | None = None, **kwargs: Any
 ) -> nn.Module:
-    """OlmoEarth Nano model.
+    """OlmoEarth v1 Nano model.
+
+    If you use this model in your research, please cite the following paper:
+
+    * https://arxiv.org/abs/2511.13655
+
+    This model requires the following additional library to be installed:
+
+    * `olmoearth-pretrain-minimal <https://pypi.org/project/olmoearth-pretrain-minimal/>`_:
+      to load the models.
+
+    .. versionadded:: 0.11
+
+    Args:
+        weights: Pre-trained weights. If ``None``, model is randomly initialized.
+        **kwargs: Passed to
+            ``olmoearth_pretrain_minimal.OlmoEarthPretrain_v1``
+            (e.g. ``max_patch_size``).
+
+    Returns:
+        An OlmoEarth v1 Nano model.
+    """
+    return _olmoearth(weights, 'nano', 'v1', **kwargs)
+
+
+def olmoearth_v1_tiny(
+    weights: OlmoEarthV1_Tiny_Weights | None = None, **kwargs: Any
+) -> nn.Module:
+    """OlmoEarth v1 Tiny model.
+
+    If you use this model in your research, please cite the following paper:
+
+    * https://arxiv.org/abs/2511.13655
+
+    This model requires the following additional library to be installed:
+
+    * `olmoearth-pretrain-minimal <https://pypi.org/project/olmoearth-pretrain-minimal/>`_:
+      to load the models.
+
+    .. versionadded:: 0.11
+
+    Args:
+        weights: Pre-trained weights. If ``None``, model is randomly initialized.
+        **kwargs: Passed to
+            ``olmoearth_pretrain_minimal.OlmoEarthPretrain_v1``
+            (e.g. ``max_patch_size``).
+
+    Returns:
+        An OlmoEarth v1 Tiny model.
+    """
+    return _olmoearth(weights, 'tiny', 'v1', **kwargs)
+
+
+def olmoearth_v1_base(
+    weights: OlmoEarthV1_Base_Weights | None = None, **kwargs: Any
+) -> nn.Module:
+    """OlmoEarth v1 Base model.
+
+    If you use this model in your research, please cite the following paper:
+
+    * https://arxiv.org/abs/2511.13655
+
+    This model requires the following additional library to be installed:
+
+    * `olmoearth-pretrain-minimal <https://pypi.org/project/olmoearth-pretrain-minimal/>`_:
+      to load the models.
+
+    .. versionadded:: 0.11
+
+    Args:
+        weights: Pre-trained weights. If ``None``, model is randomly initialized.
+        **kwargs: Passed to
+            ``olmoearth_pretrain_minimal.OlmoEarthPretrain_v1``
+            (e.g. ``max_patch_size``).
+
+    Returns:
+        An OlmoEarth v1 Base model.
+    """
+    return _olmoearth(weights, 'base', 'v1', **kwargs)
+
+
+def olmoearth_v1_large(
+    weights: OlmoEarthV1_Large_Weights | None = None, **kwargs: Any
+) -> nn.Module:
+    """OlmoEarth v1 Large model.
+
+    If you use this model in your research, please cite the following paper:
+
+    * https://arxiv.org/abs/2511.13655
+
+    This model requires the following additional library to be installed:
+
+    * `olmoearth-pretrain-minimal <https://pypi.org/project/olmoearth-pretrain-minimal/>`_:
+      to load the models.
+
+    .. versionadded:: 0.11
+
+    Args:
+        weights: Pre-trained weights. If ``None``, model is randomly initialized.
+        **kwargs: Passed to
+            ``olmoearth_pretrain_minimal.OlmoEarthPretrain_v1``
+            (e.g. ``max_patch_size``).
+
+    Returns:
+        An OlmoEarth v1 Large model.
+    """
+    return _olmoearth(weights, 'large', 'v1', **kwargs)
+
+
+def olmoearth_v1_1_nano(
+    weights: OlmoEarthV1_1_Nano_Weights | None = None, **kwargs: Any
+) -> nn.Module:
+    """OlmoEarth v1.1 Nano model.
 
     If you use this model in your research, please cite the following papers:
 
     * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804v1
-    * https://arxiv.org/abs/2605.20804
 
     This model requires the following additional library to be installed:
 
@@ -304,25 +488,23 @@ def olmoearth_nano(
         weights: Pre-trained weights. If ``None``, model is randomly initialized.
         **kwargs: Passed to
             ``olmoearth_pretrain_minimal.OlmoEarthPretrain_v1``
-            (e.g. ``model_version``, ``max_patch_size``).
+            (e.g. ``max_patch_size``).
 
     Returns:
-        An OlmoEarth Nano model.
+        An OlmoEarth v1.1 Nano model.
     """
-    kwargs.setdefault('model_version', 'v1.2')
-    return _olmoearth(weights, 'nano', kwargs.pop('model_version'), **kwargs)
+    return _olmoearth(weights, 'nano', 'v1.1', **kwargs)
 
 
-def olmoearth_tiny(
-    weights: OlmoEarthTiny_Weights | None = None, **kwargs: Any
+def olmoearth_v1_1_tiny(
+    weights: OlmoEarthV1_1_Tiny_Weights | None = None, **kwargs: Any
 ) -> nn.Module:
-    """OlmoEarth Tiny model.
+    """OlmoEarth v1.1 Tiny model.
 
     If you use this model in your research, please cite the following papers:
 
     * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804v1
-    * https://arxiv.org/abs/2605.20804
 
     This model requires the following additional library to be installed:
 
@@ -335,53 +517,51 @@ def olmoearth_tiny(
         weights: Pre-trained weights. If ``None``, model is randomly initialized.
         **kwargs: Passed to
             ``olmoearth_pretrain_minimal.OlmoEarthPretrain_v1``
-            (e.g. ``model_version``, ``max_patch_size``).
+            (e.g. ``max_patch_size``).
 
     Returns:
-        An OlmoEarth Tiny model.
+        An OlmoEarth v1.1 Tiny model.
     """
-    kwargs.setdefault('model_version', 'v1.2')
-    return _olmoearth(weights, 'tiny', kwargs.pop('model_version'), **kwargs)
+    return _olmoearth(weights, 'tiny', 'v1.1', **kwargs)
 
 
-def olmoearth_small(
-    weights: OlmoEarthSmall_Weights | None = None, **kwargs: Any
+def olmoearth_v1_1_base(
+    weights: OlmoEarthV1_1_Base_Weights | None = None, **kwargs: Any
 ) -> nn.Module:
-    """OlmoEarth Small model.
-
-    If you use this model in your research, please cite the following papers:
-
-    * https://arxiv.org/abs/2605.20804
-
-    This model requires the following additional library to be installed:
-
-    * `olmoearth-pretrain-minimal <https://pypi.org/project/olmoearth-pretrain-minimal/>`_:
-      to load the models.
-
-    .. versionadded:: 0.11
-
-    Args:
-        weights: Pre-trained weights. If ``None``, model is randomly initialized.
-        **kwargs: Passed to
-            ``olmoearth_pretrain_minimal.OlmoEarthPretrain_v1``
-            (e.g. ``model_version``, ``max_patch_size``).
-
-    Returns:
-        An OlmoEarth Small model.
-    """
-    kwargs.setdefault('model_version', 'v1.2')
-    return _olmoearth(weights, 'small', kwargs.pop('model_version'), **kwargs)
-
-
-def olmoearth_base(
-    weights: OlmoEarthBase_Weights | None = None, **kwargs: Any
-) -> nn.Module:
-    """OlmoEarth Base model.
+    """OlmoEarth v1.1 Base model.
 
     If you use this model in your research, please cite the following papers:
 
     * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804v1
+
+    This model requires the following additional library to be installed:
+
+    * `olmoearth-pretrain-minimal <https://pypi.org/project/olmoearth-pretrain-minimal/>`_:
+      to load the models.
+
+    .. versionadded:: 0.11
+
+    Args:
+        weights: Pre-trained weights. If ``None``, model is randomly initialized.
+        **kwargs: Passed to
+            ``olmoearth_pretrain_minimal.OlmoEarthPretrain_v1``
+            (e.g. ``max_patch_size``).
+
+    Returns:
+        An OlmoEarth v1.1 Base model.
+    """
+    return _olmoearth(weights, 'base', 'v1.1', **kwargs)
+
+
+def olmoearth_v1_2_nano(
+    weights: OlmoEarthV1_2_Nano_Weights | None = None, **kwargs: Any
+) -> nn.Module:
+    """OlmoEarth v1.2 Nano model.
+
+    If you use this model in your research, please cite the following papers:
+
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804
 
     This model requires the following additional library to be installed:
@@ -395,23 +575,23 @@ def olmoearth_base(
         weights: Pre-trained weights. If ``None``, model is randomly initialized.
         **kwargs: Passed to
             ``olmoearth_pretrain_minimal.OlmoEarthPretrain_v1``
-            (e.g. ``model_version``, ``max_patch_size``).
+            (e.g. ``max_patch_size``).
 
     Returns:
-        An OlmoEarth Base model.
+        An OlmoEarth v1.2 Nano model.
     """
-    kwargs.setdefault('model_version', 'v1.2')
-    return _olmoearth(weights, 'base', kwargs.pop('model_version'), **kwargs)
+    return _olmoearth(weights, 'nano', 'v1.2', **kwargs)
 
 
-def olmoearth_large(
-    weights: OlmoEarthLarge_Weights | None = None, **kwargs: Any
+def olmoearth_v1_2_tiny(
+    weights: OlmoEarthV1_2_Tiny_Weights | None = None, **kwargs: Any
 ) -> nn.Module:
-    """OlmoEarth Large model.
+    """OlmoEarth v1.2 Tiny model.
 
     If you use this model in your research, please cite the following papers:
 
     * https://arxiv.org/abs/2511.13655
+    * https://arxiv.org/abs/2605.20804
 
     This model requires the following additional library to be installed:
 
@@ -424,13 +604,70 @@ def olmoearth_large(
         weights: Pre-trained weights. If ``None``, model is randomly initialized.
         **kwargs: Passed to
             ``olmoearth_pretrain_minimal.OlmoEarthPretrain_v1``
-            (e.g. ``model_version``, ``max_patch_size``).
+            (e.g. ``max_patch_size``).
 
     Returns:
-        An OlmoEarth Large model.
+        An OlmoEarth v1.2 Tiny model.
     """
-    kwargs.setdefault('model_version', 'v1')
-    return _olmoearth(weights, 'large', kwargs.pop('model_version'), **kwargs)
+    return _olmoearth(weights, 'tiny', 'v1.2', **kwargs)
+
+
+def olmoearth_v1_2_small(
+    weights: OlmoEarthV1_2_Small_Weights | None = None, **kwargs: Any
+) -> nn.Module:
+    """OlmoEarth v1.2 Small model.
+
+    If you use this model in your research, please cite the following papers:
+
+    * https://arxiv.org/abs/2511.13655
+    * https://arxiv.org/abs/2605.20804
+
+    This model requires the following additional library to be installed:
+
+    * `olmoearth-pretrain-minimal <https://pypi.org/project/olmoearth-pretrain-minimal/>`_:
+      to load the models.
+
+    .. versionadded:: 0.11
+
+    Args:
+        weights: Pre-trained weights. If ``None``, model is randomly initialized.
+        **kwargs: Passed to
+            ``olmoearth_pretrain_minimal.OlmoEarthPretrain_v1``
+            (e.g. ``max_patch_size``).
+
+    Returns:
+        An OlmoEarth v1.2 Small model.
+    """
+    return _olmoearth(weights, 'small', 'v1.2', **kwargs)
+
+
+def olmoearth_v1_2_base(
+    weights: OlmoEarthV1_2_Base_Weights | None = None, **kwargs: Any
+) -> nn.Module:
+    """OlmoEarth v1.2 Base model.
+
+    If you use this model in your research, please cite the following papers:
+
+    * https://arxiv.org/abs/2511.13655
+    * https://arxiv.org/abs/2605.20804
+
+    This model requires the following additional library to be installed:
+
+    * `olmoearth-pretrain-minimal <https://pypi.org/project/olmoearth-pretrain-minimal/>`_:
+      to load the models.
+
+    .. versionadded:: 0.11
+
+    Args:
+        weights: Pre-trained weights. If ``None``, model is randomly initialized.
+        **kwargs: Passed to
+            ``olmoearth_pretrain_minimal.OlmoEarthPretrain_v1``
+            (e.g. ``max_patch_size``).
+
+    Returns:
+        An OlmoEarth v1.2 Base model.
+    """
+    return _olmoearth(weights, 'base', 'v1.2', **kwargs)
 
 
 _olmoearth_v1_meta = {
@@ -455,9 +692,9 @@ class OlmoEarthV1_Weights(WeightsEnum):
     .. versionadded:: 0.10
 
     .. deprecated:: 0.11
-       Will be removed in 1.0. Use :class:`OlmoEarthNano_Weights`,
-       :class:`OlmoEarthTiny_Weights`, :class:`OlmoEarthBase_Weights` or
-       :class:`OlmoEarthLarge_Weights` instead.
+       Will be removed in 1.0. Use :class:`OlmoEarthV1_Nano_Weights`,
+       :class:`OlmoEarthV1_Tiny_Weights`, :class:`OlmoEarthV1_Base_Weights` or
+       :class:`OlmoEarthV1_Large_Weights` instead.
     """
 
     NANO = Weights(
@@ -487,8 +724,8 @@ class OlmoEarthV1_Weights(WeightsEnum):
 
 
 @deprecated(
-    'Use torchgeo.models.olmoearth_nano, olmoearth_tiny, olmoearth_base or '
-    'olmoearth_large instead'
+    'Use torchgeo.models.olmoearth_v1_nano, olmoearth_v1_tiny, olmoearth_v1_base '
+    'or olmoearth_v1_large instead'
 )
 def olmoearth_v1(
     weights: OlmoEarthV1_Weights | None = None, **kwargs: Any
@@ -507,8 +744,9 @@ def olmoearth_v1(
     .. versionadded:: 0.10
 
     .. deprecated:: 0.11
-       Will be removed in 1.0. Use :func:`olmoearth_nano`, :func:`olmoearth_tiny`,
-       :func:`olmoearth_base` or :func:`olmoearth_large` instead.
+       Will be removed in 1.0. Use :func:`olmoearth_v1_nano`,
+       :func:`olmoearth_v1_tiny`, :func:`olmoearth_v1_base` or
+       :func:`olmoearth_v1_large` instead.
 
     Args:
         weights: Pre-trained weights. If ``None``, model is randomly initialized.
