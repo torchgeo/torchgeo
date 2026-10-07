@@ -88,9 +88,12 @@ def test_random_bbox_assignment(
     assert len(test_ds) == expected_lengths[2]
 
     # Check dataset index
-    assert len(train_ds.index.filepath)
-    assert len(val_ds.index.filepath)
-    assert len(test_ds.index.filepath)
+    assert (
+        list(ds.index.columns)
+        == list(train_ds.index.columns)
+        == list(val_ds.index.columns)
+        == list(test_ds.index.columns)
+    )
 
     # Check dataset CRSs
     assert train_ds.crs == val_ds.crs == test_ds.crs == ds.crs
@@ -144,9 +147,12 @@ def test_random_bbox_splitting() -> None:
     assert isclose(test_ds_area, ds_area * 1 / 8)
 
     # Check dataset index
-    assert len(train_ds.index.filepath)
-    assert len(val_ds.index.filepath)
-    assert len(test_ds.index.filepath)
+    assert (
+        list(ds.index.columns)
+        == list(train_ds.index.columns)
+        == list(val_ds.index.columns)
+        == list(test_ds.index.columns)
+    )
 
     # Check dataset CRSs
     assert train_ds.crs == val_ds.crs == test_ds.crs == ds.crs
@@ -187,9 +193,12 @@ def test_random_grid_cell_assignment() -> None:
     assert len(test_ds) == floor(1 / 4 * 2 * 5**2)
 
     # Check dataset index
-    assert len(train_ds.index.filepath)
-    assert len(val_ds.index.filepath)
-    assert len(test_ds.index.filepath)
+    assert (
+        list(ds.index.columns)
+        == list(train_ds.index.columns)
+        == list(val_ds.index.columns)
+        == list(test_ds.index.columns)
+    )
 
     # Check dataset CRSs
     assert train_ds.crs == val_ds.crs == test_ds.crs == ds.crs
@@ -265,9 +274,12 @@ def test_roi_split() -> None:
     assert len(test_ds) == 1
 
     # Check dataset index
-    assert len(train_ds.index.filepath)
-    assert len(val_ds.index.filepath)
-    assert len(test_ds.index.filepath)
+    assert (
+        list(ds.index.columns)
+        == list(train_ds.index.columns)
+        == list(val_ds.index.columns)
+        == list(test_ds.index.columns)
+    )
 
     # Check dataset CRSs
     assert train_ds.crs == val_ds.crs == test_ds.crs == ds.crs
@@ -345,9 +357,12 @@ def test_time_series_split(
     assert len(test_ds) == expected_lengths[2]
 
     # Check dataset index
-    assert len(train_ds.index.filepath)
-    assert len(val_ds.index.filepath)
-    assert len(test_ds.index.filepath)
+    assert (
+        list(ds.index.columns)
+        == list(train_ds.index.columns)
+        == list(val_ds.index.columns)
+        == list(test_ds.index.columns)
+    )
 
     # Check dataset CRSs
     assert train_ds.crs == val_ds.crs == test_ds.crs == ds.crs
