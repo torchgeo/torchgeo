@@ -1,14 +1,12 @@
 # Copyright (c) TorchGeo Contributors. All rights reserved.
 # Licensed under the MIT License.
 
-import os
 from pathlib import Path
 
 import pytest
 import torch
 from _pytest.fixtures import SubRequest
 from pytest import MonkeyPatch
-from torch import nn
 
 from torchgeo.models import (
     OlmoEarthV1_1_Base_Weights,
@@ -41,37 +39,21 @@ from torchgeo.models import (
 olmoearth_pretrain_minimal = pytest.importorskip('olmoearth_pretrain_minimal')
 
 
-@pytest.fixture
-def mock_download(monkeypatch: MonkeyPatch) -> list[str]:
-    """Stand in for the pinned config.json + weights.pth download and load."""
-    urls: list[str] = []
-
-    def download_url_to_file(
-        url: str, dst: str, hash_prefix: str | None = None
-    ) -> None:
-        urls.append(url)
-        Path(dst).touch()
-
-    def load_model_from_path(path: str) -> nn.Module:
-        assert os.path.exists(os.path.join(path, 'config.json'))
-        assert os.path.exists(os.path.join(path, 'weights.pth'))
-        return nn.Identity()
-
-    monkeypatch.setattr(torch.hub, 'download_url_to_file', download_url_to_file)
-    monkeypatch.setattr(
-        olmoearth_pretrain_minimal, 'load_model_from_path', load_model_from_path
-    )
-    return urls
-
-
 class TestOlmoEarthV1Nano:
     @pytest.fixture(params=[*OlmoEarthV1_Nano_Weights])
     def weights(self, request: SubRequest) -> OlmoEarthV1_Nano_Weights:
         return request.param
 
     @pytest.fixture
-    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthV1_Nano_Weights:
-        return OlmoEarthV1_Nano_Weights.OLMOEARTH
+    def mocked_weights(
+        self, tmp_path: Path, monkeypatch: MonkeyPatch, load_state_dict_from_url: None
+    ) -> OlmoEarthV1_Nano_Weights:
+        weights = OlmoEarthV1_Nano_Weights.OLMOEARTH
+        path = tmp_path / f'{weights}.pth'
+        model = olmoearth_v1_nano()
+        torch.save(model.model.state_dict(), path)
+        monkeypatch.setattr(weights.value, 'url', str(path))
+        return weights
 
     def test_olmoearth(self) -> None:
         olmoearth_v1_nano()
@@ -90,8 +72,15 @@ class TestOlmoEarthV1Tiny:
         return request.param
 
     @pytest.fixture
-    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthV1_Tiny_Weights:
-        return OlmoEarthV1_Tiny_Weights.OLMOEARTH
+    def mocked_weights(
+        self, tmp_path: Path, monkeypatch: MonkeyPatch, load_state_dict_from_url: None
+    ) -> OlmoEarthV1_Tiny_Weights:
+        weights = OlmoEarthV1_Tiny_Weights.OLMOEARTH
+        path = tmp_path / f'{weights}.pth'
+        model = olmoearth_v1_tiny()
+        torch.save(model.model.state_dict(), path)
+        monkeypatch.setattr(weights.value, 'url', str(path))
+        return weights
 
     def test_olmoearth(self) -> None:
         olmoearth_v1_tiny()
@@ -110,8 +99,15 @@ class TestOlmoEarthV1Base:
         return request.param
 
     @pytest.fixture
-    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthV1_Base_Weights:
-        return OlmoEarthV1_Base_Weights.OLMOEARTH
+    def mocked_weights(
+        self, tmp_path: Path, monkeypatch: MonkeyPatch, load_state_dict_from_url: None
+    ) -> OlmoEarthV1_Base_Weights:
+        weights = OlmoEarthV1_Base_Weights.OLMOEARTH
+        path = tmp_path / f'{weights}.pth'
+        model = olmoearth_v1_base()
+        torch.save(model.model.state_dict(), path)
+        monkeypatch.setattr(weights.value, 'url', str(path))
+        return weights
 
     def test_olmoearth(self) -> None:
         olmoearth_v1_base()
@@ -130,8 +126,15 @@ class TestOlmoEarthV1Large:
         return request.param
 
     @pytest.fixture
-    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthV1_Large_Weights:
-        return OlmoEarthV1_Large_Weights.OLMOEARTH
+    def mocked_weights(
+        self, tmp_path: Path, monkeypatch: MonkeyPatch, load_state_dict_from_url: None
+    ) -> OlmoEarthV1_Large_Weights:
+        weights = OlmoEarthV1_Large_Weights.OLMOEARTH
+        path = tmp_path / f'{weights}.pth'
+        model = olmoearth_v1_large()
+        torch.save(model.model.state_dict(), path)
+        monkeypatch.setattr(weights.value, 'url', str(path))
+        return weights
 
     def test_olmoearth(self) -> None:
         olmoearth_v1_large()
@@ -150,8 +153,15 @@ class TestOlmoEarthV1_1Nano:
         return request.param
 
     @pytest.fixture
-    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthV1_1_Nano_Weights:
-        return OlmoEarthV1_1_Nano_Weights.OLMOEARTH
+    def mocked_weights(
+        self, tmp_path: Path, monkeypatch: MonkeyPatch, load_state_dict_from_url: None
+    ) -> OlmoEarthV1_1_Nano_Weights:
+        weights = OlmoEarthV1_1_Nano_Weights.OLMOEARTH
+        path = tmp_path / f'{weights}.pth'
+        model = olmoearth_v1_1_nano()
+        torch.save(model.model.state_dict(), path)
+        monkeypatch.setattr(weights.value, 'url', str(path))
+        return weights
 
     def test_olmoearth(self) -> None:
         olmoearth_v1_1_nano()
@@ -172,8 +182,15 @@ class TestOlmoEarthV1_1Tiny:
         return request.param
 
     @pytest.fixture
-    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthV1_1_Tiny_Weights:
-        return OlmoEarthV1_1_Tiny_Weights.OLMOEARTH
+    def mocked_weights(
+        self, tmp_path: Path, monkeypatch: MonkeyPatch, load_state_dict_from_url: None
+    ) -> OlmoEarthV1_1_Tiny_Weights:
+        weights = OlmoEarthV1_1_Tiny_Weights.OLMOEARTH
+        path = tmp_path / f'{weights}.pth'
+        model = olmoearth_v1_1_tiny()
+        torch.save(model.model.state_dict(), path)
+        monkeypatch.setattr(weights.value, 'url', str(path))
+        return weights
 
     def test_olmoearth(self) -> None:
         olmoearth_v1_1_tiny()
@@ -194,8 +211,15 @@ class TestOlmoEarthV1_1Base:
         return request.param
 
     @pytest.fixture
-    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthV1_1_Base_Weights:
-        return OlmoEarthV1_1_Base_Weights.OLMOEARTH
+    def mocked_weights(
+        self, tmp_path: Path, monkeypatch: MonkeyPatch, load_state_dict_from_url: None
+    ) -> OlmoEarthV1_1_Base_Weights:
+        weights = OlmoEarthV1_1_Base_Weights.OLMOEARTH
+        path = tmp_path / f'{weights}.pth'
+        model = olmoearth_v1_1_base()
+        torch.save(model.model.state_dict(), path)
+        monkeypatch.setattr(weights.value, 'url', str(path))
+        return weights
 
     def test_olmoearth(self) -> None:
         olmoearth_v1_1_base()
@@ -216,8 +240,15 @@ class TestOlmoEarthV1_2Nano:
         return request.param
 
     @pytest.fixture
-    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthV1_2_Nano_Weights:
-        return OlmoEarthV1_2_Nano_Weights.OLMOEARTH
+    def mocked_weights(
+        self, tmp_path: Path, monkeypatch: MonkeyPatch, load_state_dict_from_url: None
+    ) -> OlmoEarthV1_2_Nano_Weights:
+        weights = OlmoEarthV1_2_Nano_Weights.OLMOEARTH
+        path = tmp_path / f'{weights}.pth'
+        model = olmoearth_v1_2_nano()
+        torch.save(model.model.state_dict(), path)
+        monkeypatch.setattr(weights.value, 'url', str(path))
+        return weights
 
     def test_olmoearth(self) -> None:
         olmoearth_v1_2_nano()
@@ -226,15 +257,6 @@ class TestOlmoEarthV1_2Nano:
         self, mocked_weights: OlmoEarthV1_2_Nano_Weights
     ) -> None:
         olmoearth_v1_2_nano(weights=mocked_weights)
-
-    def test_olmoearth_weights_cached(
-        self, mocked_weights: OlmoEarthV1_2_Nano_Weights, mock_download: list[str]
-    ) -> None:
-        olmoearth_v1_2_nano(weights=mocked_weights)
-        olmoearth_v1_2_nano(weights=mocked_weights)
-        meta = mocked_weights.meta
-        prefix = f'https://huggingface.co/{meta["hf_repo"]}/resolve/{meta["revision"]}'
-        assert mock_download == [f'{prefix}/config.json', f'{prefix}/weights.pth']
 
     @pytest.mark.slow
     def test_olmoearth_download(self, weights: OlmoEarthV1_2_Nano_Weights) -> None:
@@ -247,8 +269,15 @@ class TestOlmoEarthV1_2Tiny:
         return request.param
 
     @pytest.fixture
-    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthV1_2_Tiny_Weights:
-        return OlmoEarthV1_2_Tiny_Weights.OLMOEARTH
+    def mocked_weights(
+        self, tmp_path: Path, monkeypatch: MonkeyPatch, load_state_dict_from_url: None
+    ) -> OlmoEarthV1_2_Tiny_Weights:
+        weights = OlmoEarthV1_2_Tiny_Weights.OLMOEARTH
+        path = tmp_path / f'{weights}.pth'
+        model = olmoearth_v1_2_tiny()
+        torch.save(model.model.state_dict(), path)
+        monkeypatch.setattr(weights.value, 'url', str(path))
+        return weights
 
     def test_olmoearth(self) -> None:
         olmoearth_v1_2_tiny()
@@ -269,8 +298,15 @@ class TestOlmoEarthV1_2Small:
         return request.param
 
     @pytest.fixture
-    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthV1_2_Small_Weights:
-        return OlmoEarthV1_2_Small_Weights.OLMOEARTH
+    def mocked_weights(
+        self, tmp_path: Path, monkeypatch: MonkeyPatch, load_state_dict_from_url: None
+    ) -> OlmoEarthV1_2_Small_Weights:
+        weights = OlmoEarthV1_2_Small_Weights.OLMOEARTH
+        path = tmp_path / f'{weights}.pth'
+        model = olmoearth_v1_2_small()
+        torch.save(model.model.state_dict(), path)
+        monkeypatch.setattr(weights.value, 'url', str(path))
+        return weights
 
     def test_olmoearth(self) -> None:
         olmoearth_v1_2_small()
@@ -291,8 +327,15 @@ class TestOlmoEarthV1_2Base:
         return request.param
 
     @pytest.fixture
-    def mocked_weights(self, mock_download: list[str]) -> OlmoEarthV1_2_Base_Weights:
-        return OlmoEarthV1_2_Base_Weights.OLMOEARTH
+    def mocked_weights(
+        self, tmp_path: Path, monkeypatch: MonkeyPatch, load_state_dict_from_url: None
+    ) -> OlmoEarthV1_2_Base_Weights:
+        weights = OlmoEarthV1_2_Base_Weights.OLMOEARTH
+        path = tmp_path / f'{weights}.pth'
+        model = olmoearth_v1_2_base()
+        torch.save(model.model.state_dict(), path)
+        monkeypatch.setattr(weights.value, 'url', str(path))
+        return weights
 
     def test_olmoearth(self) -> None:
         olmoearth_v1_2_base()
