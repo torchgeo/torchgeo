@@ -17,7 +17,7 @@ _olmoearth_meta = {
     'dataset': 'OlmoEarthPretrain',
     'model': 'OlmoEarthPretrain_v1',
     'architecture': 'Vision Transformer',
-    'publication': 'https://arxiv.org/abs/2506.10890',
+    'publication': 'https://arxiv.org/abs/2511.13655',
     'repo': 'https://github.com/allenai/olmoearth_pretrain',
     'license': 'OlmoEarth Artifact License',
     'model_version': None,
@@ -250,12 +250,10 @@ def _olmoearth(
         model_size=model_size, model_version=model_version, **kwargs
     )
     if weights:
-        missing_keys, unexpected_keys = model.model.load_state_dict(
+        model.model.load_state_dict(
             weights.get_state_dict(progress=True, check_hash=True, weights_only=True),
-            strict=False,
+            strict=True,
         )
-        assert not missing_keys
-        assert not unexpected_keys
 
     return model
 
