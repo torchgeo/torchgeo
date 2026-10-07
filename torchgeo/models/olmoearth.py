@@ -619,10 +619,10 @@ def olmoearth_v1_2_base(
 
 
 _olmoearth_v1_meta = {
-    'dataset': 'Major TOM',
+    'dataset': 'OlmoEarthPretrain',
     'model': 'OlmoEarthPretrain_v1',
     'architecture': 'Vision Transformer',
-    'publication': 'https://arxiv.org/abs/2506.10890',
+    'publication': 'https://arxiv.org/abs/2511.13655',
     'repo': 'https://github.com/allenai/olmoearth_pretrain',
     'license': 'OlmoEarth Artifact License',
     'model_size': None,
