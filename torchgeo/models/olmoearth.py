@@ -30,7 +30,7 @@ class OlmoEarthV1_Nano_Weights(WeightsEnum):
 
     If you use this model in your research, please cite the following paper:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
 
     .. versionadded:: 0.11
     """
@@ -48,7 +48,7 @@ class OlmoEarthV1_Tiny_Weights(WeightsEnum):
 
     If you use this model in your research, please cite the following paper:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
 
     .. versionadded:: 0.11
     """
@@ -66,7 +66,7 @@ class OlmoEarthV1_Base_Weights(WeightsEnum):
 
     If you use this model in your research, please cite the following paper:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
 
     .. versionadded:: 0.11
     """
@@ -84,7 +84,7 @@ class OlmoEarthV1_Large_Weights(WeightsEnum):
 
     If you use this model in your research, please cite the following paper:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
 
     .. versionadded:: 0.11
     """
@@ -102,7 +102,7 @@ class OlmoEarthV1_1_Nano_Weights(WeightsEnum):
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804v1
 
     .. versionadded:: 0.11
@@ -121,7 +121,7 @@ class OlmoEarthV1_1_Tiny_Weights(WeightsEnum):
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804v1
 
     .. versionadded:: 0.11
@@ -140,7 +140,7 @@ class OlmoEarthV1_1_Base_Weights(WeightsEnum):
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804v1
 
     .. versionadded:: 0.11
@@ -159,7 +159,7 @@ class OlmoEarthV1_2_Nano_Weights(WeightsEnum):
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804
 
     .. versionadded:: 0.11
@@ -178,7 +178,7 @@ class OlmoEarthV1_2_Tiny_Weights(WeightsEnum):
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804
 
     .. versionadded:: 0.11
@@ -197,7 +197,7 @@ class OlmoEarthV1_2_Small_Weights(WeightsEnum):
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804
 
     .. versionadded:: 0.11
@@ -216,7 +216,7 @@ class OlmoEarthV1_2_Base_Weights(WeightsEnum):
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804
 
     .. versionadded:: 0.11
@@ -267,7 +267,7 @@ def olmoearth_v1_nano(
 
     If you use this model in your research, please cite the following paper:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
 
     This model requires the following additional library to be installed:
 
@@ -295,7 +295,7 @@ def olmoearth_v1_tiny(
 
     If you use this model in your research, please cite the following paper:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
 
     This model requires the following additional library to be installed:
 
@@ -323,7 +323,7 @@ def olmoearth_v1_base(
 
     If you use this model in your research, please cite the following paper:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
 
     This model requires the following additional library to be installed:
 
@@ -351,7 +351,7 @@ def olmoearth_v1_large(
 
     If you use this model in your research, please cite the following paper:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
 
     This model requires the following additional library to be installed:
 
@@ -379,7 +379,7 @@ def olmoearth_v1_1_nano(
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804v1
 
     This model requires the following additional library to be installed:
@@ -408,7 +408,7 @@ def olmoearth_v1_1_tiny(
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804v1
 
     This model requires the following additional library to be installed:
@@ -437,7 +437,7 @@ def olmoearth_v1_1_base(
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804v1
 
     This model requires the following additional library to be installed:
@@ -466,7 +466,7 @@ def olmoearth_v1_2_nano(
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804
 
     This model requires the following additional library to be installed:
@@ -495,7 +495,7 @@ def olmoearth_v1_2_tiny(
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804
 
     This model requires the following additional library to be installed:
@@ -524,7 +524,7 @@ def olmoearth_v1_2_small(
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804
 
     This model requires the following additional library to be installed:
@@ -553,7 +553,7 @@ def olmoearth_v1_2_base(
 
     If you use this model in your research, please cite the following papers:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
     * https://arxiv.org/abs/2605.20804
 
     This model requires the following additional library to be installed:
@@ -592,7 +592,7 @@ class OlmoEarthV1_Weights(WeightsEnum):
 
     If you use this model in your research, please cite the following paper:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
 
     .. versionadded:: 0.10
 
@@ -639,7 +639,7 @@ def olmoearth_v1(
 
     If you use this model in your research, please cite the following paper:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
 
     This model requires the following additional library to be installed:
 
@@ -698,7 +698,7 @@ def olmoearth_v1_unet_decoder(
 
     If you use this model in your research, please cite the following paper:
 
-    * https://arxiv.org/pdf/2511.13655
+    * https://arxiv.org/abs/2511.13655
 
     This model requires the following additional library to be installed:
 
