@@ -1,12 +1,15 @@
 # Copyright (c) TorchGeo Contributors. All rights reserved.
 # Licensed under the MIT License.
 
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
 import torch
 from _pytest.fixtures import SubRequest
 from pytest import MonkeyPatch
+from torch import nn
+from torchvision.models._api import WeightsEnum
 
 from torchgeo.models import (
     OlmoEarthV1_1_Base_Weights,
@@ -36,7 +39,43 @@ from torchgeo.models import (
     olmoearth_v1_unet_decoder,
 )
 
-olmoearth_pretrain_minimal = pytest.importorskip('olmoearth_pretrain_minimal')
+constants = pytest.importorskip(
+    'olmoearth_pretrain_minimal.olmoearth_pretrain_v1.utils.constants'
+)
+
+
+@pytest.mark.parametrize(
+    'builder,weights',
+    [
+        (olmoearth_v1_nano, OlmoEarthV1_Nano_Weights.OLMOEARTH),
+        (olmoearth_v1_tiny, OlmoEarthV1_Tiny_Weights.OLMOEARTH),
+        (olmoearth_v1_base, OlmoEarthV1_Base_Weights.OLMOEARTH),
+        (olmoearth_v1_large, OlmoEarthV1_Large_Weights.OLMOEARTH),
+        (olmoearth_v1_1_nano, OlmoEarthV1_1_Nano_Weights.OLMOEARTH),
+        (olmoearth_v1_1_tiny, OlmoEarthV1_1_Tiny_Weights.OLMOEARTH),
+        (olmoearth_v1_1_base, OlmoEarthV1_1_Base_Weights.OLMOEARTH),
+        (olmoearth_v1_2_nano, OlmoEarthV1_2_Nano_Weights.OLMOEARTH),
+        (olmoearth_v1_2_tiny, OlmoEarthV1_2_Tiny_Weights.OLMOEARTH),
+        (olmoearth_v1_2_small, OlmoEarthV1_2_Small_Weights.OLMOEARTH),
+        (olmoearth_v1_2_base, OlmoEarthV1_2_Base_Weights.OLMOEARTH),
+    ],
+)
+def test_olmoearth_meta(
+    builder: Callable[..., nn.Module], weights: WeightsEnum
+) -> None:
+    """The weights metadata matches the architecture the library builds."""
+    encoder = builder().model.encoder
+    meta = weights.meta
+    assert encoder.embedding_size == meta['embed_dim']
+    blocks = encoder.blocks
+    assert isinstance(blocks, nn.ModuleList)
+    assert len(blocks) == meta['depth']
+    assert blocks[0].attn.num_heads == meta['num_heads']
+    assert (encoder.min_patch_size, encoder.max_patch_size) == meta['patch_size']
+    assert encoder.max_sequence_length == meta['max_sequence_length']
+    for modality in meta['modalities']:
+        spec = constants.Modality.get(modality)
+        assert meta['bands'][modality] == list(spec.band_order)
 
 
 class TestOlmoEarthV1Nano:
