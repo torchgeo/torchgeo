@@ -14,7 +14,7 @@ from ..datasets.utils import lazy_import
 _olmoearth_transforms = nn.Identity()
 
 _olmoearth_meta = {
-    'dataset': 'Major TOM',
+    'dataset': 'OlmoEarthPretrain',
     'model': 'OlmoEarthPretrain_v1',
     'architecture': 'Vision Transformer',
     'publication': 'https://arxiv.org/abs/2506.10890',
