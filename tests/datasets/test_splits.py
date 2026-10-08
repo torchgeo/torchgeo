@@ -10,7 +10,6 @@ import shapely
 from geopandas import GeoDataFrame
 from pyproj import CRS
 from shapely import Geometry, Polygon
-from torch import Generator
 
 from torchgeo.datasets import (
     GeoDataset,
@@ -94,6 +93,12 @@ def test_random_bbox_assignment(
         == list(val_ds.index.columns)
         == list(test_ds.index.columns)
     )
+    assert (
+        ds.index.index.name
+        == train_ds.index.index.name
+        == val_ds.index.index.name
+        == test_ds.index.index.name
+    )
 
     # Check dataset CRSs
     assert train_ds.crs == val_ds.crs == test_ds.crs == ds.crs
@@ -135,7 +140,7 @@ def test_random_bbox_splitting() -> None:
     ds_area = total_area(ds)
 
     train_ds, val_ds, test_ds = random_bbox_splitting(
-        ds, fractions=[5 / 8, 2 / 8, 1 / 8], generator=Generator().manual_seed(5)
+        ds, fractions=[5 / 8, 2 / 8, 1 / 8]
     )
     train_ds_area = total_area(train_ds)
     val_ds_area = total_area(val_ds)
@@ -152,6 +157,12 @@ def test_random_bbox_splitting() -> None:
         == list(train_ds.index.columns)
         == list(val_ds.index.columns)
         == list(test_ds.index.columns)
+    )
+    assert (
+        ds.index.index.name
+        == train_ds.index.index.name
+        == val_ds.index.index.name
+        == test_ds.index.index.name
     )
 
     # Check dataset CRSs
@@ -198,6 +209,12 @@ def test_random_grid_cell_assignment() -> None:
         == list(train_ds.index.columns)
         == list(val_ds.index.columns)
         == list(test_ds.index.columns)
+    )
+    assert (
+        ds.index.index.name
+        == train_ds.index.index.name
+        == val_ds.index.index.name
+        == test_ds.index.index.name
     )
 
     # Check dataset CRSs
@@ -279,6 +296,12 @@ def test_roi_split() -> None:
         == list(train_ds.index.columns)
         == list(val_ds.index.columns)
         == list(test_ds.index.columns)
+    )
+    assert (
+        ds.index.index.name
+        == train_ds.index.index.name
+        == val_ds.index.index.name
+        == test_ds.index.index.name
     )
 
     # Check dataset CRSs
@@ -362,6 +385,12 @@ def test_time_series_split(
         == list(train_ds.index.columns)
         == list(val_ds.index.columns)
         == list(test_ds.index.columns)
+    )
+    assert (
+        ds.index.index.name
+        == train_ds.index.index.name
+        == val_ds.index.index.name
+        == test_ds.index.index.name
     )
 
     # Check dataset CRSs
