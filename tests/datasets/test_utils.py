@@ -14,10 +14,9 @@ import pandas as pd
 import pytest
 import rasterio
 import torch
-from affine import Affine
 from numpy.typing import NDArray
 from pytest import MonkeyPatch
-from rasterio import MemoryFile
+from rasterio import Affine, MemoryFile
 from rasterio.transform import from_origin
 from rasterio.vrt import WarpedVRT
 from shapely import MultiPolygon, Polygon, box
@@ -399,6 +398,22 @@ def test_download_url_interrupted(tmp_path: Path, monkeypatch: MonkeyPatch) -> N
         download_url(url, tmp_path, filename=filename)
 
     # Neither a truncated final file nor a leftover temporary file should remain.
+    assert not (tmp_path / filename).exists()
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_download_url_truncated(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    url = Path('tests/data/vhr10/NWPU VHR-10 dataset.zip').absolute().as_uri()
+    filename = 'NWPU VHR-10 dataset.zip'
+
+    def truncate(fsrc: Any, fdst: Any, *args: Any, **kwargs: Any) -> None:
+        fdst.write(fsrc.read(16))
+
+    monkeypatch.setattr(shutil, 'copyfileobj', truncate)
+
+    with pytest.raises(RuntimeError, match=r'Downloaded file .* is incomplete'):
+        download_url(url, tmp_path, filename=filename)
+
     assert not (tmp_path / filename).exists()
     assert list(tmp_path.iterdir()) == []
 
