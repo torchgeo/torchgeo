@@ -9,6 +9,7 @@ from collections import defaultdict
 from collections.abc import Callable
 from typing import ClassVar, Literal
 
+import einops
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -371,19 +372,20 @@ class MapInWild(NonGeoDataset):
         # Plot each modality in its respective axis
         for i, (modality, image) in enumerate(split_images.items()):
             ax = axs[i]
-            img = np.transpose(image, (1, 2, 0)).squeeze()
+
+            image = einops.rearrange(image, 'c h w -> h w c').squeeze()
             # Apply transformations based on modality type
             if modality.startswith('s2'):
-                img = img[:, :, [4, 3, 2]]
-            if modality == 'esa_wc':
-                img = self._convert_to_color(torch.as_tensor(img), cmap=self.wc_cmap)
+                image = image[:, :, [4, 3, 2]]
             if modality == 's1':
-                img = img[:, :, 0]
+                image = image[:, :, 0]
 
-            if not 'esa_wc':
-                img = quantile_normalization(img)
+            if modality == 'esa_wc':
+                image = self._convert_to_color(image, cmap=self.wc_cmap)
+            else:
+                image = quantile_normalization(image)
 
-            ax.imshow(img)
+            ax.imshow(image)
             if show_titles:
                 ax.set_title(modality)
             ax.axis('off')
