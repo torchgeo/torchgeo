@@ -90,7 +90,7 @@ class TestClassification:
     def test_trainer(
         self, monkeypatch: MonkeyPatch, name: str, fast_dev_run: bool
     ) -> None:
-        if name.startswith('so2sat'):
+        if name.startswith('so2sat') or name == 'quakeset':
             pytest.importorskip('h5py', minversion='3.10')
 
         config = os.path.join('tests', 'conf', name + '.yaml')
