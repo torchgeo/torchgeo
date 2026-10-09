@@ -90,7 +90,7 @@ class SpatioTemporalSegmentation(ClassificationMixin, BaseTask):
                     input_dim=in_channels,
                     num_classes=num_classes,
                     convolutional_head=True,
-                    **self.kwargs,
+                    **kwargs,
                 )
             case 'conv3dlstm':
                 kwargs = self.kwargs.copy()
