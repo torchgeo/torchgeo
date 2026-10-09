@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright (c) TorchGeo Contributors. All rights reserved.
 # Licensed under the MIT License.
 
@@ -94,8 +96,6 @@ def create_test_data(root: Path) -> None:
             print(f"        '{type_}': {{")
 
             for version in versions:
-                tar_name = f'dotav{version}_{type_}_{split}.tar.gz'
-
                 # version 1.0 and 1.5 have the same images
                 if version == '1.5' and type_ == 'images':
                     version_filename = '1.0'
@@ -114,7 +114,7 @@ def create_test_data(root: Path) -> None:
     print('}')
 
 
-def create_sample_df(root: Path) -> pd.DataFrame:
+def create_sample_df(root: Path) -> None:
     """Create sample DataFrame for test data."""
     rows = []
     splits = ['train', 'val']
@@ -139,10 +139,9 @@ def create_sample_df(root: Path) -> pd.DataFrame:
 
     df = pd.DataFrame(rows)
     df.to_csv(root / 'samples.csv')
-    return df
 
 
 if __name__ == '__main__':
     root = Path('.')
     create_test_data(root)
-    df = create_sample_df(root)
+    create_sample_df(root)

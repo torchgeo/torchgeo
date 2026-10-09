@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright (c) TorchGeo Contributors. All rights reserved.
 # Licensed under the MIT License.
 
@@ -5,7 +7,7 @@ import os
 
 import numpy as np
 import rasterio as rio
-from affine import Affine
+from rasterio import Affine
 from rasterio.control import GroundControlPoint
 
 EPSG = 4326

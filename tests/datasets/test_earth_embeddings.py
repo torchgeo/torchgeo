@@ -5,8 +5,7 @@ import os
 
 import matplotlib.pyplot as plt
 import pytest
-import torch.nn as nn
-from torch import Tensor
+from torch import Tensor, nn
 
 from torchgeo.datasets import DatasetNotFoundError, EarthEmbeddings
 
@@ -35,5 +34,5 @@ class TestEarthEmbeddings:
 
     def test_plot(self, dataset: EarthEmbeddings) -> None:
         x = dataset[0]
-        dataset.plot(x)
+        dataset.plot(x, suptitle='Test')
         plt.close()

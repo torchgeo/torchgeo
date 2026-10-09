@@ -8,8 +8,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pytest
 import torch
-import torch.nn as nn
 from pytest import MonkeyPatch
+from torch import nn
 
 from torchgeo.datasets import CropHarvest, DatasetNotFoundError
 
@@ -63,4 +63,6 @@ class TestCropHarvest:
     def test_plot(self, dataset: CropHarvest) -> None:
         x = dataset[0].copy()
         dataset.plot(x, suptitle='Test')
+        plt.close()
+        dataset.plot(x, show_titles=False)
         plt.close()

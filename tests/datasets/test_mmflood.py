@@ -9,9 +9,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
 import torch
-import torch.nn as nn
 from _pytest.fixtures import SubRequest
 from pytest import MonkeyPatch
+from torch import nn
 
 from torchgeo.datasets import (
     DatasetNotFoundError,
@@ -92,6 +92,8 @@ class TestMMFlood:
     def test_plot(self, dataset: MMFlood) -> None:
         x = dataset[dataset.bounds]
         dataset.plot(x, suptitle='Test')
+        plt.close()
+        dataset.plot(x, show_titles=False)
         plt.close()
 
     def test_plot_prediction(self, dataset: MMFlood) -> None:

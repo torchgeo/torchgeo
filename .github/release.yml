@@ -6,6 +6,9 @@ changelog:
     - title: Backwards-incompatible changes
       labels:
         - backwards-incompatible
+    - title: Callbacks
+      labels:
+        - callbacks
     - title: Dependencies
       labels:
         - dependencies
@@ -21,12 +24,15 @@ changelog:
     - title: Models
       labels:
         - models
+    - title: Profilers
+      labels:
+        - profilers
     - title: Samplers
       labels:
         - samplers
-    - title: Trainers
+    - title: Tasks
       labels:
-        - trainers
+        - tasks
     - title: Transforms
       labels:
         - transforms

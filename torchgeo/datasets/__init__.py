@@ -6,6 +6,7 @@
 from .advance import ADVANCE
 from .agb_live_woody_density import AbovegroundLiveWoodyBiomassDensity
 from .agrifieldnet import AgriFieldNet
+from .air_quality import AirQuality
 from .airphen import Airphen
 from .astergdem import AsterGDEM
 from .benin_cashews import BeninSmallHolderCashews
@@ -78,6 +79,7 @@ from .eurosat import EuroSAT, EuroSAT100, EuroSATSpatial
 from .everwatch import EverWatch
 from .fair1m import FAIR1M
 from .fire_risk import FireRisk
+from .flair import FLAIRHUB, FLAIRHUBBase, FLAIRHUBToy
 from .forestdamage import ForestDamage
 from .ftw import FieldsOfTheWorld
 from .gbif import GBIF
@@ -94,6 +96,7 @@ from .geo import (
 )
 from .geonrw import GeoNRW
 from .gid15 import GID15
+from .globalmangrovewatch import GlobalMangroveWatch
 from .globbiomass import GlobBiomass
 from .gse import GoogleSatelliteEmbedding
 from .hyspecnet import HySpecNet11k
@@ -122,7 +125,9 @@ from .loveda import LoveDA
 from .major_tom import MajorTOMEmbeddings
 from .mapinwild import MapInWild
 from .mdas import MDAS
+from .meta_chm import MetaCHM
 from .millionaid import MillionAID
+from .mixins import PlottingMixin
 from .mmearth import MMEarth
 from .mmflood import MMFlood
 from .naip import NAIP
@@ -191,7 +196,8 @@ from .utils import (
 from .vaihingen import Vaihingen2D
 from .vhr10 import VHR10
 from .western_usa_live_fuel_moisture import WesternUSALiveFuelMoisture
-from .xbd import XView2, xBD
+from .worldstrat import WorldStrat
+from .xbd import XView2, xBD, xBDDistShift
 from .zuericrop import ZueriCrop
 
 __all__ = (
@@ -206,6 +212,7 @@ __all__ = (
     'ETCI2021',
     'EUDEM',
     'FAIR1M',
+    'FLAIRHUB',
     'GBIF',
     'GID15',
     'LEVIRCD',
@@ -228,6 +235,7 @@ __all__ = (
     'VHR10',
     'AbovegroundLiveWoodyBiomassDensity',
     'AgriFieldNet',
+    'AirQuality',
     'Airphen',
     'AsterGDEM',
     'BeninSmallHolderCashews',
@@ -293,6 +301,8 @@ __all__ = (
     'EuroSAT100',
     'EuroSATSpatial',
     'EverWatch',
+    'FLAIRHUBBase',
+    'FLAIRHUBToy',
     'FieldsOfTheWorld',
     'FireRisk',
     'ForestDamage',
@@ -300,6 +310,7 @@ __all__ = (
     'GeoNRW',
     'GlobBiomass',
     'GlobalBuildingMap',
+    'GlobalMangroveWatch',
     'GoogleSatelliteEmbedding',
     'HySpecNet11k',
     'IDTReeS',
@@ -331,6 +342,7 @@ __all__ = (
     'MMFlood',
     'MajorTOMEmbeddings',
     'MapInWild',
+    'MetaCHM',
     'MillionAID',
     'NASAMarineDebris',
     'NonGeoClassificationDataset',
@@ -339,6 +351,7 @@ __all__ = (
     'OpenBuildings',
     'OpenStreetMap',
     'PatternNet',
+    'PlottingMixin',
     'Potsdam2D',
     'PrestoEmbeddings',
     'QuakeSet',
@@ -379,6 +392,7 @@ __all__ = (
     'Vaihingen2D',
     'VectorDataset',
     'WesternUSALiveFuelMoisture',
+    'WorldStrat',
     'XView2',
     'XarrayDataset',
     'ZueriCrop',
@@ -392,4 +406,5 @@ __all__ = (
     'time_series_split',
     'unbind_samples',
     'xBD',
+    'xBDDistShift',
 )

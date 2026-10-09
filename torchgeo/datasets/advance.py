@@ -91,7 +91,7 @@ class ADVANCE(NonGeoDataset):
         root: Path = 'data',
         transforms: Callable[[Sample], Sample] | None = None,
         download: bool = False,
-        checksum: bool = False,
+        checksum: bool = True,
     ) -> None:
         """Initialize a new ADVANCE dataset instance.
 
@@ -164,7 +164,7 @@ class ADVANCE(NonGeoDataset):
         wavs = sorted(glob.glob(os.path.join(root, 'sound', '**', '*.wav')))
         labels = [image.split(os.sep)[-2] for image in images]
         files = [
-            dict(image=image, audio=wav, cls=label)
+            {'image': image, 'audio': wav, 'cls': label}
             for image, wav, label in zip(images, wavs, labels)
         ]
         return files
@@ -180,7 +180,7 @@ class ADVANCE(NonGeoDataset):
         """
         with Image.open(path) as img:
             array: np.typing.NDArray[np.int_] = np.array(img.convert('RGB'))
-            tensor = torch.from_numpy(array)
+            tensor = torch.from_numpy(array).float()
             # Convert from HxWxC to CxHxW
             tensor = tensor.permute((2, 0, 1))
             return tensor
