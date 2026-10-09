@@ -73,6 +73,9 @@ Path: TypeAlias = str | os.PathLike[str]  # noqa: UP040
 #: * label: expected output classification or regression label
 #: * bbox_xyxy: expected output bounding box in (x1, y1, x2, y2) format
 #: * prediction: predicted output
+#: * bounds: spatiotemporal bounds of the sample
+#: * transform: affine transform of the sample
+#: * crs_index: index into the dataset's ``crs_registry`` giving the sample's CRS
 #:
 #: Values are of type torch.Tensor.
 Sample: TypeAlias = dict[str, Tensor]  # noqa: UP040
@@ -683,6 +686,8 @@ def concat_samples(samples: Iterable[Sample]) -> Sample:
     """Concatenate a list of samples along an existing axis.
 
     Useful for joining samples in a :class:`torchgeo.datasets.IntersectionDataset`.
+    Drops ``crs_index``, as indices into different datasets' registries can't be
+    combined.
 
     Args:
         samples: list of samples
@@ -691,10 +696,15 @@ def concat_samples(samples: Iterable[Sample]) -> Sample:
         a single sample
 
     .. versionadded:: 0.2
+
+    .. versionchanged:: 0.11
+       Drops ``crs_index``.
     """
     uncollated = _list_dict_to_dict_list(samples)
     collated = {}
     for key, value in uncollated.items():
+        if key == 'crs_index':
+            continue
         collated[key] = torch.cat(value)
     return collated
 
@@ -703,6 +713,8 @@ def merge_samples(samples: Iterable[Sample]) -> Sample:
     """Merge a list of samples.
 
     Useful for joining samples in a :class:`torchgeo.datasets.UnionDataset`.
+    Drops ``crs_index``, as indices into different datasets' registries can't be
+    combined.
 
     Args:
         samples: list of samples
@@ -711,10 +723,15 @@ def merge_samples(samples: Iterable[Sample]) -> Sample:
         a single sample
 
     .. versionadded:: 0.2
+
+    .. versionchanged:: 0.11
+       Drops ``crs_index``.
     """
     collated = {}
     for sample in samples:
         for key, value in sample.items():
+            if key == 'crs_index':
+                continue
             if key in collated:
                 # Take the maximum so that nodata values (zeros) get replaced
                 # by data values whenever possible

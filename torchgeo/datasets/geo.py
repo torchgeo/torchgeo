@@ -281,6 +281,40 @@ class GeoDataset(Dataset[Sample], abc.ABC, PlottingMixin):
         self.index.to_crs(new_crs, inplace=True)
 
     @property
+    def crs_registry(self) -> tuple[PROJ_CRS, ...]:
+        """Ordered registry of the CRSs a sample's ``crs_index`` refers to.
+
+        A sample's ``crs_index`` is an integer index into this tuple, so the per-sample
+        CRS travels as a tensor. A dataset currently reads every query in :attr:`crs`,
+        so the registry holds only that single CRS. Follows :attr:`crs`, so changing it
+        re-points earlier ``crs_index`` values.
+
+        Returns:
+            The CRSs this dataset can emit, in index order.
+
+        .. versionadded:: 0.11
+        """
+        return (self.crs,)
+
+    def _crs_index(self, crs: PROJ_CRS) -> Tensor:
+        """Registry index of *crs*, for a sample's ``crs_index``.
+
+        Args:
+            crs: :term:`coordinate reference system (CRS)` the sample is read in.
+
+        Returns:
+            The index of *crs* in :attr:`crs_registry` as a 0-d tensor.
+
+        Raises:
+            ValueError: If *crs* is not in :attr:`crs_registry`.
+        """
+        registry = self.crs_registry
+        if crs not in registry:
+            msg = f'{crs.name} is not in the crs_registry of {type(self).__name__}'
+            raise ValueError(msg)
+        return torch.tensor(registry.index(crs))
+
+    @property
     def res(self) -> tuple[float, float]:
         """Resolution of the dataset in units of CRS.
 
@@ -575,6 +609,7 @@ class RasterDataset(GeoDataset):
         transform = rasterio.transform.from_origin(x.start, y.stop, x.step, y.step)
         sample: Sample = {
             'bounds': self._slice_to_tensor(index),
+            'crs_index': self._crs_index(out_crs),
             'transform': torch.tensor(transform),
         }
 
@@ -967,6 +1002,7 @@ class XarrayDataset(GeoDataset):
         transform = rasterio.transform.from_origin(x.start, y.stop, x.step, y.step)
         sample: Sample = {
             'bounds': self._slice_to_tensor(index),
+            'crs_index': self._crs_index(out_crs),
             'image': image,
             'transform': torch.tensor(transform),
         }
@@ -1299,6 +1335,7 @@ class VectorDataset(GeoDataset):
         transform = rasterio.transform.from_origin(x.start, y.stop, x.step, y.step)
         sample: Sample = {
             'bounds': self._slice_to_tensor(index),
+            'crs_index': self._crs_index(out_crs),
             'transform': torch.tensor(transform),
         }
 
@@ -1578,7 +1615,12 @@ class IntersectionDataset(GeoDataset):
         # All datasets are guaranteed to have a valid index
         samples = [ds[index] for ds in self.datasets]
 
+        # Every child is read in self.crs. A child's crs_index points into its own
+        # registry, so drop it and stamp an index into this combiner's registry.
+        for s in samples:
+            s.pop('crs_index', None)
         sample = self.collate_fn(samples)
+        sample['crs_index'] = self._crs_index(self.crs)
 
         if self.transforms is not None:
             sample = self.transforms(sample)
@@ -1725,7 +1767,12 @@ class UnionDataset(GeoDataset):
                 f'index: {index} not found in dataset with bounds: {self.bounds}'
             )
 
+        # Every child is read in self.crs. A child's crs_index points into its own
+        # registry, so drop it and stamp an index into this combiner's registry.
+        for s in samples:
+            s.pop('crs_index', None)
         sample = self.collate_fn(samples)
+        sample['crs_index'] = self._crs_index(self.crs)
 
         if self.transforms is not None:
             sample = self.transforms(sample)

@@ -464,6 +464,16 @@ class TestRasterDataset:
         assert x[key].ndim == expected_ndim
         assert x[key].shape[-3] == len(ds.bands)
 
+    def test_crs_registry(self) -> None:
+        ds = NAIP(self.naip_dir)
+        x = ds[ds.bounds]
+        assert ds.crs_registry == (ds.crs,)
+        assert x['crs_index'] == 0
+        assert x['crs_index'].dtype == torch.long
+        assert x['crs_index'].ndim == 0
+        with pytest.raises(ValueError, match='UTM zone 31N is not in the crs_registry'):
+            ds._crs_index(CRS.from_epsg(32631))
+
     def test_reprojection(self) -> None:
         naip1 = NAIP(self.naip_dir, crs=CRS.from_epsg(4087))
         naip2 = NAIP(self.naip_dir, crs=CRS.from_epsg(4326))
@@ -955,6 +965,11 @@ class TestIntersectionDataset:
         sample = dataset[dataset.bounds]
         assert isinstance(sample['image'], torch.Tensor)
 
+    def test_getitem_child_without_crs_index(self) -> None:
+        ds = IntersectionDataset(CustomGeoDataset(), CustomGeoDataset())
+        sample = ds[ds.bounds]
+        assert sample['crs_index'] == 0
+
     def test_len(self, dataset: IntersectionDataset) -> None:
         assert len(dataset) == 1
 
@@ -1231,6 +1246,11 @@ class TestUnionDataset:
     def test_getitem(self, dataset: UnionDataset) -> None:
         sample = dataset[dataset.bounds]
         assert isinstance(sample['image'], torch.Tensor)
+
+    def test_getitem_child_without_crs_index(self) -> None:
+        ds = UnionDataset(CustomGeoDataset(), CustomGeoDataset())
+        sample = ds[ds.bounds]
+        assert sample['crs_index'] == 0
 
     def test_len(self, dataset: UnionDataset) -> None:
         assert len(dataset) == 2
