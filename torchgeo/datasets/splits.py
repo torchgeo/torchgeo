@@ -230,6 +230,7 @@ def random_grid_cell_assignment(
     indices = randperm(len(rows), generator=generator)
     lengths = _fractions_to_lengths(fractions, len(rows))
     rows_df = GeoDataFrame(rows, crs=dataset.crs)
+    rows_df.index.rename(dataset.index.index.name, inplace=True)
 
     new_datasets = []
     for offset, length in zip(itertools.accumulate(lengths), lengths):
