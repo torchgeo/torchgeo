@@ -45,7 +45,7 @@ class PanopticonPE(nn.Module):
         self.patch_size = _to_tuple(patch_size)
         self.img_size, self.grid_size, self.num_patches = self._init_img_size(img_size)
 
-    def forward(self, x_dict: dict[str, Tensor]) -> Tensor:
+    def forward(self, x_dict: dict[str, Tensor]) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the model.
 
         Args:
@@ -102,7 +102,7 @@ class Conv3dWrapper(nn.Module):
         patch_CHW = (1, tuple_patch_size[0], tuple_patch_size[1])
         self.conv3d = nn.Conv3d(1, embed_dim, kernel_size=patch_CHW, stride=patch_CHW)
 
-    def forward(self, x: Tensor) -> tuple[Tensor, int, int]:
+    def forward(self, x: Tensor) -> tuple[Tensor, int, int]:  # ty: ignore[invalid-mutable-override]
         """Forward pass.
 
         Args:
@@ -152,7 +152,7 @@ class ChnAttn(nn.Module):
         if layer_norm:
             self.layer_norm = nn.LayerNorm(dim)
 
-    def forward(self, x: Tensor, chn_ids: Tensor, mask: Tensor | None = None) -> Tensor:
+    def forward(self, x: Tensor, chn_ids: Tensor, mask: Tensor | None = None) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass.
 
         Args:
@@ -219,7 +219,7 @@ class ChnEmb(torch.nn.Module):
             torch.zeros(2, dim2)
         )  # 0:ascending, 1:descending
 
-    def forward(self, input: Tensor) -> Tensor:
+    def forward(self, input: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass.
 
         Args:
@@ -306,7 +306,7 @@ class CrossAttnNoQueryProj(nn.Module):
         self.inproj_k = nn.Linear(dim, dim, bias=qkv_bias)
         self.inproj_v = nn.Linear(dim, dim, bias=qkv_bias)
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, q: Tensor, k: Tensor, v: Tensor, key_padding_mask: Tensor | None = None
     ) -> Tensor:
         """Forward pass of the model.
@@ -458,7 +458,7 @@ class Panopticon(torch.nn.Module):
 
         self.model: nn.Module = dinov2_vit
 
-    def forward(self, x_dict: dict[str, Tensor]) -> Tensor:
+    def forward(self, x_dict: dict[str, Tensor]) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the model including forward pass through the head.
 
         Args:

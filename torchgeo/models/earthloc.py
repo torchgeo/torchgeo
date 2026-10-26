@@ -55,7 +55,7 @@ class FeatureMixerLayer(nn.Module):
                 if m.bias is not None:
                     nn.init.zeros_(m.bias)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the FeatureMixerLayer.
 
         Args:
@@ -120,7 +120,7 @@ class MixVPR(nn.Module):
         self.channel_proj = nn.Linear(in_channels, out_channels)
         self.row_proj = nn.Linear(hw, out_rows)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the MixVPR encoder.
 
         Args:
@@ -192,7 +192,7 @@ class EarthLoc(nn.Module):
         self.fc = nn.Linear(desc_dim, desc_dim)
         self.desc_dim = desc_dim  # Dimension of final descriptor
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the EarthLoc model.
 
         Args:

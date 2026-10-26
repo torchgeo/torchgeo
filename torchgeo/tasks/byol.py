@@ -66,7 +66,7 @@ class SimCLRAugmentation(nn.Module):
             K.RandomResizedCrop(size=image_size),
         )
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Applies SimCLR augmentations to the input tensor.
 
         Args:
@@ -100,7 +100,7 @@ class MLP(nn.Module):
             nn.Linear(hidden_size, projection_size),
         )
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the MLP model.
 
         Args:
@@ -192,7 +192,7 @@ class BackboneWrapper(nn.Module):
         layer = list(self.model.children())[self.layer]
         layer.register_forward_hook(self._hook)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Pass through the model, and collect the representation from our forward hook.
 
         Args:
@@ -276,7 +276,7 @@ class BYOLModule(nn.Module):
         for param in self.target.parameters():
             param.requires_grad = False
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the backbone model through the MLP and prediction head.
 
         Args:
