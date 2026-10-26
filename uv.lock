@@ -4084,7 +4084,7 @@ all = [
     { name = "ruff", specifier = ">=0.16" },
     { name = "sphinx", specifier = ">=8" },
     { name = "sphinx-github-changelog", specifier = ">=2" },
-    { name = "ty", specifier = ">=0.0.82" },
+    { name = "ty", specifier = ">=0.0.87" },
     { name = "types-geopandas", specifier = ">=1.0" },
     { name = "types-rasterio", specifier = ">=1.5.1" },
     { name = "types-requests", specifier = ">=2.25" },
@@ -4101,7 +4101,7 @@ docs = [
 style = [
     { name = "pandas-stubs", specifier = ">=3.0.3" },
     { name = "ruff", specifier = ">=0.16" },
-    { name = "ty", specifier = ">=0.0.82" },
+    { name = "ty", specifier = ">=0.0.87" },
     { name = "types-geopandas", specifier = ">=1.0" },
     { name = "types-rasterio", specifier = ">=1.5.1" },
     { name = "types-requests", specifier = ">=2.25" },
