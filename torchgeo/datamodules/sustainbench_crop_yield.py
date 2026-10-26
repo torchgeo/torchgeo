@@ -6,6 +6,7 @@
 from typing import Any
 
 from ..datasets import SustainBenchCropYield
+import torch
 from .geo import NonGeoDataModule
 
 
@@ -14,6 +15,9 @@ class SustainBenchCropYieldDataModule(NonGeoDataModule):
 
     .. versionadded:: 0.5
     """
+
+    mean = torch.tensor(0)
+    std = torch.tensor(1)
 
     def __init__(
         self, batch_size: int = 32, num_workers: int = 0, **kwargs: Any
