@@ -7,7 +7,7 @@ import abc
 import glob
 import os
 from collections.abc import Callable
-from typing import ClassVar, Literal
+from typing import Any, ClassVar, Literal
 
 import einops
 import matplotlib.pyplot as plt
@@ -28,7 +28,7 @@ class LEVIRCDBase(NonGeoDataset, abc.ABC):
     .. versionadded:: 0.6
     """
 
-    splits: ClassVar[tuple[str, ...] | dict[str, dict[str, str]]]
+    splits: ClassVar[Any]
     directories = ('A', 'B', 'label')
 
     def __init__(
