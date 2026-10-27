@@ -1,0 +1,6 @@
+chip,event,event_fold,pilot_role,sen1floods11_split,posterior_file,aux_file
+Bolivia_1,Bolivia,0,test,bolivia,layers/sen1floods11/posterior/Bolivia_1_posterior.tif,layers/sen1floods11/aux/Bolivia_1_aux.tif
+Ghana_1,Ghana,1,anchor,train,layers/sen1floods11/posterior/Ghana_1_posterior.tif,layers/sen1floods11/aux/Ghana_1_aux.tif
+Ghana_2,Ghana,1,test,valid,layers/sen1floods11/posterior/Ghana_2_posterior.tif,layers/sen1floods11/aux/Ghana_2_aux.tif
+India_1,India,2,test,test,layers/sen1floods11/posterior/India_1_posterior.tif,layers/sen1floods11/aux/India_1_aux.tif
+India_2,India,2,test,train,layers/sen1floods11/posterior/India_2_posterior.tif,layers/sen1floods11/aux/India_2_aux.tif

@@ -130,6 +130,7 @@ from .millionaid import MillionAID
 from .mixins import PlottingMixin
 from .mmearth import MMEarth
 from .mmflood import MMFlood
+from .mosaic import MosaicV0
 from .naip import NAIP
 from .nasa_marine_debris import NASAMarineDebris
 from .nccm import NCCM
@@ -344,6 +345,7 @@ __all__ = (
     'MapInWild',
     'MetaCHM',
     'MillionAID',
+    'MosaicV0',
     'NASAMarineDebris',
     'NonGeoClassificationDataset',
     'NonGeoDataset',
