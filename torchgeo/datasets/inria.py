@@ -64,14 +64,14 @@ class InriaAerialImageLabeling(NonGeoDataset):
     filename = 'NEW2-AerialImageDataset.zip'
     sha256 = '2e0ee5051b794e5cedc2c915bd839a29d8994fcca6d50727b031ab6bfbf4ef88'
 
-    filenames = [f'aerialimagelabeling.7z.00{i}' for i in range(1, 6)]
-    sha256s = [
+    filenames = (f'aerialimagelabeling.7z.00{i}' for i in range(1, 6))
+    sha256s = (
         '17a7d95c78e484328fd8fe5d5afa2b505e04b8db8fceb617819f3c935d1f39ec',
         'b505cb223964b157823e88fbd5b0bd041afcbf39427af3ca1ce981ff9f61aff4',
         '752916faa67be6fc6693f8559531598fa2798dc01b7d197263e911718038252e',
         'b3893e78f92572455fc2c811af560a558d2a57f9b92eff62fa41399b607a6f44',
         'a92eb20fdc9911c5ffe3afc514490b8f1e1e5b22301a6fc55d3b4e1624d8033f',
-    ]
+    )
 
     def __init__(
         self,
