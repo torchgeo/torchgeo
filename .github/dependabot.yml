@@ -2,9 +2,9 @@
 version: 2
 updates:
   - package-ecosystem: 'devcontainers'
-    directory: '/.devcontainer'
+    directory: '/'
     groups:
-      all:
+      devcontainers:
         patterns:
           - '*'
     schedule:
@@ -12,7 +12,7 @@ updates:
   - package-ecosystem: 'github-actions'
     directory: '/'
     groups:
-      all:
+      github-actions:
         patterns:
           - '*'
     schedule:
@@ -20,19 +20,24 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/'
     groups:
-      all:
+      npm:
         patterns:
           - '*'
     schedule:
       interval: 'weekly'
     versioning-strategy: 'widen'
   - package-ecosystem: 'uv'
-    allow:
-      - dependency-type: 'all'
     directory: '/'
     groups:
-      all:
+      pandas:
         patterns:
-          - '*'
+          - 'pandas'
+          - 'pandas[parquet]'
+      # torchvision pins torch, must update in unison
+      torch:
+        patterns:
+          - 'torch'
+          - 'torchvision'
     schedule:
       interval: 'weekly'
+    open-pull-request-limit: 10

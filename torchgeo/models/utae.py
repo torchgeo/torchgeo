@@ -144,7 +144,7 @@ class UTAE(nn.Module):
             nkernels=[self.decoder_widths[0], *out_conv], padding_mode=padding_mode
         )
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, x: Tensor, batch_positions: Tensor | None = None, return_att: bool = False
     ) -> Tensor | tuple[Tensor, Tensor] | tuple[Tensor, list[Tensor]]:
         """Forward pass.
@@ -208,7 +208,7 @@ class TemporalAggregator(nn.Module):
 
     """
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, x: Tensor, pad_mask: Tensor | None = None, attn_mask: Tensor | None = None
     ) -> Tensor:
         """Forward pass.
@@ -375,7 +375,7 @@ class ConvLayer(nn.Module):
                 layers.append(nn.ReLU())
         self.conv = nn.Sequential(*layers)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Apply the convolutional stack.
 
         Args:
@@ -412,7 +412,7 @@ class ConvBlock(TemporallySharedBlock):
             nkernels=nkernels, norm=norm, last_relu=last_relu, padding_mode=padding_mode
         )
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Apply the temporally shared convolutional block.
 
         Args:
@@ -461,7 +461,7 @@ class DownConvBlock(TemporallySharedBlock):
             nkernels=[d_out, d_out], norm=norm, padding_mode=padding_mode
         )
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Downsample and transform a feature map.
 
         Args:
@@ -518,7 +518,7 @@ class UpConvBlock(nn.Module):
             nkernels=[d_out, d_out], norm=norm, padding_mode=padding_mode
         )
 
-    def forward(self, x: Tensor, skip: Tensor) -> Tensor:
+    def forward(self, x: Tensor, skip: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass.
 
         Args:

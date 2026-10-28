@@ -57,6 +57,7 @@ needs_sphinx = '8.0'
 nitpicky = True
 nitpick_ignore = [
     # Undocumented classes
+    ('py:class', 'affine.Affine'),
     ('py:class', 'kornia.augmentation._2d.intensity.base.IntensityAugmentationBase2D'),
     ('py:class', 'kornia.augmentation._3d.geometric.base.GeometricAugmentationBase3D'),
     ('py:class', 'kornia.augmentation.base._AugmentationBase'),
@@ -72,8 +73,15 @@ nitpick_ignore = [
     ('py:class', 'torchvision.models._api.WeightsEnum'),
     ('py:class', 'torchvision.models.resnet.ResNet'),
     ('py:class', 'torchvision.models.swin_transformer.SwinTransformer'),
+    ('py:class', 'tokenizers.models.BPE'),
+    ('py:class', 'tokenizers.models.Model'),
     # Internal type aliases we don't yet want to expose
     ('py:class', 'torchgeo.datasets.openstreetmap.OSMClassConfig'),
+]
+nitpick_ignore_regex = [
+    # Documentation site is temporarily shut down due to a security incident
+    ('py:class', 'lightning.*'),
+    ('py:class', 'torchmetrics.*'),
 ]
 
 
@@ -203,7 +211,7 @@ autodoc_typehints_description_target = 'documented'
 intersphinx_mapping = {
     'einops': ('https://einops.rocks/', None),
     'kornia': ('https://kornia.readthedocs.io/en/stable/', None),
-    'lightning': ('https://lightning.ai/docs/pytorch/stable/', None),
+    # 'lightning': ('https://lightning.ai/docs/pytorch/stable/', None),
     'matplotlib': ('https://matplotlib.org/stable/', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
     'pandas': ('https://pandas.pydata.org/docs/', None),
@@ -217,7 +225,7 @@ intersphinx_mapping = {
     'timm': ('https://huggingface.co/docs/timm/main/en/', None),
     'tokenizers': ('https://huggingface.co/docs/tokenizers/main/en/', None),
     'torch': ('https://docs.pytorch.org/docs/stable/', None),
-    'torchmetrics': ('https://lightning.ai/docs/torchmetrics/stable/', None),
+    # 'torchmetrics': ('https://lightning.ai/docs/torchmetrics/stable/', None),
     'torchvision': ('https://docs.pytorch.org/vision/stable/', None),
 }
 
