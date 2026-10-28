@@ -3961,7 +3961,7 @@ all = [
     { name = "pandas", extra = ["parquet"] },
     { name = "rioxarray" },
     { name = "scipy" },
-    { name = "tokenizers", marker = "python_full_version < '3.14'" },
+    { name = "tokenizers" },
     { name = "webdataset" },
     { name = "xarray" },
 ]
@@ -3972,7 +3972,7 @@ datasets = [
     { name = "pandas", extra = ["parquet"] },
     { name = "rioxarray" },
     { name = "scipy" },
-    { name = "tokenizers", marker = "python_full_version < '3.14'" },
+    { name = "tokenizers" },
     { name = "webdataset" },
     { name = "xarray" },
 ]
@@ -4056,7 +4056,7 @@ requires-dist = [
     { name = "segmentation-models-pytorch", specifier = ">=0.5" },
     { name = "shapely", specifier = ">=2.0.2" },
     { name = "timm", specifier = ">=1.0.3" },
-    { name = "tokenizers", marker = "python_full_version < '3.14' and extra == 'datasets'", specifier = ">=0.14" },
+    { name = "tokenizers", marker = "extra == 'datasets'", specifier = ">=0.14" },
     { name = "torch", specifier = ">=2.2" },
     { name = "torchgeo", extras = ["datasets", "models"], marker = "extra == 'all'" },
     { name = "torchmetrics", extras = ["detection"], specifier = ">=1.5" },
