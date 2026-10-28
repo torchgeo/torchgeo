@@ -40,4 +40,4 @@ updates:
           - 'torchvision'
     schedule:
       interval: 'weekly'
-    open-pull-request-limit: 10
+    open-pull-requests-limit: 10
