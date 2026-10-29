@@ -24,7 +24,7 @@ class PlottingMixin:
     cmap: str | Colormap | None = None
 
     #: Names of bands in the dataset
-    bands: Sequence[str, ...] = ()
+    bands: Sequence[str] = ()
 
     #: Names of classes in the dataset
-    classes: Sequence[object, ...] = ()
+    classes: Sequence[object] = ()
