@@ -27,4 +27,4 @@ class PlottingMixin:
     bands: Sequence[str, ...] = ()
 
     #: Names of classes in the dataset
-    classes: tuple[str, ...] = ()
+    classes: Sequence[object, ...] = ()
