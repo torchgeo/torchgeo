@@ -4,15 +4,15 @@
 * @adamjstewart
 
 # Components
-callbacks/ @calebrob6
+callbacks/
 datamodules/ @nilsleh @robmarkcole
 datasets/ @nilsleh @adamjstewart
-losses/ @calebrob6 @adamjstewart
+losses/ @adamjstewart
 models/ @isaaccorley @ashnair1
 profilers/ @adamjstewart
 samplers/ @adamjstewart @nilsleh
-tasks/ @robmarkcole @calebrob6
-transforms/ @ashnair1 @isaaccorley @calebrob6
+tasks/ @robmarkcole
+transforms/ @ashnair1 @isaaccorley
 
 # Policy documents, requires 2/3 approval
 /.github/* @adamjstewart @calebrob6 @isaaccorley @nilsleh @ashnair1 @robmarkcole
