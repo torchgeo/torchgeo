@@ -20,3 +20,9 @@ class PlottingMixin:
 
     #: Color map for the dataset
     cmap: str | Colormap | None = None
+
+    #: Names of bands in the dataset
+    bands: tuple[str, ...] = ()
+
+    #: Names of classes in the dataset
+    classes: tuple[object, ...] = ()
