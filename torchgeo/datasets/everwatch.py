@@ -132,7 +132,7 @@ class EverWatch(NonGeoDataset):
         self.annot_df['sample_index'] = pd.factorize(self.annot_df['image_path'])[0]
         self.annot_df = self.annot_df.set_index(['sample_index', self.annot_df.index])
 
-        self.class2idx: dict[str, int] = {c: i for i, c in enumerate(self.classes)}
+        self.class2idx: dict[object, int] = {c: i for i, c in enumerate(self.classes)}
 
     def __len__(self) -> int:
         """Return the number of samples in the dataset.
