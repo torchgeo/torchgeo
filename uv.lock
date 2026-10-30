@@ -3559,7 +3559,7 @@ wheels = [
 
 [[package]]
 name = "segmentation-models-pytorch"
-version = "0.5.0"
+version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "huggingface-hub" },
@@ -3571,9 +3571,9 @@ dependencies = [
     { name = "torchvision" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/15/fa/d5a29d49240fb10bdead608b4d0c6805684a8f63b1f65863502be65b1ca4/segmentation_models_pytorch-0.5.0.tar.gz", hash = "sha256:cabba8aced6ef7bdcd6288dd9e1dc2840848aa819d539c455bd07aeceb2fdf96", size = 105150, upload-time = "2025-04-17T10:43:45.755Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/40/b5/dfeb5742787921c61b61490dcf1b599247547e9468bbf01b303eed3e7ee4/segmentation_models_pytorch-0.6.0.tar.gz", hash = "sha256:5f90a7a43fac608f85a9dce66f65297d887605da9c2caafb44aa875c30180424", size = 104077, upload-time = "2026-10-26T16:44:36.527Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/62/a50e5ac6191a498ad631e54df13d7e2d7eeb1325b15ee9ea1ee3ec065aaa/segmentation_models_pytorch-0.5.0-py3-none-any.whl", hash = "sha256:c34e09047771aa4dd8878b4f899e8125700cd1f8f7db16e58c37204154151a05", size = 154789, upload-time = "2025-04-17T10:43:43.668Z" },
+    { url = "https://files.pythonhosted.org/packages/53/90/1af6ca7308f616210d30e81270712e6a460971b5233f5b6d7b36ecfd739b/segmentation_models_pytorch-0.6.0-py3-none-any.whl", hash = "sha256:c46162221b5abe3bc296b222fbea8aa80d0b56e7130f7ddef654f707804534e2", size = 154621, upload-time = "2026-10-26T16:44:35.106Z" },
 ]
 
 [[package]]
