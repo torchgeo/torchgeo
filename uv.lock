@@ -25,15 +25,6 @@ wheels = [
 ]
 
 [[package]]
-name = "aenum"
-version = "3.1.16"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/09/7a/61ed58e8be9e30c3fe518899cc78c284896d246d51381bab59b5db11e1f3/aenum-3.1.16.tar.gz", hash = "sha256:bfaf9589bdb418ee3a986d85750c7318d9d2839c1b1a1d6fe8fc53ec201cf140", size = 137693, upload-time = "2026-01-12T22:34:38.819Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e3/52/6ad8f63ec8da1bf40f96996d25d5b650fdd38f5975f8c813732c47388f18/aenum-3.1.16-py3-none-any.whl", hash = "sha256:9035092855a98e41b66e3d0998bd7b96280e85ceb3a04cc035636138a1943eaf", size = 165627, upload-time = "2025-04-25T03:17:58.89Z" },
-]
-
-[[package]]
 name = "affine"
 version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1604,40 +1595,19 @@ wheels = [
 
 [[package]]
 name = "lightly"
-version = "1.5.26"
+version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "aenum" },
-    { name = "certifi" },
     { name = "hydra-core" },
-    { name = "lightly-utils" },
     { name = "numpy" },
-    { name = "pydantic" },
-    { name = "python-dateutil" },
     { name = "pytorch-lightning" },
-    { name = "requests" },
-    { name = "six" },
     { name = "torch" },
     { name = "torchvision" },
     { name = "tqdm" },
-    { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a4/02/9c76586cd2fdf20aaa5b957a45fbdccfc08f571586db059c65e77a10208d/lightly-1.5.26.tar.gz", hash = "sha256:0c3daa74bda643f4212de1dea6d8e39cd78b6a47bf154bc6b3e9e2baad59eb09", size = 437153, upload-time = "2026-07-27T17:40:35.868Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bd/d0/a2180d2363d92eabe61dfeacdbb89db3ea047c554025bc07e0f0a6d092cb/lightly-1.6.0.tar.gz", hash = "sha256:05cfb780837989a92cc1255aa0dfef7413881cb99b9e1d2a21b1c2f48231a7e9", size = 611242, upload-time = "2026-10-26T19:33:22.456Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8e/c5/9191d27b5c13361ec7419e4c1d4a5f51e735784591b14d97b43045d270c6/lightly-1.5.26-py3-none-any.whl", hash = "sha256:6ffc121af5b73093579941d44234523babea1046725c1826f8675ba57ecc58f7", size = 891186, upload-time = "2026-07-27T17:40:34.164Z" },
-]
-
-[[package]]
-name = "lightly-utils"
-version = "0.0.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "numpy" },
-    { name = "pillow" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/12/3a/fc1c006440cef68bd618056633aea5ae50c1ceee1b8eeb25e101df8e6ded/lightly_utils-0.0.2.tar.gz", hash = "sha256:a351f3d600f0ab08d12f294725c6457ae000645cb0a1083d0845cb196ccfe698", size = 32683, upload-time = "2021-07-08T13:14:43.134Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/62/11/ff55b3f54440e604a589ae1fe6950bc1bf49b5aca1842bf4b3ab0b6f65cd/lightly_utils-0.0.2-py3-none-any.whl", hash = "sha256:57eaa99044bbdab428cc67cd336491096cd406c21b50f15ce51150c1a10843e9", size = 6374, upload-time = "2021-07-08T13:14:41.992Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/e2/41f8ed4e692fccdf031a1252fe9e244b71836a9ff6625e8b8e06cd248787/lightly-1.6.0-py3-none-any.whl", hash = "sha256:f1564244cec0a4d2a5206f818e9de90d5869becbcfcb4a8ef0d78ba61c5b9071", size = 284465, upload-time = "2026-10-26T19:33:21.172Z" },
 ]
 
 [[package]]
