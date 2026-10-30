@@ -304,7 +304,7 @@ class BigEarthNet(NonGeoDataset):
         assert num_classes in [43, 19]
         self.root = root
         self.split = split
-        self.bands: Literal['s1', 's2', 'all'] = bands
+        self.band_set: Literal['s1', 's2', 'all'] = bands
         self.num_classes = num_classes
         self.transforms = transforms
         self.download = download
@@ -371,7 +371,7 @@ class BigEarthNet(NonGeoDataset):
         Returns:
             list of file paths
         """
-        if self.bands == 'all':
+        if self.band_set == 'all':
             folder_s1 = self.folders[index]['s1']
             folder_s2 = self.folders[index]['s2']
             paths_s1 = glob.glob(os.path.join(folder_s1, '*.tif'))
@@ -379,7 +379,7 @@ class BigEarthNet(NonGeoDataset):
             paths_s1 = sorted(paths_s1)
             paths_s2 = sorted(paths_s2, key=sort_sentinel2_bands)
             paths = paths_s1 + paths_s2
-        elif self.bands == 's1':
+        elif self.band_set == 's1':
             folder = self.folders[index]['s1']
             paths = glob.glob(os.path.join(folder, '*.tif'))
             paths = sorted(paths)
@@ -425,7 +425,7 @@ class BigEarthNet(NonGeoDataset):
         Returns:
             the target label
         """
-        if self.bands == 's2':
+        if self.band_set == 's2':
             folder = self.folders[index]['s2']
         else:
             folder = self.folders[index]['s1']
@@ -448,7 +448,7 @@ class BigEarthNet(NonGeoDataset):
 
     def _verify(self) -> None:
         """Verify the integrity of the dataset."""
-        keys = ['s1', 's2'] if self.bands == 'all' else [self.bands]
+        keys = ['s1', 's2'] if self.band_set == 'all' else [self.band_set]
         urls = [self.metadata[k]['url'] for k in keys]
         md5s = [self.metadata[k]['md5'] for k in keys]
         filenames = [self.metadata[k]['filename'] for k in keys]
@@ -548,13 +548,13 @@ class BigEarthNet(NonGeoDataset):
 
         .. versionadded:: 0.2
         """
-        if self.bands == 's2':
+        if self.band_set == 's2':
             image = np.rollaxis(sample['image'][[3, 2, 1]].numpy(), 0, 3)
             image = np.clip(image / 2000, 0, 1)
-        elif self.bands == 'all':
+        elif self.band_set == 'all':
             image = np.rollaxis(sample['image'][[5, 4, 3]].numpy(), 0, 3)
             image = np.clip(image / 2000, 0, 1)
-        elif self.bands == 's1':
+        elif self.band_set == 's1':
             image = sample['image'][0].numpy()
 
         label_mask = sample['label'].numpy().astype(np.bool_)
@@ -719,7 +719,7 @@ class BigEarthNetV2(NonGeoDataset):
         assert bands in ['s1', 's2', 'all']
         self.root = root
         self.split = split
-        self.bands: Literal['s1', 's2', 'all'] = bands
+        self.band_set: Literal['s1', 's2', 'all'] = bands
         self.transforms = transforms
         self.num_classes = 19
         self.download = download
@@ -756,7 +756,7 @@ class BigEarthNetV2(NonGeoDataset):
         """
         sample: Sample = {}
 
-        match self.bands:
+        match self.band_set:
             case 's1':
                 sample['image'] = self._load_image(index, 's1')
             case 's2':
@@ -936,26 +936,28 @@ class BigEarthNetV2(NonGeoDataset):
         Returns:
             a matplotlib Figure with the rendered sample
         """
-        fig, axes = plt.subplots(1, 2 if self.bands != 'all' else 3, figsize=(12, 4))
+        fig, axes = plt.subplots(
+            1, 2 if self.band_set != 'all' else 3, figsize=(12, 4)
+        )
 
-        if self.bands in ['s2', 'all']:
-            s2_img = sample['image_s2' if self.bands == 'all' else 'image']
+        if self.band_set in ['s2', 'all']:
+            s2_img = sample['image_s2' if self.band_set == 'all' else 'image']
             rgb = np.rollaxis(s2_img[[3, 2, 1]].numpy(), 0, 3)
             axes[0].imshow(np.clip(rgb / 2000, 0, 1))
             if show_titles:
                 axes[0].set_title('Sentinel-2 RGB')
             axes[0].axis('off')
 
-        if self.bands in ['s1', 'all']:
-            idx = 0 if self.bands == 's1' else 1
-            s1_img = sample['image_s1' if self.bands == 'all' else 'image']
+        if self.band_set in ['s1', 'all']:
+            idx = 0 if self.band_set == 's1' else 1
+            s1_img = sample['image_s1' if self.band_set == 'all' else 'image']
             axes[idx].imshow(s1_img[0].numpy())
             if show_titles:
                 axes[idx].set_title('Sentinel-1 VV')
             axes[idx].axis('off')
 
         # Handle mask plotting
-        mask_idx = 1 if self.bands != 'all' else 2
+        mask_idx = 1 if self.band_set != 'all' else 2
         mask = sample['mask'][0].numpy()
 
         # Get unique ordinal labels from mask

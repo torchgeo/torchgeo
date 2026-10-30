@@ -72,9 +72,9 @@ class TestBigEarthNet:
         assert x['image'].dtype == torch.float32
         assert x['label'].dtype == torch.int64
 
-        if dataset.bands == 'all':
+        if dataset.band_set == 'all':
             assert x['image'].shape == (14, 120, 120)
-        elif dataset.bands == 's1':
+        elif dataset.band_set == 's1':
             assert x['image'].shape == (2, 120, 120)
         else:
             assert x['image'].shape == (12, 120, 120)
@@ -90,7 +90,7 @@ class TestBigEarthNet:
     def test_already_downloaded(self, dataset: BigEarthNet, tmp_path: Path) -> None:
         BigEarthNet(
             root=tmp_path,
-            bands=dataset.bands,
+            bands=dataset.band_set,
             split=dataset.split,
             num_classes=dataset.num_classes,
             download=True,
@@ -99,7 +99,7 @@ class TestBigEarthNet:
     def test_already_downloaded_not_extracted(
         self, dataset: BigEarthNet, tmp_path: Path
     ) -> None:
-        if dataset.bands == 'all':
+        if dataset.band_set == 'all':
             shutil.rmtree(
                 os.path.join(dataset.root, dataset.metadata['s1']['directory'])
             )
@@ -108,7 +108,7 @@ class TestBigEarthNet:
             )
             shutil.copy(dataset.metadata['s1']['url'], tmp_path)
             shutil.copy(dataset.metadata['s2']['url'], tmp_path)
-        elif dataset.bands == 's1':
+        elif dataset.band_set == 's1':
             shutil.rmtree(
                 os.path.join(dataset.root, dataset.metadata['s1']['directory'])
             )
@@ -121,7 +121,7 @@ class TestBigEarthNet:
 
         BigEarthNet(
             root=tmp_path,
-            bands=dataset.bands,
+            bands=dataset.band_set,
             split=dataset.split,
             num_classes=dataset.num_classes,
             download=False,
@@ -171,14 +171,14 @@ class TestBigEarthNetV2:
         """Test loading data."""
         x = dataset[0]
 
-        if dataset.bands in ['s2', 'all']:
-            if dataset.bands == 's2':
+        if dataset.band_set in ['s2', 'all']:
+            if dataset.band_set == 's2':
                 assert x['image'].shape == (12, 120, 120)
             else:
                 assert x['image_s2'].shape == (12, 120, 120)
 
-        if dataset.bands in ['s1', 'all']:
-            if dataset.bands == 's1':
+        if dataset.band_set in ['s1', 'all']:
+            if dataset.band_set == 's1':
                 assert x['image'].shape == (2, 120, 120)
             else:
                 assert x['image_s1'].shape == (2, 120, 120)
@@ -203,7 +203,10 @@ class TestBigEarthNetV2:
 
     def test_already_downloaded(self, dataset: BigEarthNetV2, tmp_path: Path) -> None:
         BigEarthNetV2(
-            root=tmp_path, bands=dataset.bands, split=dataset.split, download=True
+            root=tmp_path,
+            bands=dataset.band_set,
+            split=dataset.split,
+            download=True,
         )
 
     def test_not_downloaded(self, tmp_path: Path) -> None:
@@ -221,15 +224,18 @@ class TestBigEarthNetV2:
                         os.path.join(dataset.root, dataset.dir_file_names[key])
                     )
 
-        if dataset.bands == 'all':
+        if dataset.band_set == 'all':
             rm_files(['s1', 's2', 'maps', 'metadata'])
-        elif dataset.bands == 's1':
+        elif dataset.band_set == 's1':
             rm_files(['s1', 'metadata', 'maps'])
         else:
             rm_files(['s2', 'metadata', 'maps'])
 
         BigEarthNetV2(
-            root=tmp_path, bands=dataset.bands, split=dataset.split, download=False
+            root=tmp_path,
+            bands=dataset.band_set,
+            split=dataset.split,
+            download=False,
         )
 
     def test_plot(self, dataset: BigEarthNetV2) -> None:
