@@ -6,7 +6,7 @@
 import os
 import random
 from collections.abc import Callable, Collection, Iterable
-from typing import ClassVar, Literal
+from typing import ClassVar, Literal, Sequence
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
@@ -221,7 +221,7 @@ class SeasoNet(NonGeoDataset):
         root: Path = 'data',
         split: Literal['train', 'val', 'test'] = 'train',
         seasons: Collection[str] = all_seasons,
-        bands: Iterable[str] = all_bands,
+        bands: Sequence[str] = all_bands,
         grids: Iterable[int] = [1, 2],
         concat_seasons: int = 1,
         transforms: Callable[[Sample], Sample] | None = None,
