@@ -566,7 +566,9 @@ class SatlasPretrain(NonGeoDataset):
 
         self.root = root
         self.images = images
-        self.bands = tuple(band for image in self.images for band in self.bands_dict[image])
+        self.bands = tuple(
+            band for image in self.images for band in self.bands_dict[image]
+        )
         self.labels = labels
         self.transforms = transforms
         self.download = download
