@@ -135,7 +135,7 @@ class ForestDamage(NonGeoDataset):
 
         self.files = self._load_files(self.root)
 
-        self.class_to_idx: dict[str, int] = {c: i for i, c in enumerate(self.classes)}
+        self.class_to_idx: dict[object, int] = {c: i for i, c in enumerate(self.classes)}
 
     def __getitem__(self, index: int) -> Sample:
         """Return an index within the dataset.
