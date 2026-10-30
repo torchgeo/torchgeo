@@ -203,10 +203,7 @@ class TestBigEarthNetV2:
 
     def test_already_downloaded(self, dataset: BigEarthNetV2, tmp_path: Path) -> None:
         BigEarthNetV2(
-            root=tmp_path,
-            bands=dataset.band_set,
-            split=dataset.split,
-            download=True,
+            root=tmp_path, bands=dataset.band_set, split=dataset.split, download=True
         )
 
     def test_not_downloaded(self, tmp_path: Path) -> None:
@@ -232,10 +229,7 @@ class TestBigEarthNetV2:
             rm_files(['s2', 'metadata', 'maps'])
 
         BigEarthNetV2(
-            root=tmp_path,
-            bands=dataset.band_set,
-            split=dataset.split,
-            download=False,
+            root=tmp_path, bands=dataset.band_set, split=dataset.split, download=False
         )
 
     def test_plot(self, dataset: BigEarthNetV2) -> None:

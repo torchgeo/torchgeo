@@ -936,9 +936,7 @@ class BigEarthNetV2(NonGeoDataset):
         Returns:
             a matplotlib Figure with the rendered sample
         """
-        fig, axes = plt.subplots(
-            1, 2 if self.band_set != 'all' else 3, figsize=(12, 4)
-        )
+        fig, axes = plt.subplots(1, 2 if self.band_set != 'all' else 3, figsize=(12, 4))
 
         if self.band_set in ['s2', 'all']:
             s2_img = sample['image_s2' if self.band_set == 'all' else 'image']
