@@ -5,8 +5,8 @@
 
 import os
 import random
-from collections.abc import Callable, Collection, Iterable
-from typing import ClassVar, Literal, Sequence
+from collections.abc import Callable, Collection, Iterable, Sequence
+from typing import ClassVar, Literal
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
