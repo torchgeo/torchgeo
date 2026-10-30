@@ -320,7 +320,7 @@ class xBDDistShift(xBD):
     .. versionadded:: 0.10
     """
 
-    classes: tuple[str, ...] = ('background', 'building')
+    classes = ('background', 'building')
     colormap: tuple[str, ...] = ('blue',)
     valid_disasters = (
         'hurricane-harvey',
