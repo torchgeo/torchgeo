@@ -193,7 +193,9 @@ class DIOR(NonGeoDataset):
             self.sample_df['split'] == self.split
         ].reset_index(drop=True)
 
-        self.class_to_idx: dict[str, int] = {c: i for i, c in enumerate(self.classes)}
+        self.class_to_idx: dict[object, int] = {
+            c: i for i, c in enumerate(self.classes)
+        }
 
     def __len__(self) -> int:
         """Return the number of data points in the dataset.

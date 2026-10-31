@@ -3,6 +3,8 @@
 
 """Mixins for dataset classes."""
 
+from collections.abc import Sequence
+
 from matplotlib.colors import Colormap
 
 
@@ -20,3 +22,9 @@ class PlottingMixin:
 
     #: Color map for the dataset
     cmap: str | Colormap | None = None
+
+    #: Names of bands in the dataset
+    bands: Sequence[str] = ()
+
+    #: Names of classes in the dataset
+    classes: Sequence[object] = ()

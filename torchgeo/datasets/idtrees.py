@@ -106,7 +106,7 @@ class IDTReeS(NonGeoDataset):
     .. versionadded:: 0.2
     """
 
-    classes: ClassVar[dict[str, str]] = {
+    class_dict: ClassVar[dict[str, str]] = {
         'ACPE': 'Acer pensylvanicum L.',
         'ACRU': 'Acer rubrum L.',
         'ACSA3': 'Acer saccharum Marshall',
@@ -141,6 +141,7 @@ class IDTReeS(NonGeoDataset):
         'ROPS': 'Robinia pseudoacacia L.',
         'TSCA': 'Tsuga canadensis (L.) Carriere',
     }
+    classes = tuple(class_dict)
     metadata: ClassVar[dict[str, dict[str, str]]] = {
         'train': {
             'url': 'https://zenodo.org/records/3934932/files/IDTREES_competition_train_v2.zip?download=1',
@@ -195,9 +196,9 @@ class IDTReeS(NonGeoDataset):
         self.transforms = transforms
         self.download = download
         self.checksum = checksum
-        self.class2idx = {c: i for i, c in enumerate(self.classes)}
-        self.idx2class = {i: c for i, c in enumerate(self.classes)}
-        self.num_classes = len(self.classes)
+        self.class2idx = {c: i for i, c in enumerate(self.class_dict)}
+        self.idx2class = {i: c for i, c in enumerate(self.class_dict)}
+        self.num_classes = len(self.class_dict)
         self._verify()
         self.images, self.geometries, self.labels = self._load(root)
 

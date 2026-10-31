@@ -98,7 +98,7 @@ class ReforesTree(NonGeoDataset):
 
         self.annot_df = pd.read_csv(os.path.join(root, 'mapping', 'final_dataset.csv'))
 
-        self.class2idx: dict[str, int] = {c: i for i, c in enumerate(self.classes)}
+        self.class2idx: dict[object, int] = {c: i for i, c in enumerate(self.classes)}
 
     def __getitem__(self, index: int) -> Sample:
         """Return an index within the dataset.
