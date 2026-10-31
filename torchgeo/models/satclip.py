@@ -172,7 +172,7 @@ class SphericalHarmonics(nn.Module):
 
         return torch.cat(blocks, dim=1)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass.
 
         Args:
@@ -216,7 +216,7 @@ class SineActivation(nn.Module):
         super().__init__()
         self.w0 = w0
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass.
 
         Args:
@@ -285,7 +285,7 @@ class Siren(nn.Module):
         )
         self.activation = SineActivation(w0) if activation is None else activation
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass.
 
         Args:
@@ -359,7 +359,7 @@ class SirenNet(nn.Module):
             dropout=False,
         )
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass.
 
         Args:
@@ -420,7 +420,7 @@ class SatCLIP(nn.Module):
             num_layers=num_hidden_layers,
         )
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass.
 
         Args:

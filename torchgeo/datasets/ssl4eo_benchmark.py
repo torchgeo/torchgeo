@@ -105,7 +105,10 @@ class SSL4EOLBenchmark(NonGeoDataset):
 
     split_percentages = (0.7, 0.15, 0.15)
 
-    cmaps: ClassVar[dict[str, Colormap]] = {'nlcd': NLCD.cmap, 'cdl': CDL.cmap}
+    cmaps: ClassVar[dict[str, Colormap | str | None]] = {
+        'nlcd': NLCD.cmap,
+        'cdl': CDL.cmap,
+    }
     valid_classes: ClassVar[dict[str, tuple[int, ...]]] = {
         'nlcd': NLCD.valid_classes,
         'cdl': CDL.valid_classes,

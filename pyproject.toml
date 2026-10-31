@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     # uv-build 0.7+ required for bdist reorganization
-    "uv_build>=0.7,<0.13",
+    "uv_build>=0.7,<0.14",
 ]
 build-backend = "uv_build"
 
@@ -25,8 +25,8 @@ style = [
     "pandas-stubs>=3.0.3",
     # ruff 0.16+ required for 2026 style guide
     "ruff>=0.16",
-    # ty 0.0.82+ required for latest type checking changes
-    "ty>=0.0.82",
+    # ty 0.0.87+ required for invalid-mutable-override
+    "ty>=0.0.87",
     # geopandas 1.0+ required to use pyogrio backend instead of Fiona (unmaintained)
     "types-geopandas>=1.0",
     # types-rasterio 1.5.1+ needed to use affine type hints
@@ -165,7 +165,8 @@ datasets = [
     # webdataset 0.2.101+ required for security hardening
     "webdataset>=0.2.101",
     # xarray 0.17+ required by rioxarray
-    "xarray>=0.17",
+    # h5py 3.15+ is incompatible with netcdf4 wheels; no h5py on Python 3.14+
+    "xarray[io]>=0.17; python_version<'3.14'",
 ]
 models = [
     # microsoft-aurora 1.6+ required for timm 1.0+ support

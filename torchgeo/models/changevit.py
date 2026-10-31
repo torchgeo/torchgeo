@@ -53,7 +53,7 @@ class DetailCaptureModule(Module):
         self.proj2 = nn.Conv2d(backbone_channels[1], 128, kernel_size=1)
         self.proj3 = nn.Conv2d(backbone_channels[2], 256, kernel_size=1)
 
-    def forward(self, x: Tensor) -> tuple[Tensor, Tensor, Tensor]:
+    def forward(self, x: Tensor) -> tuple[Tensor, Tensor, Tensor]:  # ty: ignore[invalid-mutable-override]
         """Forward pass through detail capture module.
 
         Args:
@@ -112,7 +112,7 @@ class FeatureInjector(Module):
             nn.Linear(vit_dim, vit_dim),
         )
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, vit_feats: Tensor, detail_feats: tuple[Tensor, Tensor, Tensor]
     ) -> Tensor:
         """Inject detail features into ViT features via cross-attention.
@@ -193,7 +193,7 @@ class ChangeViTDecoder(Module):
         self.convs = nn.Sequential(*layers)
         self.head = nn.Conv2d(inner_channels, num_classes, 3, 1, 1)
 
-    def forward(self, bi_feature: Tensor) -> tuple[Tensor, Tensor]:
+    def forward(self, bi_feature: Tensor) -> tuple[Tensor, Tensor]:  # ty: ignore[invalid-mutable-override]
         """Forward pass for change detection.
 
         Args:
@@ -279,7 +279,7 @@ class ChangeViT(Module):
         )
         self.decoder = ChangeViTDecoder(in_channels=embed_dim, num_classes=num_classes)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of ChangeViT.
 
         Args:

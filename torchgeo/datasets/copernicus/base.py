@@ -9,7 +9,6 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Sequence
 from typing import Any, Literal
 
-import matplotlib.colors
 import numpy as np
 import pandas as pd
 import rasterio as rio
@@ -70,9 +69,6 @@ class CopernicusBenchBase(NonGeoDataset, ABC):
 
     #: Date format string used to parse date from filename.
     date_format = '%Y%m%dT%H%M%S'
-
-    #: Matplotlib color map for semantic segmentation and change detection plots.
-    cmap: str | matplotlib.colors.Colormap
 
     #: List of classes for classification, semantic segmentation, and change detection.
     classes: tuple[str, ...]
