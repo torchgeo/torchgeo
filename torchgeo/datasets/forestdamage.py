@@ -105,7 +105,7 @@ class ForestDamage(NonGeoDataset):
     classes = ('other', 'H', 'LD', 'HD')
     url = 'https://lilawildlife.blob.core.windows.net/lila-wildlife/larch-casebearer/Data_Set_Larch_Casebearer.zip'
     data_dir = 'Data_Set_Larch_Casebearer'
-    md5 = '907815bcc739bff89496fac8f8ce63d7'
+    sha256 = '0f98bdca8dcb5db2d7dd7bfef5e30e4f2b73bef74adba048d87d20377038e67b'
 
     def __init__(
         self,
@@ -121,7 +121,7 @@ class ForestDamage(NonGeoDataset):
             transforms: a function/transform that takes input sample and its target as
                 entry and returns a transformed version
             download: if True, download dataset and store it in the root directory
-            checksum: if True, check the MD5 of the downloaded files (may be slow)
+            checksum: if True, verify the checksum of the downloaded files (may be slow)
 
         Raises:
             DatasetNotFoundError: If dataset is not found and *download* is False.
@@ -230,7 +230,7 @@ class ForestDamage(NonGeoDataset):
 
         filepath = os.path.join(self.root, f'{self.data_dir}.zip')
         if os.path.isfile(filepath):
-            if self.checksum and not check_integrity(filepath, self.md5):
+            if self.checksum and not check_integrity(filepath, sha256=self.sha256):
                 raise RuntimeError('Dataset found, but corrupted.')
             extract_archive(filepath)
             return
@@ -248,7 +248,7 @@ class ForestDamage(NonGeoDataset):
             self.url,
             self.root,
             filename=self.data_dir + '.zip',
-            md5=self.md5 if self.checksum else None,
+            sha256=self.sha256 if self.checksum else None,
         )
 
     def plot(
