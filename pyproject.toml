@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     # uv-build 0.7+ required for bdist reorganization
-    "uv_build>=0.7,<0.13",
+    "uv_build>=0.7,<0.14",
 ]
 build-backend = "uv_build"
 
@@ -167,7 +167,8 @@ datasets = [
     # webdataset 0.2.101+ required for security hardening
     "webdataset>=0.2.101",
     # xarray 0.17+ required by rioxarray
-    "xarray>=0.17",
+    # h5py 3.15+ is incompatible with netcdf4 wheels; no h5py on Python 3.14+
+    "xarray[io]>=0.17; python_version<'3.14'",
 ]
 models = [
     # microsoft-aurora 1.6+ required for timm 1.0+ support

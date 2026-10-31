@@ -195,6 +195,7 @@ from .utils import (
 )
 from .vaihingen import Vaihingen2D
 from .vhr10 import VHR10
+from .weatherbench import WeatherBench2
 from .western_usa_live_fuel_moisture import WesternUSALiveFuelMoisture
 from .wms import WMSDataset
 from .worldstrat import WorldStrat
@@ -393,6 +394,7 @@ __all__ = (
     'Vaihingen2D',
     'VectorDataset',
     'WMSDataset',
+    'WeatherBench2',
     'WesternUSALiveFuelMoisture',
     'WorldStrat',
     'XView2',
