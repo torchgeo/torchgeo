@@ -304,7 +304,7 @@ class Encoder(nn.Module):
 
         return x, kept_indices, removed_indices
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self,
         x: torch.Tensor,
         dynamic_world: torch.Tensor,
@@ -677,7 +677,7 @@ class Decoder(nn.Module):
         # we can just do this concatenation because the BANDS_GROUP_IDX is ordered
         return torch.cat(eo_output, dim=-1), dw_output
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self,
         x: torch.Tensor,
         kept_indices: torch.Tensor,
@@ -766,7 +766,7 @@ class Presto(nn.Module):
             max_sequence_length=max_sequence_length,
         )
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self,
         x: torch.Tensor,
         dynamic_world: torch.Tensor,

@@ -70,7 +70,7 @@ class BTC(Module):
         # padding tensors used for compatibility with UPerNet implementation
         self.upernet_padding = [torch.tensor(0), torch.tensor(0)]
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """BTC forward call.
 
         Extract multi-resolution features, fuse by subtraction, decode with UperNet.
@@ -146,7 +146,7 @@ class SwinBackbone(Module):
             )
             self.norms.load_state_dict(state_dict['feat_norms_state_dict'])
 
-    def forward(self, x: Tensor) -> list[Tensor]:
+    def forward(self, x: Tensor) -> list[Tensor]:  # ty: ignore[invalid-mutable-override]
         """Get multi-resolution features and apply layernorm to each level.
 
         Args:

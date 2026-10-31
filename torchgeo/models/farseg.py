@@ -88,7 +88,7 @@ class FarSeg(Module):
         self.fsr = _FSRelation(max_channels, [256] * 4, 256)
         self.decoder = _LightWeightDecoder(256, 128, classes)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the model.
 
         Args:
@@ -169,7 +169,7 @@ class _FSRelation(Module):
 
         self.normalizer = Sigmoid()
 
-    def forward(self, scene_feature: Tensor, features: list[Tensor]) -> list[Tensor]:
+    def forward(self, scene_feature: Tensor, features: list[Tensor]) -> list[Tensor]:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the model."""
         # [N, C, H, W]
         content_feats = [
@@ -249,7 +249,7 @@ class _LightWeightDecoder(Module):
             UpsamplingBilinear2d(scale_factor=4),
         )
 
-    def forward(self, features: list[Tensor]) -> Tensor:
+    def forward(self, features: list[Tensor]) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the model."""
         inner_feat_list = []
         for idx, block in enumerate(self.blocks):

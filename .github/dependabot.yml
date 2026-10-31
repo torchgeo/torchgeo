@@ -28,16 +28,6 @@ updates:
     versioning-strategy: 'widen'
   - package-ecosystem: 'uv'
     directory: '/'
-    groups:
-      pandas:
-        patterns:
-          - 'pandas'
-          - 'pandas[parquet]'
-      # torchvision pins torch, must update in unison
-      torch:
-        patterns:
-          - 'torch'
-          - 'torchvision'
     schedule:
       interval: 'weekly'
-    open-pull-request-limit: 10
+    open-pull-requests-limit: 10

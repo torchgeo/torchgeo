@@ -46,7 +46,7 @@ class ConvLSTMCell(nn.Module):
             bias=self.bias,
         )
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, input_tensor: torch.Tensor, cur_state: tuple[torch.Tensor, torch.Tensor]
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Forward pass of the ConvLSTMCell.
@@ -233,7 +233,7 @@ class ConvLSTM(nn.Module):
 
         return layer_output_list, last_state_list
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self,
         input_tensor: torch.Tensor,
         lengths: torch.Tensor | None = None,

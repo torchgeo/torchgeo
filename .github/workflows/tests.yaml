@@ -23,7 +23,7 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up uv
-        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
@@ -33,7 +33,7 @@ jobs:
             pyproject.toml
             uv.lock
       - name: Install dependencies
-        run: uv sync --locked --extra datasets --extra models --extra tests
+        run: uv sync --locked --extra datasets --extra models --group tests
       - name: List installed dependencies
         run: uv pip list
       - name: Run checks
@@ -54,7 +54,7 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up uv
-        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           python-version: '3.12'
           enable-cache: true
@@ -63,7 +63,7 @@ jobs:
           cache-dependency-glob: |
             pyproject.toml
       - name: Install dependencies
-        run: uv pip install --resolution lowest-direct '.[datasets,models,tests]'
+        run: uv pip install --resolution lowest-direct '.[datasets,models]' --group tests
       - name: List installed dependencies
         run: uv pip list
       - name: Run checks
@@ -81,7 +81,7 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up uv
-        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           python-version: '3.14'
           enable-cache: true
@@ -91,7 +91,7 @@ jobs:
             pyproject.toml
             uv.lock
       - name: Install dependencies
-        run: uv sync --locked --extra tests
+        run: uv sync --locked --group tests
       - name: List installed dependencies
         run: uv pip list
       - name: Run checks

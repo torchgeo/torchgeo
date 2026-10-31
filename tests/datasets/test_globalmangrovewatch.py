@@ -54,8 +54,9 @@ class TestGlobalMangroveWatch:
         assert isinstance(ds, UnionDataset)
 
     def test_full_year(self, dataset: GlobalMangroveWatch) -> None:
-        time = pd.Timestamp(2020, 6, 1)
-        index = (dataset.bounds[0], dataset.bounds[1], slice(time, time))
+        tmin = pd.Timestamp(2020, 1, 1)
+        tmax = pd.Timestamp(2020, 12, 31)
+        index = (dataset.bounds[0], dataset.bounds[1], slice(tmin, tmax))
         dataset[index]
 
     def test_already_extracted(self, dataset: GlobalMangroveWatch) -> None:

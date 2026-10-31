@@ -161,7 +161,7 @@ class FourierExpansion(nn.Module):
         self.upper = upper
         self.assert_range = assert_range
 
-    def forward(self, x: Tensor, d: int) -> Tensor:
+    def forward(self, x: Tensor, d: int) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Perform the expansion.
 
         Adds a dimension of length `d` to the end of the shape of `x`.
@@ -291,7 +291,7 @@ class DynamicPatchEmbed(nn.Module):
         self.weight_generator.apply(self.weight_init)
         self.fclayer.apply(self.weight_init)
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self,
         x: Tensor,
         wavelengths: Tensor | None = None,
@@ -677,7 +677,7 @@ class CopernicusFM(nn.Module):
         x = self.head_drop(x)
         return x if pre_logits else self.head(x)
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self,
         x: Tensor,
         metadata: Tensor,
