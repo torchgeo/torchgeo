@@ -5,8 +5,9 @@
 
 from typing import Any
 
-from ..datasets import SustainBenchCropYield
 import torch
+
+from ..datasets import SustainBenchCropYield
 from .geo import NonGeoDataModule
 
 
