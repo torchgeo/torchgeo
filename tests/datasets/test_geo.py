@@ -104,7 +104,7 @@ class CustomVectorParquetDataset(VectorDataset):
 
 
 class CustomSentinelDataset(Sentinel2):
-    all_bands: tuple[str, ...] = ()
+    all_bands = ()
     separate_files = False
 
 
