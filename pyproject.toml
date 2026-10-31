@@ -160,8 +160,7 @@ datasets = [
     # scipy 1.11.2+ required for Python 3.12 wheels
     "scipy>=1.11.2",
     # tokenizers 0.14+ required for Python 3.12 wheels
-    # tokenizers does not yet provide wheels for Python 3.14t
-    "tokenizers>=0.14; python_version<'3.14'",
+    "tokenizers>=0.14",
     # webdataset 0.2.101+ required for security hardening
     "webdataset>=0.2.101",
     # xarray 0.17+ required by rioxarray
