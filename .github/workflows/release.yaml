@@ -20,7 +20,7 @@ jobs:
         id: setup-uv
         uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
-          python-version: '3.14'
+          python-version: '3.15'
           enable-cache: true
           prune-cache: true
           activate-environment: true
@@ -47,7 +47,7 @@ jobs:
         id: setup-uv
         uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
-          python-version: '3.14'
+          python-version: '3.15'
           enable-cache: true
           prune-cache: true
           activate-environment: true
