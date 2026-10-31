@@ -56,8 +56,9 @@ class TestCDL:
         assert isinstance(ds, UnionDataset)
 
     def test_full_year(self, dataset: CDL) -> None:
-        time = pd.Timestamp(2023, 6, 1)
-        index = (dataset.bounds[0], dataset.bounds[1], slice(time, time))
+        tmin = pd.Timestamp(2023, 1, 1)
+        tmax = pd.Timestamp(2023, 12, 31)
+        index = (dataset.bounds[0], dataset.bounds[1], slice(tmin, tmax))
         dataset[index]
 
     def test_already_extracted(self, dataset: CDL) -> None:

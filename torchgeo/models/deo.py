@@ -79,7 +79,7 @@ class DEO(nn.Module):
             x: input image tensor (b, c, h, w).
 
         Returns:
-            list of swin feature tensors list[(b, c, h', w')].
+            list of swin multiscale feature tensors list[(b, h', w', c)].
         """
         features = []
         # apply the appropriate conv layer based on the number of input channels
@@ -96,14 +96,14 @@ class DEO(nn.Module):
 
         return features
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         """Get last layer swin features.
 
         Args:
             x: input image tensor (b, c, h, w).
 
         Returns:
-            swin feature tensor (b, c, h', w').
+            swin feature tensor (b, h', w', c).
         """
         return self.forward_features(x)[-1]
 
