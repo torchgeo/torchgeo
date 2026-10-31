@@ -29,7 +29,7 @@ class _PrestoTemporalRegressionModel(nn.Module):
         self.model = model
         self.head = nn.Linear(model.encoder.embedding_size, out_features)
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self,
         x: Tensor,
         dynamic_world: Tensor | None = None,
