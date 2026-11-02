@@ -31,7 +31,7 @@ class PixelwiseRegressionTestModel(Module):
             in_channels=in_channels, out_channels=classes, kernel_size=1, padding=0
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         return cast(torch.Tensor, self.conv1(x))
 
 
@@ -55,7 +55,7 @@ def plot_missing_bands(*args: Any, **kwargs: Any) -> None:
 
 class TestRegression:
     @classmethod
-    def create_model(*args: Any, **kwargs: Any) -> Module:
+    def create_model(cls, *args: Any, **kwargs: Any) -> Module:
         return RegressionTestModel(**kwargs)
 
     @pytest.mark.parametrize(
@@ -215,7 +215,7 @@ class TestRegression:
 
 class TestPixelwiseRegression:
     @classmethod
-    def create_model(*args: Any, **kwargs: Any) -> Module:
+    def create_model(cls, *args: Any, **kwargs: Any) -> Module:
         return PixelwiseRegressionTestModel(**kwargs)
 
     @pytest.mark.parametrize(

@@ -3,8 +3,6 @@
 
 """MAE task for self-supervised learning (SSL)."""
 
-import warnings
-
 import timm
 import torch
 from kornia import augmentation as K
@@ -55,7 +53,7 @@ class MAE(BaseTask):
        The *transform* parameter was renamed to *augmentations*.
     """
 
-    ignore = ('augmentations', 'transform', 'weights')
+    ignore = ('augmentations', 'weights')
 
     def __init__(
         self,
@@ -72,7 +70,6 @@ class MAE(BaseTask):
         size: int = 224,
         norm_pix_loss: bool = True,
         warmup_epochs: int = 40,
-        transform: nn.Module | None = None,
     ) -> None:
         """Initialize the MAE task.
 
@@ -84,7 +81,8 @@ class MAE(BaseTask):
                 default pretrained weights, or None for random initialization.
             in_channels: Number of input channels in the images. Must match the in_chans
                 argument of the ViT model.
-            augmentations: Data augmentation pipeline. Defaults to MAE augmentation.
+            augmentations: Optional augmentations to apply to the input images. If None, a
+                default MAE augmentation will be used.
             decoder_dim: The embedding dimension of the MAE decoder. Typically 512 is a
                 good choice for ViT-Base encoders.
             lr: Should typically be set to 1.5e-4 * batch_size / 256.
@@ -99,88 +97,16 @@ class MAE(BaseTask):
             norm_pix_loss: If True, normalize each target patch to zero mean and unit
                 variance before computing MSE. Recommended by the original MAE paper.
             warmup_epochs: Number of linear warmup epochs before cosine annealing.
-            transform: Deprecated alias for *augmentations*.
 
         Raises:
             TypeError: If *model* is not a ViT architecture.
-            ValueError: If both *augmentations* and *transform* are provided.
-
-        Warns:
-            DeprecationWarning: If *transform* is provided.
         """
         self.weights = weights
         super().__init__()
-        if augmentations is not None and transform is not None:
-            raise ValueError('augmentations cannot be combined with transform')
-        if transform is not None:
-            warnings.warn(
-                'transform is deprecated; use augmentations instead',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            augmentations = transform
         self.augmentations = (
             augmentations if augmentations is not None else mae_augmentation(size)
         )
         self.warmup_epochs = warmup_epochs
-
-    @property
-    def transform(self) -> nn.Module:
-        """Deprecated alias for the augmentation pipeline.
-
-        .. deprecated:: 0.11
-           Use *augmentations* instead.
-        """
-        warnings.warn(
-            'transform is deprecated; use augmentations instead',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.augmentations
-
-    @transform.setter
-    def transform(self, value: nn.Module) -> None:
-        self.augmentations = value  # pragma: no cover
-
-    def __setattr__(self, name: str, value: torch.Tensor | nn.Module) -> None:
-        """Set an attribute, resolving the deprecated augmentation alias."""
-        if name == 'transform' and 'augmentations' in self.__dict__.get('_modules', {}):
-            warnings.warn(
-                'transform is deprecated; use augmentations instead',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            name = 'augmentations'
-        super().__setattr__(name, value)
-
-    def _load_from_state_dict(
-        self,
-        state_dict: dict[str, torch.Tensor],
-        prefix: str,
-        local_metadata: dict[str, object],
-        strict: bool,
-        missing_keys: list[str],
-        unexpected_keys: list[str],
-        error_msgs: list[str],
-    ) -> None:
-        """Load checkpoints saved with the deprecated augmentation attribute."""
-        old_prefix = f'{prefix}transform.'
-        new_prefix = f'{prefix}augmentations.'
-        for key in list(state_dict):
-            if key.startswith(old_prefix):
-                new_key = f'{new_prefix}{key.removeprefix(old_prefix)}'
-                if new_key not in state_dict:
-                    state_dict[new_key] = state_dict[key]
-                del state_dict[key]
-        super()._load_from_state_dict(
-            state_dict,
-            prefix,
-            local_metadata,
-            strict,
-            missing_keys,
-            unexpected_keys,
-            error_msgs,
-        )
 
     def configure_losses(self) -> None:
         """Initialize the loss criterion."""

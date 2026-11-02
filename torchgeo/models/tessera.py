@@ -62,7 +62,7 @@ class _PixelTimeSeriesNormalize(nn.Module):
         super().__init__()
         self.normalize = T.Normalize(mean=mean, std=std, inplace=inplace)
 
-    def forward(self, tensor: torch.Tensor) -> torch.Tensor:
+    def forward(self, tensor: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the PixelTimeSeriesNormalize.
 
         Args:
@@ -110,7 +110,7 @@ class TemporalAwarePooling(nn.Module):
         self.query = nn.Linear(input_dim, 1)
         self.temporal_context = nn.GRU(input_dim, input_dim, batch_first=True)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the temporal-aware pooling.
 
         Args:
@@ -137,7 +137,7 @@ class TemporalPositionalEncoder(nn.Module):
         super().__init__()
         self.d_model = d_model
 
-    def forward(self, doy: Tensor) -> Tensor:
+    def forward(self, doy: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the temporal positional encoder.
 
         Args:
@@ -205,7 +205,7 @@ class TransformerEncoder(nn.Module):
 
         self.attn_pool = TemporalAwarePooling(latent_dim * 4)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the transformer encoder.
 
         Args:
@@ -266,7 +266,7 @@ class Tessera(nn.Module):
         )
         self.dim_reducer = nn.Sequential(nn.Linear(embed_dim * 8, embed_dim))
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the Tessera model.
 
         Args:

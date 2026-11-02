@@ -1,30 +1,33 @@
-# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+# https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference
 version: 2
 updates:
   - package-ecosystem: 'devcontainers'
-    directory: '/.devcontainer'
+    directory: '/'
+    groups:
+      devcontainers:
+        patterns:
+          - '*'
     schedule:
       interval: 'weekly'
   - package-ecosystem: 'github-actions'
     directory: '/'
+    groups:
+      github-actions:
+        patterns:
+          - '*'
     schedule:
       interval: 'weekly'
+  - package-ecosystem: 'npm'
+    directory: '/'
+    groups:
+      npm:
+        patterns:
+          - '*'
+    schedule:
+      interval: 'weekly'
+    versioning-strategy: 'widen'
   - package-ecosystem: 'uv'
     directory: '/'
     schedule:
-      interval: 'daily'
-    groups:
-      pandas:
-        patterns:
-          - 'pandas'
-          - 'pandas[parquet]'
-      # torchvision pins torch, must update in unison
-      torch:
-        patterns:
-          - 'torch'
-          - 'torchvision'
-  - package-ecosystem: 'npm'
-    directory: '/'
-    schedule:
       interval: 'weekly'
-    versioning-strategy: 'lockfile-only'
+    open-pull-requests-limit: 10

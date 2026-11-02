@@ -143,7 +143,7 @@ class ZueriCrop(NonGeoDataset):
         with h5py.File(self.filepath, 'r') as f:
             array = f['data'][index, ...]
 
-        tensor = torch.from_numpy(array)
+        tensor = torch.from_numpy(array).float()
         # Convert from TxHxWxC to TxCxHxW
         tensor = tensor.permute((0, 3, 1, 2))
         tensor = torch.index_select(tensor, dim=1, index=self.band_indices)
@@ -251,17 +251,17 @@ class ZueriCrop(NonGeoDataset):
     def plot(
         self,
         sample: Sample,
-        time_step: int = 0,
         show_titles: bool = True,
         suptitle: str | None = None,
+        time_step: int = 0,
     ) -> Figure:
         """Plot a sample from the dataset.
 
         Args:
             sample: a sample returned by :meth:`__getitem__`
-            time_step: time step at which to access image, beginning with 0
             show_titles: flag indicating whether to show titles above each panel
             suptitle: optional suptitle to use for figure
+            time_step: time step at which to access image, beginning with 0
 
         Returns:
             a matplotlib Figure with the rendered sample

@@ -95,7 +95,7 @@ class TransformerWeightGenerator(nn.Module):
         torch.nn.init.normal_(self.weight_tokens, std=0.02)
         torch.nn.init.normal_(self.bias_token, std=0.02)
 
-    def forward(self, x: Tensor) -> tuple[Tensor, Tensor]:
+    def forward(self, x: Tensor) -> tuple[Tensor, Tensor]:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the model.
 
         Args:
@@ -130,7 +130,7 @@ class FCResLayer(nn.Module):
         self.w1 = nn.Linear(self.l_size, self.l_size)
         self.w2 = nn.Linear(self.l_size, self.l_size)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the model.
 
         Args:
@@ -192,7 +192,7 @@ class DOFAEmbedding(nn.Module):
         self.weight_generator.apply(self._init_weight)
         self.fclayer.apply(self._init_weight)
 
-    def forward(self, x: Tensor, wavelengths: Tensor) -> tuple[Tensor, Tensor]:
+    def forward(self, x: Tensor, wavelengths: Tensor) -> tuple[Tensor, Tensor]:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the model.
 
         Args:
@@ -372,7 +372,7 @@ class DOFA(nn.Module):
         x = x if pre_logits else self.head(x)
         return x
 
-    def forward(self, x: Tensor, wavelengths: list[float]) -> Tensor:
+    def forward(self, x: Tensor, wavelengths: list[float]) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the model.
 
         Args:

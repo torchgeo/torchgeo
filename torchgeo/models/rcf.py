@@ -172,7 +172,7 @@ class RCF(Module):
         return patches_normalized.reshape(orig_shape)
 
     @torch.inference_mode()
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the RCF model.
 
         Args:

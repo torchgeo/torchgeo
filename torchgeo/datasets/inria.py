@@ -62,7 +62,16 @@ class InriaAerialImageLabeling(NonGeoDataset):
 
     directory = 'AerialImageDataset'
     filename = 'NEW2-AerialImageDataset.zip'
-    md5 = '4b1acfe84ae9961edc1a6049f940380f'
+    sha256 = '2e0ee5051b794e5cedc2c915bd839a29d8994fcca6d50727b031ab6bfbf4ef88'
+
+    filenames = (f'aerialimagelabeling.7z.00{i}' for i in range(1, 6))
+    sha256s = (
+        '17a7d95c78e484328fd8fe5d5afa2b505e04b8db8fceb617819f3c935d1f39ec',
+        'b505cb223964b157823e88fbd5b0bd041afcbf39427af3ca1ce981ff9f61aff4',
+        '752916faa67be6fc6693f8559531598fa2798dc01b7d197263e911718038252e',
+        'b3893e78f92572455fc2c811af560a558d2a57f9b92eff62fa41399b607a6f44',
+        'a92eb20fdc9911c5ffe3afc514490b8f1e1e5b22301a6fc55d3b4e1624d8033f',
+    )
 
     def __init__(
         self,
@@ -78,7 +87,7 @@ class InriaAerialImageLabeling(NonGeoDataset):
             split: train/val/test split
             transforms: a function/transform that takes input sample and its target as
                 entry and returns a transformed version.
-            checksum: if True, check the MD5 of the downloaded files (may be slow)
+            checksum: if True, verify the checksum of the downloaded files (may be slow)
 
         Raises:
             AssertionError: if ``split`` is invalid
@@ -193,10 +202,10 @@ class InriaAerialImageLabeling(NonGeoDataset):
             return
 
         archive_path = os.path.join(self.root, self.filename)
-        md5_hash = self.md5 if self.checksum else None
+        sha256 = self.sha256 if self.checksum else None
         if not os.path.isfile(archive_path):
             raise DatasetNotFoundError(self)
-        if not check_integrity(archive_path, md5_hash):
+        if not check_integrity(archive_path, sha256=sha256):
             raise RuntimeError('Dataset corrupted')
         print('Extracting...')
         extract_archive(archive_path)
