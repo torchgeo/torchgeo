@@ -10,9 +10,12 @@ from collections.abc import Callable
 from typing import ClassVar, Literal, cast
 from xml.etree import ElementTree
 
+import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
 import torch
+from matplotlib.figure import Figure
+from matplotlib.patches import Rectangle
 from PIL import Image
 from rasterio.transform import Affine
 from torch import Tensor
@@ -43,7 +46,8 @@ class RarePlanes(NonGeoDataset):
     Both variants return axis-aligned pixel boxes in ``bbox_xyxy`` as
     ``(xmin, ymin, xmax, ymax)``, with the origin at the image's upper-left corner.
     Real GeoJSON coordinates are transformed into pixels and enclosed by each box;
-    synthetic boxes retain the XML coordinates.
+    synthetic boxes retain the XML coordinates. Aircraft have label 1; label 0 is
+    reserved for background.
 
     The dataset must be downloaded manually from the dataset website.
 
@@ -54,7 +58,7 @@ class RarePlanes(NonGeoDataset):
     .. versionadded:: 0.11
     """
 
-    classes = ('aircraft',)
+    classes = ('background', 'aircraft')
     image_directories: ClassVar[dict[str, str]] = {
         'real': 'PS-RGB_tiled',
         'synthetic': 'images',
@@ -137,7 +141,7 @@ class RarePlanes(NonGeoDataset):
             image = self._load_synthetic_image(image_path)
             boxes = self._load_synthetic_target(annotation_path)
 
-        labels = torch.zeros(len(boxes), dtype=torch.long)
+        labels = torch.ones(len(boxes), dtype=torch.long)
         sample = {'image': image, 'bbox_xyxy': boxes, 'label': labels}
 
         if self.transforms is not None:
@@ -226,3 +230,36 @@ class RarePlanes(NonGeoDataset):
             )
 
         return torch.tensor(boxes, dtype=torch.float32).reshape(-1, 4)
+
+    def plot(
+        self, sample: Sample, show_titles: bool = True, suptitle: str | None = None
+    ) -> Figure:
+        """Plot a sample and optional predicted bounding boxes.
+
+        Args:
+            sample: A sample returned by :meth:`__getitem__`.
+            show_titles: Whether to show panel titles.
+            suptitle: Optional figure title.
+
+        Returns:
+            A figure showing the image and bounding boxes.
+        """
+        keys = ['bbox_xyxy']
+        if 'prediction_bbox_xyxy' in sample:
+            keys.append('prediction_bbox_xyxy')
+        fig, axes = plt.subplots(
+            1, len(keys), figsize=(8 * len(keys), 8), squeeze=False
+        )
+        image = sample['image'].permute(1, 2, 0).cpu().numpy().astype(np.uint8)
+        for ax, key, title in zip(axes[0], keys, ['Ground Truth', 'Predictions']):
+            ax.imshow(image)
+            for x1, y1, x2, y2 in sample[key].cpu().numpy():
+                ax.add_patch(
+                    Rectangle((x1, y1), x2 - x1, y2 - y1, fill=False, edgecolor='r')
+                )
+            ax.axis('off')
+            if show_titles:
+                ax.set_title(title)
+        if suptitle is not None:
+            fig.suptitle(suptitle)
+        return fig
