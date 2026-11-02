@@ -227,9 +227,10 @@ class ChangeDetection(ClassificationMixin, BaseTask):
 
         y_hat = self(x)
 
-        # if self.hparams['loss'] == 'bce':
-        y_hat = rearrange(y_hat, 'b () h w -> b h w')
-        y = y.float()
+        print(y_hat.shape)
+        if self.hparams['loss'] == 'bce':
+            y_hat = rearrange(y_hat, 'b () h w -> b h w')
+            y = y.float()
 
         # Compute the loss
         loss: Tensor = self.criterion(y_hat, y)
@@ -262,7 +263,7 @@ class ChangeDetection(ClassificationMixin, BaseTask):
                 case 'binary' | 'multilabel':
                     batch['prediction'] = (y_hat.sigmoid() >= 0.5).long()
                 case 'multiclass':
-                    batch['prediction'] = y_hat.argmax(dim=1, keepdim=True)
+                    batch['prediction'] = y_hat.argmax(dim=1)
 
             for key in ['image', 'mask', 'prediction']:
                 batch[key] = batch[key].cpu()
