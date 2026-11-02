@@ -4581,7 +4581,7 @@ wheels = [
 
 [[package]]
 name = "types-geopandas"
-version = "1.1.4.20261006"
+version = "1.2.0.20261029"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
@@ -4589,9 +4589,9 @@ dependencies = [
     { name = "pyproj" },
     { name = "types-shapely" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bf/0b/22e59cc7c6d10802da764ba987ed4fb291312ab85304cd6607b9725bd094/types_geopandas-1.1.4.20261006.tar.gz", hash = "sha256:0b23c70557ae5a2878f9f4159bcf58b7f7c4b2f99673cbb0fb720c08fba8131e", size = 24798, upload-time = "2026-10-06T08:16:10.574Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/42/57/2b3c0b7ed720eb4cf6c9720d6e59b9479f2d786ae36e3427b7c2ba69c4c9/types_geopandas-1.2.0.20261029.tar.gz", hash = "sha256:071f6f8ed2059561005f90a1b29b25abd733cd45b676c4268980b6cbbc584491", size = 25194, upload-time = "2026-10-29T07:44:47.44Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5e/07/5070fe05728d685f324b9561ae96f531438a6a8d0160f8492609fc527de3/types_geopandas-1.1.4.20261006-py3-none-any.whl", hash = "sha256:6689210f1273b10d6ba0ed10f611b338f75845145f575133484421f15c98511e", size = 31989, upload-time = "2026-10-06T08:16:09.661Z" },
+    { url = "https://files.pythonhosted.org/packages/66/48/89e3e1d96ef0c6fad3fc90ccba8a5da763337022ea30bb9f0b4abbbc4cfe/types_geopandas-1.2.0.20261029-py3-none-any.whl", hash = "sha256:143ee209bc1a5a1846db60505ebc442e794e90e53eaaafd0e14cbe090cda4f2e", size = 32682, upload-time = "2026-10-29T07:44:46.392Z" },
 ]
 
 [[package]]
