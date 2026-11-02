@@ -57,6 +57,7 @@ needs_sphinx = '8.0'
 nitpicky = True
 nitpick_ignore = [
     # Undocumented classes
+    ('py:class', 'affine.Affine'),
     ('py:class', 'kornia.augmentation._2d.intensity.base.IntensityAugmentationBase2D'),
     ('py:class', 'kornia.augmentation._3d.geometric.base.GeometricAugmentationBase3D'),
     ('py:class', 'kornia.augmentation.base._AugmentationBase'),
@@ -215,7 +216,7 @@ intersphinx_mapping = {
     'shapely': ('https://shapely.readthedocs.io/en/stable/', None),
     'sklearn': ('https://scikit-learn.org/stable/', None),
     'timm': ('https://huggingface.co/docs/timm/main/en/', None),
-    'tokenizers': ('https://huggingface.co/docs/tokenizers/main/en/', None),
+    'tokenizers': ('https://huggingface.co/docs/tokenizers/v0.23.3/en/', None),
     'torch': ('https://docs.pytorch.org/docs/stable/', None),
     'torchmetrics': ('https://lightning.ai/docs/torchmetrics/stable/', None),
     'torchvision': ('https://docs.pytorch.org/vision/stable/', None),

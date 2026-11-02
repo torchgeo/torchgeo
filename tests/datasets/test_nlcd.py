@@ -56,8 +56,9 @@ class TestNLCD:
         assert isinstance(ds, UnionDataset)
 
     def test_full_year(self, dataset: NLCD) -> None:
-        time = pd.Timestamp(2019, 6, 1)
-        index = (dataset.bounds[0], dataset.bounds[1], slice(time, time))
+        tmin = pd.Timestamp(2019, 1, 1)
+        tmax = pd.Timestamp(2019, 12, 31)
+        index = (dataset.bounds[0], dataset.bounds[1], slice(tmin, tmax))
         dataset[index]
 
     def test_already_extracted(self, dataset: NLCD) -> None:

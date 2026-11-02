@@ -196,6 +196,7 @@ from .utils import (
 from .vaihingen import Vaihingen2D
 from .vhr10 import VHR10
 from .visdrone import VisDrone
+from .weatherbench import WeatherBench2
 from .western_usa_live_fuel_moisture import WesternUSALiveFuelMoisture
 from .worldstrat import WorldStrat
 from .xbd import XView2, xBD, xBDDistShift
@@ -393,6 +394,7 @@ __all__ = (
     'Vaihingen2D',
     'VectorDataset',
     'VisDrone',
+    'WeatherBench2',
     'WesternUSALiveFuelMoisture',
     'WorldStrat',
     'XView2',
