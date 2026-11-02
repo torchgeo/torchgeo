@@ -9,10 +9,10 @@ import warnings
 from collections.abc import Callable, Sequence
 from typing import ClassVar, Literal
 
-import einops
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from einops import rearrange, reduce, repeat
 from matplotlib.figure import Figure
 from PIL import Image
 from torch import Tensor
@@ -152,12 +152,12 @@ class OSCD(NonGeoDataset):
         sample = {'image': image, 'mask': mask}
 
         if self.transforms is not None:
-            # FIXME: VideoSequential only works with a batch dimension
-            sample['image'] = sample['image'].unsqueeze(0)
-            sample['mask'] = sample['mask'].unsqueeze(0)
+            # VideoSequential only supports BTCHW images and BTHW masks
+            sample['image'] = rearrange(sample['image'], 't c h w -> () t c h w')
+            sample['mask'] = repeat(sample['mask'], 'h w -> b t h w', b=1, t=2)
             sample = self.transforms(sample)
-            sample['image'] = sample['image'].squeeze(0)
-            sample['mask'] = sample['mask'].squeeze(0)
+            sample['image'] = rearrange(sample['image'], '() t c h w -> t c h w')
+            sample['mask'] = reduce(sample['mask'], 'b t h w -> h w', 'min')
 
         return sample
 
@@ -244,9 +244,7 @@ class OSCD(NonGeoDataset):
             array: np.typing.NDArray[np.int_] = np.array(img.convert('L'))
             tensor = torch.from_numpy(array)
             tensor = torch.clamp(tensor, min=0, max=1)
-            tensor = tensor.to(torch.long)
-            # VideoSequential requires time dimension
-            return einops.rearrange(tensor, 'h w -> () h w')
+            return tensor.to(torch.long)
 
     def _verify(self) -> None:
         """Verify the integrity of the dataset."""
@@ -329,7 +327,7 @@ class OSCD(NonGeoDataset):
 
         image1 = to_rgb(sample['image'][0])
         image2 = to_rgb(sample['image'][1])
-        mask = sample['mask'][0]
+        mask = sample['mask']
 
         h, w = image1.shape[:2]
         fig, axs = plt.subplots(
@@ -340,11 +338,7 @@ class OSCD(NonGeoDataset):
         axs[2].imshow(mask, cmap='gray', interpolation='none', vmin=0, vmax=1)
         if ncols == 4:
             axs[3].imshow(
-                sample['prediction'][0],
-                cmap='gray',
-                interpolation='none',
-                vmin=0,
-                vmax=1,
+                sample['prediction'], cmap='gray', interpolation='none', vmin=0, vmax=1
             )
 
         for ax in axs:

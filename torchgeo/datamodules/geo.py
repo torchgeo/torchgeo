@@ -8,6 +8,7 @@ from typing import Any, cast
 
 import kornia.augmentation as K
 import torch
+from einops import reduce, repeat
 from lightning.pytorch import LightningDataModule
 from matplotlib.figure import Figure
 from torch.utils.data import DataLoader, Dataset, Subset, default_collate
@@ -136,7 +137,16 @@ class BaseDataModule(LightningDataModule):
                 split = 'predict'
 
             aug = self._valid_attribute(f'{split}_aug', 'aug')
+
+            # VideoSequential only supports BTCHW images and BTHW masks
+            if aug.contains_video_sequential and 'image' in batch and 'mask' in batch:
+                t = batch['image'].shape[1]
+                batch['mask'] = repeat(batch['mask'], 'b h w -> b t h w', t=t)
+
             batch = aug(batch)
+
+            if aug.contains_video_sequential and 'image' in batch and 'mask' in batch:
+                batch['mask'] = reduce(batch['mask'], 'b t h w -> b h w', 'min')
 
         return batch
 
