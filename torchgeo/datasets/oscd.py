@@ -12,7 +12,7 @@ from typing import ClassVar, Literal
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from einops import rearrange, reduce, repeat
+from einops import rearrange, repeat
 from matplotlib.figure import Figure
 from PIL import Image
 from torch import Tensor
@@ -157,7 +157,7 @@ class OSCD(NonGeoDataset):
             sample['mask'] = repeat(sample['mask'], 'h w -> b t h w', b=1, t=2)
             sample = self.transforms(sample)
             sample['image'] = rearrange(sample['image'], '() t c h w -> t c h w')
-            sample['mask'] = reduce(sample['mask'], 'b t h w -> h w', 'min')
+            sample['mask'] = sample['mask'][0, 0]  # b t h w -> h w
 
         return sample
 

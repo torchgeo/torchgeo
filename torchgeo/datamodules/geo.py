@@ -8,7 +8,7 @@ from typing import Any, cast
 
 import kornia.augmentation as K
 import torch
-from einops import reduce, repeat
+from einops import repeat
 from lightning.pytorch import LightningDataModule
 from matplotlib.figure import Figure
 from torch.utils.data import DataLoader, Dataset, Subset, default_collate
@@ -146,7 +146,7 @@ class BaseDataModule(LightningDataModule):
             batch = aug(batch)
 
             if aug.contains_video_sequential and 'image' in batch and 'mask' in batch:
-                batch['mask'] = reduce(batch['mask'], 'b t h w -> b h w', 'min')
+                batch['mask'] = batch['mask'][:, 0]  # b t h w -> b h w
 
         return batch
 
