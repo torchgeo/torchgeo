@@ -46,7 +46,9 @@ dependencies = [
     "jsonargparse[jsonnet,signatures]>=4.39",
     # kornia 0.8.2+ required for fix to VideoSequential
     # https://github.com/kornia/kornia/pull/3330
-    "kornia>=0.8.2",
+    # kornia 0.9.0+ contains backwards-incompatible changes to VideoSequential
+    # https://github.com/kornia/kornia/pull/5636
+    "kornia>=0.8.2,<0.9",
     # lightly 1.5.1+ required for lightly.models.modules.MAEDecoderTIMM
     "lightly>=1.5.1",
     # lightning 2.4+ required for fastapi and pydantic v2 support in lightning
