@@ -122,7 +122,8 @@ class OpenStreetMap(VectorDataset):
         self._validate_classes(classes)
 
         self.bbox = bbox
-        self.classes = classes
+        self.class_configs = classes
+        self.classes = tuple(config['name'] for config in classes)
         self.root = pathlib.Path(paths)
         self.root.mkdir(parents=True, exist_ok=True)
 
@@ -176,7 +177,7 @@ class OpenStreetMap(VectorDataset):
         Returns:
             Path to the cached GeoJSON file based on bbox and classes hash
         """
-        cache_key = {'bbox': self.bbox, 'classes': self.classes}
+        cache_key = {'bbox': self.bbox, 'classes': self.class_configs}
         cache_str = json.dumps(cache_key, sort_keys=True)
         cache_hash = hashlib.md5(cache_str.encode()).hexdigest()[:16]
         return self.root / f'osm_features_{cache_hash}.geojson'
@@ -203,7 +204,7 @@ class OpenStreetMap(VectorDataset):
         overpass_bbox = f'{ymin},{xmin},{ymax},{xmax}'
 
         queries = []
-        for class_def in self.classes:
+        for class_def in self.class_configs:
             for selector in class_def['selector']:
                 for tag, values in selector.items():
                     if values == '*':
@@ -352,7 +353,7 @@ class OpenStreetMap(VectorDataset):
     def _get_class_label(self, feature: dict[str, Any]) -> int:
         """Get label based on class priority (first match wins).
 
-        Classes are checked in the order they appear in self.classes list.
+        Classes are checked in the order they appear in self.class_configs list.
         The first class whose selector matches the feature determines the label.
         This means if a feature has tags matching multiple classes, only the
         first matching class's label is assigned.
@@ -365,7 +366,7 @@ class OpenStreetMap(VectorDataset):
         """
         props = feature.get('properties', {})
 
-        for class_idx, class_def in enumerate(self.classes):
+        for class_idx, class_def in enumerate(self.class_configs):
             for selector in class_def['selector']:
                 if self._feature_matches_selector(props, selector):
                     return class_idx + 1
@@ -418,14 +419,14 @@ class OpenStreetMap(VectorDataset):
 
         The GeoDataFrame is loaded temporarily for checking, then discarded.
         """
-        if self.classes:
+        if self.class_configs:
             data_file = self._get_data_filename()
             gdf = gpd.read_file(data_file)
 
             if len(gdf) > 0:
                 label_counts = gdf['label'].value_counts()
 
-                for i, class_def in enumerate(self.classes):
+                for i, class_def in enumerate(self.class_configs):
                     class_label = i + 1
                     if label_counts.get(class_label, 0) == 0:
                         warnings.warn(
@@ -484,8 +485,8 @@ class OpenStreetMap(VectorDataset):
             if label == 0:
                 continue
             class_idx = int(label - 1)
-            if class_idx < len(self.classes):
-                class_name = self.classes[class_idx]['name']
+            if class_idx < len(self.class_configs):
+                class_name = self.class_configs[class_idx]['name']
                 color = colors[int(label) % len(colors)]
                 legend_handles.append(
                     mpatches.Patch(color=color, label=class_name.title())

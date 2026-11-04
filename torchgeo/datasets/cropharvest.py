@@ -128,7 +128,7 @@ class CropHarvest(NonGeoDataset):
         self.labels = self._load_labels(self.root)
         classes = self.labels['properties.label'].unique()
         classes = classes[classes != np.array(None)]
-        self.classes = np.insert(classes, 0, ['None', 'Other'])
+        self.classes = tuple(np.insert(classes, 0, ['None', 'Other']))
 
     def __getitem__(self, index: int) -> Sample:
         """Return an index within the dataset.
@@ -235,7 +235,7 @@ class CropHarvest(NonGeoDataset):
         elif properties['properties.is_crop'] == 1:
             label = 'Other'
 
-        return torch.tensor(np.where(self.classes == label)[0][0])
+        return torch.tensor(self.classes.index(label))
 
     def _verify(self) -> None:
         """Verify the integrity of the dataset."""
@@ -310,7 +310,7 @@ class CropHarvest(NonGeoDataset):
         rgb = np.array(sample['array'])[:, bands] / 3000
         axs.imshow(rgb[None, ...])
         if show_titles:
-            axs.set_title(f'Crop type: {self.classes[sample["label"]]}')
+            axs.set_title(f'Crop type: {self.classes[int(sample["label"].item())]}')
         axs.set_xticks(np.arange(12))
         axs.set_xticklabels(np.arange(12) + 1)
         axs.set_yticks([])

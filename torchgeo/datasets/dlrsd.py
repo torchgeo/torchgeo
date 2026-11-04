@@ -444,7 +444,7 @@ class DLRSDMultilabel(DLRSDBase):
         Returns:
             a list of class names corresponding to the input mask
         """
-        return [self.classes[i] for i, v in enumerate(label_mask) if v]
+        return [str(self.classes[i]) for i, v in enumerate(label_mask) if v]
 
     def plot(
         self,

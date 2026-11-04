@@ -119,7 +119,7 @@ class FAIR1M(NonGeoDataset):
     .. versionadded:: 0.2
     """
 
-    classes: ClassVar[dict[str, dict[str, Any]]] = {
+    class_dict: ClassVar[dict[str, dict[str, Any]]] = {
         'Passenger Ship': {'id': 0, 'category': 'Ship'},
         'Motorboat': {'id': 1, 'category': 'Ship'},
         'Fishing Boat': {'id': 2, 'category': 'Ship'},
@@ -158,6 +158,7 @@ class FAIR1M(NonGeoDataset):
         'Intersection': {'id': 35, 'category': 'Road'},
         'Bridge': {'id': 36, 'category': 'Road'},
     }
+    classes = tuple(class_dict)
 
     filename_glob: ClassVar[dict[str, str]] = {
         'train': os.path.join('train', '**', 'images', '*.tif'),
@@ -326,7 +327,7 @@ class FAIR1M(NonGeoDataset):
         Returns:
             the target bounding boxes and labels
         """
-        labels_list = [self.classes[label]['id'] for label in labels]
+        labels_list = [self.class_dict[label]['id'] for label in labels]
         boxes = torch.tensor(points).to(torch.float)
         labels_tensor = torch.tensor(labels_list)
         return boxes, labels_tensor
