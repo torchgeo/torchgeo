@@ -70,7 +70,7 @@ class ADVANCE(NonGeoDataset):
     filenames = ('ADVANCE_vision.zip', 'ADVANCE_sound.zip')
     md5s = ('a9e8748219ef5864d3b5a8979a67b471', 'a2d12f2d2a64f5c3d3a9d8c09aaf1c31')
     directories = ('vision', 'sound')
-    classes: tuple[str, ...] = (
+    classes = (
         'airport',
         'beach',
         'bridge',

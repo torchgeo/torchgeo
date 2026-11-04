@@ -26,3 +26,6 @@ class PlottingMixin:
 
     #: Color map for the dataset
     cmap: str | Colormap | None = None
+
+    #: Names of classes for classification and semantic segmentation datasets.
+    classes: Sequence[str] = ()

@@ -158,11 +158,11 @@ class SSL4EOLBenchmark(NonGeoDataset):
 
         self.cmap = self.cmaps[product]
         if classes is None:
-            self.classes = self.valid_classes[product]
+            self.class_indices = self.valid_classes[product]
         else:
-            self.classes = classes
+            self.class_indices = classes
 
-        assert set(self.classes) <= set(self.valid_classes[product]), (
+        assert set(self.class_indices) <= set(self.valid_classes[product]), (
             f'Only the following classes are valid: {self.valid_classes[product]}.'
         )
 
@@ -173,7 +173,7 @@ class SSL4EOLBenchmark(NonGeoDataset):
         self.ordinal_map = torch.zeros(
             self.valid_classes[product][-1] + 1, dtype=torch.long
         )
-        self.inverse_map = torch.zeros(len(self.classes), dtype=torch.long)
+        self.inverse_map = torch.zeros(len(self.class_indices), dtype=torch.long)
         self.img_dir_name = self.image_root.format(self.sensor)
         self.mask_dir_name = self.mask_dir_dict[self.sensor].format(self.product)
 
@@ -197,7 +197,7 @@ class SSL4EOLBenchmark(NonGeoDataset):
         self.sample_collection = [self.sample_collection[idx] for idx in split_indices]
 
         # Map chosen classes to ordinal numbers, all others mapped to background class
-        for v, k in enumerate(self.classes):
+        for v, k in enumerate(self.class_indices):
             self.ordinal_map[k] = v
             self.inverse_map[v] = k
 

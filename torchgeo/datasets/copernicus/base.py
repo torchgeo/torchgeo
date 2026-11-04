@@ -70,9 +70,6 @@ class CopernicusBenchBase(NonGeoDataset, ABC):
     #: Date format string used to parse date from filename.
     date_format = '%Y%m%dT%H%M%S'
 
-    #: List of classes for classification, semantic segmentation, and change detection.
-    classes: tuple[str, ...]
-
     def __init__(
         self,
         root: Path = 'data',
@@ -242,9 +239,9 @@ class CopernicusBenchBase(NonGeoDataset, ABC):
         if 'label' in sample:
             if sample['label'].dim() == 0:
                 # Multiclass classification
-                label: Any = self.classes[sample['label']]
+                label = self.classes[int(sample['label'].item())]
                 if 'prediction' in sample:
-                    prediction: Any = self.classes[sample['prediction']]
+                    prediction = self.classes[int(sample['prediction'].item())]
             else:
                 # Multilabel classification
                 label = sample['label'].numpy().nonzero()[0]
