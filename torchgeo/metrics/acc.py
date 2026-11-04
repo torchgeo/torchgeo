@@ -106,7 +106,7 @@ class AnomalyCorrCoef(Metric):
         covariance = torch.sum(self.weights * preds * target, dim=[-2, -1])
         variance1 = torch.sum(self.weights * preds**2, dim=[-2, -1])
         variance2 = torch.sum(self.weights * target**2, dim=[-2, -1])
-        self.ratio += covariance / torch.sqrt(variance1 * variance2)
+        self.ratio += torch.sum(covariance / torch.sqrt(variance1 * variance2), dim=0)
         self.total += preds.shape[0]
 
     def compute(self) -> Tensor:
