@@ -1387,7 +1387,7 @@ class FLAIRHUBBase(NonGeoDataset):
             if band not in self.modality_key_map:
                 raise ValueError(f'Invalid band name: {band}')
 
-        self.bands = bands
+        self.modalities = bands
         self._verify()
         self.files = self._load_files()
 
@@ -1444,7 +1444,7 @@ class FLAIRHUBBase(NonGeoDataset):
         sample['mask'] = self._load_mask(mask_path)
 
         # Load requested modalities
-        for modality_name in self.bands:
+        for modality_name in self.modalities:
             sample_key = self.modality_key_map[modality_name]
             modality_path = file_dict[modality_name]
             if 'TS' in modality_name or 'SC' in modality_name:
@@ -1515,7 +1515,7 @@ class FLAIRHUBBase(NonGeoDataset):
             file_dict['patch_id'] = patch_id
 
             # Add modality
-            for modality_name in self.bands:
+            for modality_name in self.modalities:
                 file_path = pathlib.Path(
                     str(label_path).replace(label_dir, modality_name)
                 )
@@ -1543,7 +1543,7 @@ class FLAIRHUBBase(NonGeoDataset):
 
         for domain, years in self.domain_years.items():
             for year in years:
-                for modality in [label_modality, *self.bands]:
+                for modality in [label_modality, *self.modalities]:
                     year_str = '195X' if modality == 'AERIAL-RLT_PAN' else year
                     dir_name = f'{domain}-{year_str}_{modality}'
                     dir_path = pathlib.Path(self.root) / dir_name

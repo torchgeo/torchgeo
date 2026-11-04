@@ -523,7 +523,7 @@ class SatlasPretrain(NonGeoDataset):
     }
 
     # NOTE: 'tci' is RGB (b04-b02), not BGR (b02-b04)
-    bands: ClassVar[dict[str, tuple[str, ...]]] = {
+    band_set: ClassVar[dict[str, tuple[str, ...]]] = {
         'landsat': tuple(f'b{i}' for i in range(1, 12)),
         'naip': ('tci', 'ir'),
         'sentinel1': ('vh', 'vv'),
@@ -562,7 +562,7 @@ class SatlasPretrain(NonGeoDataset):
             AssertionError: If *images* is invalid.
             DatasetNotFoundError: If dataset is not found and *download* is False.
         """
-        assert set(images) <= set(self.bands.keys())
+        assert set(images) <= set(self.band_set.keys())
 
         self.root = root
         self.images = images
@@ -649,7 +649,7 @@ class SatlasPretrain(NonGeoDataset):
         # Load all bands
         resample = Image.Resampling.BILINEAR
         channels = []
-        for band in self.bands[image]:
+        for band in self.band_set[image]:
             path = os.path.join(self.root, image, directory, band, f'{col}_{row}.png')
             with Image.open(path) as f:
                 img = f.resize((self.chip_size, self.chip_size), resample=resample)

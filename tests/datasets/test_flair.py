@@ -63,7 +63,7 @@ class TestFLAIRHUB:
     def test_already_downloaded(
         self, dataset: FLAIRHUB | FLAIRHUBToy, tmp_path: Path
     ) -> None:
-        type(dataset)(tmp_path, split=dataset.split, bands=dataset.bands)
+        type(dataset)(tmp_path, split=dataset.split, bands=dataset.modalities)
 
     @pytest.mark.parametrize('dataset_class', [FLAIRHUB, FLAIRHUBToy])
     def test_not_downloaded(
