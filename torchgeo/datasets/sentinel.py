@@ -295,7 +295,7 @@ class Sentinel2(Sentinel):
     date_format = '%Y%m%dT%H%M%S'
 
     # https://sentiwiki.copernicus.eu/web/s2-mission
-    all_bands: tuple[str, ...] = (
+    all_bands = (
         'B01',
         'B02',
         'B03',

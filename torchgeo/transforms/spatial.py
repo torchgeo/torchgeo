@@ -44,7 +44,7 @@ class SatSlideMix(K.GeometricAugmentationBase2D):
         """
         super().__init__(p=p)
         assert isinstance(gamma, int) and gamma > 0, 'gamma must be a positive integer'
-        self._param_generator: PlainUniformGenerator = PlainUniformGenerator(
+        self._param_generator = PlainUniformGenerator(
             (beta, 'beta', 0.5, (0.0, 1.0)),
             ((0.0, 1.0), 'dim', 0.5, (0.0, 1.0)),
             ((0.0, 1.0), 'direction', 0.5, (0.0, 1.0)),
@@ -55,10 +55,7 @@ class SatSlideMix(K.GeometricAugmentationBase2D):
         """Generate parameters for the batch."""
         B, C, H, W = batch_shape
         batch_shape = torch.Size((B * self.flags['gamma'], C, H, W))
-        params: dict[str, Tensor] = self._param_generator(
-            batch_shape, self.same_on_batch
-        )
-        return params
+        return super().generate_parameters(batch_shape)
 
     def compute_transformation(
         self, input: Tensor, params: dict[str, Tensor], flags: dict[str, Any]

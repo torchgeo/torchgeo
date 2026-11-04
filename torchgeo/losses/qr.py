@@ -36,7 +36,7 @@ class QRLoss(Module):
         super().__init__()
         self.eps = eps
 
-    def forward(self, probs: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    def forward(self, probs: torch.Tensor, target: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         """Computes the QR (forwards) loss on prior.
 
         Args:
@@ -84,7 +84,7 @@ class RQLoss(Module):
         super().__init__()
         self.eps = eps
 
-    def forward(self, probs: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    def forward(self, probs: torch.Tensor, target: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         """Computes the RQ (backwards) loss on prior.
 
         Args:

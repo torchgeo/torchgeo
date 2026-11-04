@@ -114,7 +114,7 @@ class CROMA(nn.Module):
                 dim=encoder_dim, depth=int(encoder_depth / 2), num_heads=num_heads
             )
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, x_sar: Tensor | None = None, x_optical: Tensor | None = None
     ) -> dict[str, Tensor]:
         """Forward pass of the CROMA model.
@@ -217,7 +217,7 @@ class FFN(nn.Module):
         )
         self.input_norm = nn.LayerNorm(dim)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the feed-forward network.
 
         Args:
@@ -253,7 +253,7 @@ class Attention(nn.Module):
         self.input_norm = nn.LayerNorm(dim)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x: Tensor, relative_position_bias: Tensor) -> Tensor:
+    def forward(self, x: Tensor, relative_position_bias: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the multi-head attention layer.
 
         Args:
@@ -309,7 +309,7 @@ class CrossAttention(nn.Module):
         self.input_norm = nn.LayerNorm(dim)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, x: Tensor, context: Tensor, relative_position_bias: Tensor
     ) -> Tensor:
         """Forward pass of the cross-attention layer.
@@ -385,7 +385,7 @@ class BaseTransformer(nn.Module):
         if self.final_norm:
             self.norm_out = nn.LayerNorm(dim)
 
-    def forward(self, x: Tensor, relative_position_bias: Tensor) -> Tensor:
+    def forward(self, x: Tensor, relative_position_bias: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the base transformer model.
 
         Args:
@@ -439,7 +439,7 @@ class BaseTransformerCrossAttn(nn.Module):
 
         self.norm_out = nn.LayerNorm(dim)
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, x: Tensor, context: Tensor, relative_position_bias: Tensor
     ) -> Tensor:
         """Forward pass of the base transformer model with cross-attention.
@@ -485,7 +485,7 @@ class ViT(nn.Module):
             dim=self.dim, depth=self.depth, num_heads=self.num_heads
         )
 
-    def forward(self, imgs: Tensor, attn_bias: Tensor) -> Tensor:
+    def forward(self, imgs: Tensor, attn_bias: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the vision transformer model.
 
         Args:

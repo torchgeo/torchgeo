@@ -6,6 +6,9 @@ changelog:
     - title: Backwards-incompatible changes
       labels:
         - backwards-incompatible
+    - title: Callbacks
+      labels:
+        - callbacks
     - title: Dependencies
       labels:
         - dependencies
@@ -18,6 +21,9 @@ changelog:
     - title: Losses
       labels:
         - losses
+    - title: Metrics
+      labels:
+        - metrics
     - title: Models
       labels:
         - models

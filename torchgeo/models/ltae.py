@@ -98,7 +98,7 @@ class LTAE(nn.Module):
         self.mlp = nn.Sequential(*layers)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass of the model.
 
         Args:
@@ -150,7 +150,7 @@ class IndexPositionalEncoding(nn.Module):
         pe[0, :, 1::2] = torch.cos(position * div_term)
         self.register_buffer('pe', pe)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Forward pass.
 
         Args:
@@ -192,7 +192,7 @@ class DatePositionalEncoding(nn.Module):
                 denom[i + 1] = 1.0 / (T ** (i / d))
         self.register_buffer('denom', denom)
 
-    def forward(self, batch_positions: Tensor) -> Tensor:
+    def forward(self, batch_positions: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         """Encode batch positions.
 
         Args:
@@ -242,7 +242,7 @@ class LearnedQueryAttention(nn.Module):
         )
         self.out_proj = nn.Linear(embed_dim, d_in)
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, v: Tensor, pad_mask: Tensor | None = None
     ) -> tuple[Tensor, Tensor]:
         """Forward pass.
@@ -351,7 +351,7 @@ class LTAE2d(nn.Module):
         self.mlp = nn.Sequential(*layers)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self,
         x: Tensor,
         batch_positions: Tensor | None = None,
