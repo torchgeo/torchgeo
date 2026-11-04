@@ -2643,6 +2643,21 @@ wheels = [
 ]
 
 [[package]]
+name = "owslib"
+version = "0.36.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "lxml" },
+    { name = "python-dateutil" },
+    { name = "pyyaml" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/10/5d/f2b14a61454bc290c48786c1521f7c9e60996cb0d207b544feb722c82dee/owslib-0.36.0.tar.gz", hash = "sha256:b1ea352ee84f37a1a8ae44122b13cbd3b5b7bf9af0f74d84fe9ed7d9613b9543", size = 196090, upload-time = "2026-06-04T07:05:57.616Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/68/71/c64b65fba54bda45948aec187b5199ccee01c538214e51aff1fc795b5cc0/owslib-0.36.0-py3-none-any.whl", hash = "sha256:ffe9168684fe091b18985e9368ff88b8419634d773c8566f14347c0ff6fc5aff", size = 241300, upload-time = "2026-06-04T07:05:56.194Z" },
+]
+
+[[package]]
 name = "packaging"
 version = "26.3"
 source = { registry = "https://pypi.org/simple" }
@@ -4242,6 +4257,7 @@ all = [
     { name = "microsoft-aurora" },
     { name = "netcdf4" },
     { name = "olmoearth-pretrain-minimal" },
+    { name = "owslib" },
     { name = "pandas", extra = ["parquet"] },
     { name = "rioxarray" },
     { name = "scipy" },
@@ -4253,6 +4269,7 @@ datasets = [
     { name = "h5py" },
     { name = "laspy" },
     { name = "netcdf4" },
+    { name = "owslib" },
     { name = "pandas", extra = ["parquet"] },
     { name = "rioxarray" },
     { name = "scipy" },
@@ -4328,6 +4345,7 @@ requires-dist = [
     { name = "netcdf4", marker = "extra == 'datasets'", specifier = ">=1.6.5" },
     { name = "numpy", specifier = ">=1.26" },
     { name = "olmoearth-pretrain-minimal", marker = "extra == 'models'", specifier = ">=0.1.5" },
+    { name = "owslib", marker = "extra == 'datasets'", specifier = ">=0.29.3" },
     { name = "pandas", specifier = ">=2.1.1" },
     { name = "pandas", extras = ["parquet"], marker = "extra == 'datasets'", specifier = ">=2.1.1" },
     { name = "pillow", specifier = ">=10" },
