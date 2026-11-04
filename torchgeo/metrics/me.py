@@ -52,10 +52,7 @@ class MeanError(Metric):
     total: Tensor
 
     def __init__(
-        self,
-        latitude: Tensor,
-        num_outputs: tuple[int, ...],
-        **kwargs: Any,
+        self, latitude: Tensor, num_outputs: tuple[int, ...], **kwargs: Any
     ) -> None:
         r"""Initialize a new MeanError instance.
 
