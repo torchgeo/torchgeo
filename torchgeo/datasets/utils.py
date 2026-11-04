@@ -629,16 +629,27 @@ def pad_across_batches(
         device=images[0].device,
     )
 
+    padded_dates = None
+    if 'dates' in batch[0]:
+        dates = batch[0]['dates']
+        padded_dates = torch.zeros(
+            (len(batch), padding_length), dtype=dates.dtype, device=dates.device
+        )
+
     truncated = 0
     lengths: list[int] = []
     for i, img in enumerate(images):
         seq_len = img.size(0)
         if seq_len > padding_length:
             padded_images[i, :padding_length] = img[:padding_length]
+            if padded_dates is not None:
+                padded_dates[i, :padding_length] = batch[i]['dates'][:padding_length]
             truncated += 1
             lengths.append(padding_length)
         else:
             padded_images[i, :seq_len] = img
+            if padded_dates is not None:
+                padded_dates[i, :seq_len] = batch[i]['dates']
             lengths.append(seq_len)
 
     if truncated > 0:
@@ -648,6 +659,8 @@ def pad_across_batches(
     collated['length'] = torch.tensor(
         lengths, device=padded_images.device, dtype=torch.long
     )
+    if padded_dates is not None:
+        collated['dates'] = padded_dates
     if 'mask' in batch[0]:
         collated['mask'] = torch.stack([sample['mask'] for sample in batch])
     if 'bbox_xyxy' in batch[0]:

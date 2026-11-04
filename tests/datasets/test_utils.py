@@ -632,13 +632,22 @@ def test_which() -> None:
 
 def test_pad_across_batches() -> None:
     batch = [
-        {'image': torch.ones(2, 10, 5, 5), 'mask': torch.zeros(5, 5)},
-        {'image': torch.ones(3, 10, 5, 5), 'mask': torch.zeros(5, 5)},
+        {
+            'image': torch.ones(2, 10, 5, 5),
+            'mask': torch.zeros(5, 5),
+            'dates': torch.tensor([20180901, 20180911]),
+        },
+        {
+            'image': torch.ones(3, 10, 5, 5),
+            'mask': torch.zeros(5, 5),
+            'dates': torch.tensor([20180905, 20180915, 20180925]),
+        },
     ]
 
     out = pad_across_batches(batch, padding_value=0.0, padding_length=3)
     assert out['image'].shape[1] == 3
     assert out['mask'].shape[0] == len(batch)
+    assert out['dates'].shape[1] == 3
     # Track the original sequence lengths so models can ignore padded timesteps.
     assert torch.equal(out['length'], torch.tensor([2, 3], device=out['length'].device))
 
@@ -646,6 +655,7 @@ def test_pad_across_batches() -> None:
         out = pad_across_batches(batch, padding_value=0.0, padding_length=1)
     assert out['image'].shape[1] == 1
     assert out['mask'].shape[0] == len(batch)
+    assert out['dates'].shape[1] == 1
     assert torch.equal(out['length'], torch.tensor([1, 1], device=out['length'].device))
 
     batch = [
@@ -665,6 +675,10 @@ def test_pad_across_batches() -> None:
     assert out['bbox_xyxy'].shape[0] == len(batch)
     assert out['label'].shape[0] == len(batch)
     assert torch.equal(out['length'], torch.tensor([3, 2], device=out['length'].device))
+
+    with pytest.warns(UserWarning, match='Truncated 2 sequences to length 1'):
+        out = pad_across_batches(batch, padding_value=0.0, padding_length=1)
+    assert 'dates' not in out
 
 
 class TestFindFiles:

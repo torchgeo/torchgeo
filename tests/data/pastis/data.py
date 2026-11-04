@@ -3,10 +3,11 @@
 # Copyright (c) TorchGeo Contributors. All rights reserved.
 # Licensed under the MIT License.
 
+import json
 import os
 import shutil
+from datetime import date, timedelta
 
-import fiona
 import numpy as np
 
 SIZE = 32
@@ -55,28 +56,45 @@ def create_directory(directory: str, hierarchy: FILENAME_HIERARCHY) -> None:
             create_file(path)
 
 
+def make_dates(t: int) -> dict[str, int]:
+    start = date(2018, 10, 4)
+    return {
+        str(i): int((start + timedelta(days=6 * i)).strftime('%Y%m%d'))
+        for i in range(t)
+    }
+
+
+def num_steps(modality: str, i: int) -> int:
+    path = os.path.join('PASTIS-R', f'DATA_{modality}', f'{modality}_{i}.npy')
+    return np.load(path).shape[0]
+
+
 if __name__ == '__main__':
     create_directory('PASTIS-R', filenames)
 
-    schema = {'geometry': 'Polygon', 'properties': {'Fold': 'int', 'ID_PATCH': 'int'}}
-    with fiona.open(
-        os.path.join('PASTIS-R', 'metadata.geojson'),
-        'w',
-        'GeoJSON',
-        crs='EPSG:4326',
-        schema=schema,
-    ) as f:
-        for i in range(NUM_SAMPLES):
-            f.write(
-                {
-                    'geometry': {
-                        'type': 'Polygon',
-                        'coordinates': [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]],
-                    },
+    features = []
+    for i in range(NUM_SAMPLES):
+        features.append(
+            {
+                'id': str(i),
+                'type': 'Feature',
+                'properties': {
+                    'Fold': (i % 5) + 1,
+                    'ID_PATCH': i,
+                    'dates-S1A': make_dates(num_steps('S1A', i)),
+                    'dates-S1D': make_dates(num_steps('S1D', i)),
+                    'dates-S2': make_dates(num_steps('S2', i)),
                     'id': str(i),
-                    'properties': {'Fold': (i % 5) + 1, 'ID_PATCH': i},
-                }
-            )
+                },
+                'geometry': {
+                    'type': 'Polygon',
+                    'coordinates': [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]],
+                },
+            }
+        )
+
+    with open(os.path.join('PASTIS-R', 'metadata.geojson'), 'w') as f:
+        json.dump({'type': 'FeatureCollection', 'features': features}, f, indent=2)
 
     filename = 'PASTIS-R.zip'
     shutil.make_archive(filename.replace('.zip', ''), 'zip', '.', 'PASTIS-R')
