@@ -214,28 +214,26 @@ class GriddedPatchSampler(SpatialSampler):
         """
         xmin, ymin, xmax, ymax = self.geometry.bounds
 
-        rows = convolution_arithmetic(ymax - ymin, self.size[0], self.stride[0])
-        cols = convolution_arithmetic(xmax - xmin, self.size[1], self.stride[1])
-
-        # Adjust xmin/ymin to have equal spacing in case of non-integer multiple
-        geometry_width = xmax - xmin
-        stride_width = self.stride[1] * (cols - 1) + self.size[1]
-        xmin -= (stride_width - geometry_width) / 2
-        geometry_height = ymax - ymin
-        stride_height = self.stride[0] * (rows - 1) + self.size[0]
-        ymin -= (stride_height - geometry_height) / 2
-
         if self.snap2pixel or self.snap2block:
             scale = self.size[::-1] if self.snap2block else self.res
             # Convert from geospatial coords to pixel/block coords
             xmin = (xmin - self.bounds[0]) / scale[0]
+            xmax = (xmax - self.bounds[0]) / scale[0]
             ymin = (ymin - self.bounds[1]) / scale[1]
+            ymax = (ymax - self.bounds[1]) / scale[1]
             # Round to the nearest pixel/block
-            xmin = round(xmin)
-            ymin = round(ymin)
+            xmin = math.floor(xmin)
+            xmax = math.ceil(xmax)
+            ymin = math.floor(ymin)
+            ymax = math.ceil(ymax)
             # Convert from pixel/block coords to geospatial coords
             xmin = xmin * scale[0] + self.bounds[0]
+            xmax = xmax * scale[0] + self.bounds[0]
             ymin = ymin * scale[1] + self.bounds[1]
+            ymax = ymax * scale[1] + self.bounds[1]
+
+        rows = convolution_arithmetic(ymax - ymin, self.size[0], self.stride[0])
+        cols = convolution_arithmetic(xmax - xmin, self.size[1], self.stride[1])
 
         # For each row...
         for i in range(rows):
