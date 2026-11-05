@@ -72,7 +72,7 @@ class RandomPatchSampler(SpatialSampler):
                 decrease in data diversity but a large increase in I/O speed.
             snap2block: Snap sampled patches to the nearest block. Results in a large
                 decrease in data diversity but a larger increase in I/O speed. Set
-                *size* to a factor of multiple of your COG block size for best effect.
+                *size* to a factor or multiple of your COG block size for best effect.
 
         .. versionadded:: 0.11
            The *snap2pixel* and *snap2block* parameters.
@@ -186,7 +186,8 @@ class GriddedPatchSampler(SpatialSampler):
                 decrease in data diversity but a large increase in I/O speed.
             snap2block: Snap sampled patches to the nearest block. Results in a large
                 decrease in data diversity but a larger increase in I/O speed. Set
-                *size* to a factor of multiple of your COG block size for best effect.
+                *size* and *stride* to a factor or multiple of your COG block size for
+                best effect.
 
         .. versionadded:: 0.11
            The *snap2pixel* and *snap2block* parameters.
