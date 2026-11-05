@@ -115,19 +115,25 @@ class TestGriddedPatchSampler:
 
     def test_snap(self, dataset: GeoDataset) -> None:
         roi = shapely.box(3, 3, 97, 97)
-        sampler = GriddedPatchSampler(dataset, size=5, stride=4, roi=roi, snap2pixel=False)
+        sampler = GriddedPatchSampler(
+            dataset, size=5, stride=4, roi=roi, snap2pixel=False
+        )
         x, y = next(iter(sampler))
         assert x.start % 2 != 0
         assert y.start % 2 != 0
         assert x.start % 5 != 0
         assert y.start % 5 != 0
 
-        sampler = GriddedPatchSampler(dataset, size=5, stride=4, roi=roi, snap2pixel=True)
+        sampler = GriddedPatchSampler(
+            dataset, size=5, stride=4, roi=roi, snap2pixel=True
+        )
         x, y = next(iter(sampler))
         assert x.start % 2 == 0
         assert y.start % 2 == 0
 
-        sampler = GriddedPatchSampler(dataset, size=5, stride=4, roi=roi, snap2block=True)
+        sampler = GriddedPatchSampler(
+            dataset, size=5, stride=4, roi=roi, snap2block=True
+        )
         x, y = next(iter(sampler))
         assert x.start % 5 == 0
         assert y.start % 5 == 0
