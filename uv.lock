@@ -4099,7 +4099,7 @@ wheels = [
 
 [[package]]
 name = "timm"
-version = "1.0.30"
+version = "1.0.31"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "huggingface-hub" },
@@ -4108,9 +4108,9 @@ dependencies = [
     { name = "torch" },
     { name = "torchvision" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0e/ab/49041213990e48edcb6013463b18ef86d8d3c5d6ac5b408802c480443025/timm-1.0.30.tar.gz", hash = "sha256:1444a3af7e17fdba5440ac2bcf6e4b728da96dd62289ed9e1bcba31a545f5935", size = 2534738, upload-time = "2026-09-22T20:46:13.9Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d8/f0/ef613e01647ba8e39d073df11bfe157ea16d0280a9b4a973f1caf0601856/timm-1.0.31.tar.gz", hash = "sha256:baa0b333339c46d3d6d4965d99b69f5053afed71210e8f433d7ea5ee6a18f0ec", size = 2737241, upload-time = "2026-11-03T19:24:56.491Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f5/85/b897716d0fa016af23b11e6526f5ef76d2013e8bc36b9c7ce15d9200e456/timm-1.0.30-py3-none-any.whl", hash = "sha256:c8e27adf6801a2fdfb570dbbdd171f2f084756eefc673df8cfaab06bd14864f3", size = 2668917, upload-time = "2026-09-22T20:46:12.11Z" },
+    { url = "https://files.pythonhosted.org/packages/aa/bb/b909b8f0517a8fa00ffb3a9a0ddb20da9dbe3554eb68dfc3c9a2db99db76/timm-1.0.31-py3-none-any.whl", hash = "sha256:5bd50f7d0fe6d09bf9285ac2523234a1b7e6bf075c0be3e7aed09139fcb617c7", size = 2798714, upload-time = "2026-11-03T19:24:54.508Z" },
 ]
 
 [[package]]
