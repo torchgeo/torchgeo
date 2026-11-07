@@ -67,6 +67,15 @@ class TestRandomPatchSampler:
         assert x.start % 5 == 0
         assert y.start % 5 == 0
 
+    def test_origin(self, dataset: GeoDataset) -> None:
+        sampler = RandomPatchSampler(dataset, size=5, origin='upper')
+        _, y = next(iter(sampler))
+        assert 0 <= y.start < y.stop <= 100
+
+        sampler = RandomPatchSampler(dataset, size=5, origin='lower')
+        _, y = next(iter(sampler))
+        assert 0 <= y.start < y.stop <= 100
+
     @pytest.mark.slow
     @pytest.mark.parametrize('num_workers', [0, 1, 2])
     def test_dataloader(
@@ -137,6 +146,15 @@ class TestGriddedPatchSampler:
         x, y = next(iter(sampler))
         assert x.start % 5 == 0
         assert y.start % 5 == 0
+
+    def test_origin(self, dataset: GeoDataset) -> None:
+        sampler = GriddedPatchSampler(dataset, size=5, origin='upper')
+        _, y = next(iter(sampler))
+        assert y.stop == 100
+
+        sampler = GriddedPatchSampler(dataset, size=5, origin='lower')
+        _, y = next(iter(sampler))
+        assert y.start == 0
 
     @pytest.mark.slow
     @pytest.mark.parametrize('num_workers', [0, 1, 2])
