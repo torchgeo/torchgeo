@@ -5,6 +5,7 @@
 
 import math
 from collections.abc import Iterator
+from typing import Literal
 
 import geopandas as gpd
 import numpy as np
@@ -47,6 +48,7 @@ class RandomPatchSampler(SpatialSampler):
         | None = None,
         snap2pixel: bool = True,
         snap2block: bool = False,
+        origin: Literal['upper', 'lower'] = 'upper',
     ) -> None:
         """Initialize a new RandomPatchSampler instance.
 
@@ -73,9 +75,11 @@ class RandomPatchSampler(SpatialSampler):
             snap2block: Snap sampled patches to the nearest block. Results in a large
                 decrease in data diversity but a larger increase in I/O speed. Set
                 *size* to a factor or multiple of your COG block size for best effect.
+            origin: Whether the [0, 0] origin is in the upper left or lower left corner
+                of each raster file. Only matters when *snap2block* is True.
 
         .. versionadded:: 0.11
-           The *snap2pixel* and *snap2block* parameters.
+           The *snap2pixel*, *snap2block*, and *origin* parameters.
         """
         super().__init__(dataset, roi=roi)
 
@@ -83,6 +87,7 @@ class RandomPatchSampler(SpatialSampler):
         self.generator = np.random.default_rng(generator)
         self.snap2pixel = snap2pixel
         self.snap2block = snap2block
+        self.origin = origin
 
         # Convert from pixel units to CRS units
         if units == Units.PIXELS:
@@ -115,10 +120,11 @@ class RandomPatchSampler(SpatialSampler):
         points = points.translate(-self.size[1] / 2, -self.size[0] / 2)
 
         if self.snap2pixel or self.snap2block:
-            xmin, ymin, _, _ = self.bounds
+            xorigin, ymin, _, ymax = self.bounds
+            yorigin = ymax if self.origin == 'upper' else ymin
             scale = self.size[::-1] if self.snap2block else self.res
             # Convert from geospatial coords to pixel/block coords
-            points = points.translate(-xmin, -ymin)
+            points = points.translate(-xorigin, -yorigin)
             points = points.scale(1 / scale[0], 1 / scale[1], origin=(0, 0))
             # Round to the nearest pixel/block
             x = points.x.round()
@@ -126,7 +132,7 @@ class RandomPatchSampler(SpatialSampler):
             # Convert from pixel/block coords to geospatial coords
             points = gpd.points_from_xy(x, y)
             points = points.scale(scale[0], scale[1], origin=(0, 0))
-            points = points.translate(xmin, ymin)
+            points = points.translate(xorigin, yorigin)
 
         for point in points:
             xmin = point.x
@@ -165,6 +171,7 @@ class GriddedPatchSampler(SpatialSampler):
         units: Units = Units.PIXELS,
         snap2pixel: bool = True,
         snap2block: bool = False,
+        origin: Literal['upper', 'lower'] = 'upper',
     ) -> None:
         """Initialize a new GriddedPatchSampler instance.
 
@@ -188,9 +195,11 @@ class GriddedPatchSampler(SpatialSampler):
                 decrease in data diversity but a larger increase in I/O speed. Set
                 *size* and *stride* to a factor or multiple of your COG block size for
                 best effect.
+            origin: Whether the [0, 0] origin is in the upper left or lower left corner
+                of each raster file. Only matters when *snap2block* is True.
 
         .. versionadded:: 0.11
-           The *snap2pixel* and *snap2block* parameters.
+           The *snap2pixel*, *snap2block*, and *origin* parameters.
         """
         super().__init__(dataset, roi=roi)
 
@@ -198,6 +207,7 @@ class GriddedPatchSampler(SpatialSampler):
         self.stride = _to_tuple(stride or size)
         self.snap2pixel = snap2pixel
         self.snap2block = snap2block
+        self.origin = origin
 
         # Convert from pixel units to CRS units
         if units == Units.PIXELS:
@@ -214,31 +224,36 @@ class GriddedPatchSampler(SpatialSampler):
             [xmin:xmax, ymin:ymax] coordinates to index a dataset.
         """
         xmin, ymin, xmax, ymax = self.geometry.bounds
+        xorigin = self.bounds[0]
+        yorigin = self.bounds[3] if self.origin == 'upper' else self.bounds[1]
 
         if self.snap2pixel or self.snap2block:
             scale = self.size[::-1] if self.snap2block else self.res
             # Convert from geospatial coords to pixel/block coords
-            xmin = (xmin - self.bounds[0]) / scale[0]
-            xmax = (xmax - self.bounds[0]) / scale[0]
-            ymin = (ymin - self.bounds[1]) / scale[1]
-            ymax = (ymax - self.bounds[1]) / scale[1]
+            xmin = (xmin - xorigin) / scale[0]
+            xmax = (xmax - xorigin) / scale[0]
+            ymin = (ymin - yorigin) / scale[1]
+            ymax = (ymax - yorigin) / scale[1]
             # Round to the nearest pixel/block
             xmin = math.floor(xmin)
             xmax = math.ceil(xmax)
             ymin = math.floor(ymin)
             ymax = math.ceil(ymax)
             # Convert from pixel/block coords to geospatial coords
-            xmin = xmin * scale[0] + self.bounds[0]
-            xmax = xmax * scale[0] + self.bounds[0]
-            ymin = ymin * scale[1] + self.bounds[1]
-            ymax = ymax * scale[1] + self.bounds[1]
+            xmin = xmin * scale[0] + xorigin
+            xmax = xmax * scale[0] + xorigin
+            ymin = ymin * scale[1] + yorigin
+            ymax = ymax * scale[1] + yorigin
 
         rows = convolution_arithmetic(ymax - ymin, self.size[0], self.stride[0])
         cols = convolution_arithmetic(xmax - xmin, self.size[1], self.stride[1])
 
         # For each row...
         for i in range(rows):
-            y = ymin + i * self.stride[0]
+            if self.origin == 'upper':
+                y = ymax - i * self.stride[0]
+            else:
+                y = ymin + i * self.stride[0]
 
             # For each column...
             for j in range(cols):
