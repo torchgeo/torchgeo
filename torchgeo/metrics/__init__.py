@@ -3,6 +3,7 @@
 
 """TorchGeo metrics."""
 
+from .me import MeanError
 from .mse import MeanSquaredError
 
-__all__ = ('MeanSquaredError',)
+__all__ = ('MeanError', 'MeanSquaredError')
