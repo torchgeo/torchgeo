@@ -260,6 +260,12 @@ class GriddedPatchSampler(SpatialSampler):
                 x = xmin + j * self.stride[1]
 
                 # Check for intersection
-                bbox = shapely.box(x, y, x + self.size[1], y + self.size[0])
+                if self.origin == 'upper':
+                    bbox = shapely.box(x, y - self.size[0], x + self.size[1], y)
+                else:
+                    bbox = shapely.box(x, y, x + self.size[1], y + self.size[0])
                 if self.geometry.intersects(bbox) and not self.geometry.touches(bbox):
-                    yield slice(x, x + self.size[1]), slice(y, y + self.size[0])
+                    if self.origin == 'upper':
+                        yield slice(x, x + self.size[1]), slice(y - self.size[0], y)
+                    else:
+                        yield slice(x, x + self.size[1]), slice(y, y + self.size[0])
