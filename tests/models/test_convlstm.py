@@ -145,7 +145,6 @@ class TestConvLSTM:
             kernel_size=3,
             num_layers=1,
             num_classes=num_classes,
-            head_kernel_size=1,
             convolutional_head=True,
         )
         y_hat = model(input_tensor, lengths=torch.tensor([4, 2]))
@@ -168,7 +167,6 @@ class TestConvLSTM:
             kernel_size=3,
             num_layers=1,
             num_classes=num_classes,
-            head_kernel_size=1,
         )
         y_hat = model(input_tensor)
         y_hat_last_step = model(input_tensor, lengths=torch.tensor([t, t]))
@@ -259,7 +257,6 @@ class TestConv3dLSTM:
         ('option', 'match'),
         [
             ('conv3d_kernel_size', 'conv3d_kernel_size must be odd'),
-            ('head_kernel_size', 'head_kernel_size must be odd'),
             ('output_mode', "output_mode must be 'pixel' or 'chip'"),
         ],
     )
@@ -273,8 +270,6 @@ class TestConv3dLSTM:
             match option:
                 case 'conv3d_kernel_size':
                     Conv3dLSTM(input_dim=3, conv3d_kernel_size=(3, 2, 3))
-                case 'head_kernel_size':
-                    Conv3dLSTM(input_dim=3, head_kernel_size=2)
                 case 'output_mode':
                     output_mode = cast('Literal["pixel", "chip"]', 'invalid')
                     Conv3dLSTM(input_dim=3, output_mode=output_mode)
