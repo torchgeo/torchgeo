@@ -115,7 +115,6 @@ class ConvLSTM(nn.Module):
         bias: bool = True,
         return_all_layers: bool = False,
         num_classes: int = 1,
-        head_kernel_size: int = 1,
         convolutional_head: bool = True,
     ) -> None:
         """Initializes the ConvLSTM model.
@@ -135,7 +134,6 @@ class ConvLSTM(nn.Module):
                 for all layers.
             num_classes: Optional number of segmentation classes for an attached
                 prediction head.
-            head_kernel_size: Kernel size for the optional segmentation head.
             convolutional_head: If ``False``, uses global average pooling followed by a
                 fully connected head for image-level prediction. If ``True``, uses a
                 convolutional head for dense/pixel-level prediction.
@@ -308,7 +306,6 @@ class Conv3dLSTM(ConvLSTM):
         bias: bool = True,
         return_all_layers: bool = False,
         num_outputs: int = 1,
-        head_kernel_size: int = 1,
         output_mode: Literal['pixel', 'chip'] = 'pixel',
         return_sequence: bool = False,
     ) -> None:
@@ -327,7 +324,6 @@ class Conv3dLSTM(ConvLSTM):
             return_all_layers: If ``True``, will return computations for all
                 ConvLSTM layers from :meth:`forward_features`.
             num_outputs: Number of output channels, classes, labels, or values.
-            head_kernel_size: Kernel size for the prediction head.
             output_mode: Whether to return per-pixel maps or chip-level outputs.
             return_sequence: If ``True``, return predictions for every timestep.
         Raises:
@@ -345,9 +341,6 @@ class Conv3dLSTM(ConvLSTM):
         if any(k % 2 == 0 for k in conv3d_kernel_size_tuple):
             raise ValueError('conv3d_kernel_size must be odd to preserve shape.')
 
-        if head_kernel_size % 2 == 0:
-            raise ValueError('head_kernel_size must be odd to preserve shape.')
-
         if output_mode not in {'pixel', 'chip'}:
             raise ValueError("output_mode must be 'pixel' or 'chip'.")
 
@@ -359,7 +352,6 @@ class Conv3dLSTM(ConvLSTM):
             bias=bias,
             return_all_layers=return_all_layers,
             num_classes=num_outputs,
-            head_kernel_size=head_kernel_size,
             convolutional_head=output_mode == 'pixel',
         )
 

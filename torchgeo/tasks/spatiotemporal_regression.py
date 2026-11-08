@@ -72,9 +72,7 @@ class SpatioTemporalRegression(RegressionMixin, BaseTask):
         x = batch['image']
         y = batch[self.target_key]
         batch_size = x.shape[0]
-        kwargs: dict[str, Tensor] = {}
-        if (lengths := batch.get('length')) is not None:
-            kwargs['lengths'] = lengths
+        kwargs = self._model_kwargs(batch)
         y_hat = self(x, **kwargs).squeeze(1)
 
         metrics = getattr(self, f'{stage}_metrics')
@@ -135,5 +133,15 @@ class SpatioTemporalRegression(RegressionMixin, BaseTask):
             Output predicted values.
         """
         x = batch['image']
-        y_hat: Tensor = self(x)
+        kwargs = self._model_kwargs(batch)
+        y_hat: Tensor = self(x, **kwargs)
         return y_hat
+
+    def _model_kwargs(self, batch: Any) -> dict[str, Tensor]:
+        """Extract model-specific keyword arguments from a batch."""
+        kwargs: dict[str, Tensor] = {}
+        match self.hparams['model']:
+            case 'convlstm':
+                if (lengths := batch.get('length')) is not None:
+                    kwargs['lengths'] = lengths
+        return kwargs
