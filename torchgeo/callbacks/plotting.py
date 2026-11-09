@@ -35,7 +35,7 @@ class TensorBoardCallback(Callback):
             batch_idx: The index of this batch.
             dataloader_idx: The index of the dataloader that produced this batch.
         """
-        if batch_idx > 10:
+        if batch_idx >= 10:
             return
 
         dm = trainer.datamodule
