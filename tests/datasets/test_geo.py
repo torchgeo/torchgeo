@@ -964,6 +964,29 @@ class TestIntersectionDataset:
         assert 'bbox: (slice' in out
         assert 'size: 1' in out
 
+    def test_one(self) -> None:
+        rd = RasterDataset(os.path.join('tests', 'data', 'raster', 'res_2-2_epsg_4087'))
+        ds = IntersectionDataset(rd)
+        ds[ds.bounds]
+
+    def test_two(self) -> None:
+        rd = RasterDataset(os.path.join('tests', 'data', 'raster', 'res_2-2_epsg_4087'))
+        ds1 = IntersectionDataset(rd, rd)
+        ds2 = rd & rd
+        assert torch.allclose(ds1[ds1.bounds]['image'], ds2[ds2.bounds]['image'])
+
+    def test_three(self) -> None:
+        rd = RasterDataset(os.path.join('tests', 'data', 'raster', 'res_2-2_epsg_4087'))
+        ds1 = IntersectionDataset(rd, rd, rd)
+        ds2 = rd & rd & rd
+        assert torch.allclose(ds1[ds1.bounds]['image'], ds2[ds2.bounds]['image'])
+
+    def test_four(self) -> None:
+        rd = RasterDataset(os.path.join('tests', 'data', 'raster', 'res_2-2_epsg_4087'))
+        ds1 = IntersectionDataset(rd, rd, rd, rd)
+        ds2 = rd & rd & rd & rd
+        assert torch.allclose(ds1[ds1.bounds]['image'], ds2[ds2.bounds]['image'])
+
     def test_nongeo_dataset(self) -> None:
         ds1 = CustomNonGeoDataset()
         ds2 = CustomNonGeoDataset()
@@ -1240,6 +1263,29 @@ class TestUnionDataset:
         assert 'type: UnionDataset' in out
         assert 'bbox: (slice' in out
         assert 'size: 2' in out
+
+    def test_one(self) -> None:
+        rd = RasterDataset(os.path.join('tests', 'data', 'raster', 'res_2-2_epsg_4087'))
+        ds = UnionDataset(rd)
+        ds[ds.bounds]
+
+    def test_two(self) -> None:
+        rd = RasterDataset(os.path.join('tests', 'data', 'raster', 'res_2-2_epsg_4087'))
+        ds1 = UnionDataset(rd, rd)
+        ds2 = rd | rd
+        assert torch.allclose(ds1[ds1.bounds]['image'], ds2[ds2.bounds]['image'])
+
+    def test_three(self) -> None:
+        rd = RasterDataset(os.path.join('tests', 'data', 'raster', 'res_2-2_epsg_4087'))
+        ds1 = UnionDataset(rd, rd, rd)
+        ds2 = rd | rd | rd
+        assert torch.allclose(ds1[ds1.bounds]['image'], ds2[ds2.bounds]['image'])
+
+    def test_four(self) -> None:
+        rd = RasterDataset(os.path.join('tests', 'data', 'raster', 'res_2-2_epsg_4087'))
+        ds1 = UnionDataset(rd, rd, rd, rd)
+        ds2 = rd | rd | rd | rd
+        assert torch.allclose(ds1[ds1.bounds]['image'], ds2[ds2.bounds]['image'])
 
     def test_different_crs_12(self) -> None:
         ds1 = RasterDataset(
