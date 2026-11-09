@@ -1537,12 +1537,13 @@ class IntersectionDataset(GeoDataset):
             ds.crs = datasets[0].crs
             ds.res = datasets[0].res
 
-        self.index = datasets[0].index.reset_index()
+        self.index = datasets[0].index
         for ds in datasets[1:]:
             # Spatial intersection
-            index = ds.index.reset_index()
+            index1 = self.index.reset_index()
+            index2 = ds.index.reset_index()
             self.index = gpd.overlay(
-                self.index, index, how='intersection', keep_geom_type=True
+                index1, index2, how='intersection', keep_geom_type=True
             )
 
             if self.index.empty:
