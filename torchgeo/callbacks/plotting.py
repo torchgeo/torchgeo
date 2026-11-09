@@ -30,8 +30,8 @@ class TensorBoardCallback(Callback):
         Args:
             trainer: The trainer.
             pl_module: The task.
-            outputs: The output of :meth:`LightningModule.validation_step`.
-            batch: The input of :meth:`LightningModule.validation_step`.
+            outputs: The output of *pl_module.validation_step*.
+            batch: The input of *pl_module.validation_step*.
             batch_idx: The index of this batch.
             dataloader_idx: The index of the dataloader that produced this batch.
         """
