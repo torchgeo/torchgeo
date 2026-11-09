@@ -6,17 +6,12 @@
 import os
 from typing import Literal
 
-import kornia.augmentation as K
-import matplotlib.pyplot as plt
 import segmentation_models_pytorch as smp
 import timm
 import torch
-from matplotlib.figure import Figure
 from torch import Tensor
 from torchvision.models._api import WeightsEnum
 
-from ..datamodules import BaseDataModule
-from ..datasets import RGBBandsMissingError, unbind_samples
 from ..datasets.utils import Sample
 from ..models import FCN, get_weight
 from . import utils
@@ -153,6 +148,9 @@ class Regression(RegressionMixin, BaseTask):
             batch: The output of your DataLoader.
             batch_idx: Integer displaying index of this batch.
             dataloader_idx: Index of the current dataloader.
+
+        Returns:
+            Batch with example predictions.
         """
         x = batch['image']
         batch_size = x.shape[0]
