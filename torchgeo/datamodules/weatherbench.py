@@ -3,14 +3,33 @@
 
 """WeatherBench datamodule."""
 
+from collections.abc import Sequence
 from typing import Any
 
 import pandas as pd
+import torch
 
 from ..datasets import WeatherBench2
 from ..datasets.utils import Sample
 from ..samplers import SequentialTimedeltaSampler
 from .geo import GeoDataModule
+
+
+def _collate_fn(samples: Sequence[Sample]) -> Sample:
+    """Collate weather samples sharing a grid and static fields.
+
+    Args:
+        samples: Weather samples with input and target fields.
+
+    Returns:
+        A batch with shared 2D fields and timestamps kept in nanoseconds.
+    """
+    return {
+        key: value
+        if value.ndim == 2
+        else torch.stack([sample[key] for sample in samples])
+        for key, value in samples[0].items()
+    }
 
 
 class WeatherBench2DataModule(GeoDataModule):
@@ -19,6 +38,7 @@ class WeatherBench2DataModule(GeoDataModule):
     Uses chronological train/validation/test splits. Each window stays within
     its split, and predict uses the test split. Values stay in physical units.
     The dataset splits each window into input and target tensors.
+    Static fields remain 2D, and timestamps are kept in nanoseconds.
 
     .. versionadded:: 0.11
     """
@@ -53,6 +73,7 @@ class WeatherBench2DataModule(GeoDataModule):
             **kwargs,
         )
 
+        self.collate_fn = _collate_fn
         self.input_steps = input_steps
 
         level = kwargs.get('level')
@@ -69,30 +90,34 @@ class WeatherBench2DataModule(GeoDataModule):
         """
         dataset = WeatherBench2(**self.kwargs)
         self.dataset = dataset
-        times = pd.DatetimeIndex(dataset.data.time.values)
-        timestep = times[1] - times[0]
+        times = dataset.data.time
+        timestep = pd.Timestamp(times[1].values) - pd.Timestamp(times[0].values)
         window_size = self.input_steps + dataset.target_steps
-        val_size = round(self.val_split_pct * len(times))
-        test_size = round(self.test_split_pct * len(times))
-        train_size = len(times) - val_size - test_size
-        test = times[train_size + val_size :]
+        num_times = dataset.data.sizes['time']
+        val_size = round(self.val_split_pct * num_times)
+        test_size = round(self.test_split_pct * num_times)
+        train_size = num_times - val_size - test_size
 
-        def sampler(timestamps: pd.DatetimeIndex) -> SequentialTimedeltaSampler:
+        def sampler(start: int, stop: int) -> SequentialTimedeltaSampler:
             return SequentialTimedeltaSampler(
                 dataset,
                 delta=(window_size - 1) * timestep,
                 stride=timestep,
-                toi=pd.Interval(timestamps[0], timestamps[-1], closed='both'),
+                toi=pd.Interval(
+                    pd.Timestamp(times[start].values),
+                    pd.Timestamp(times[stop - 1].values),
+                    closed='both',
+                ),
             )
 
         if stage in ['fit']:
-            self.train_sampler = sampler(times[:train_size])
+            self.train_sampler = sampler(0, train_size)
         if stage in ['fit', 'validate']:
-            self.val_sampler = sampler(times[train_size : train_size + val_size])
+            self.val_sampler = sampler(train_size, train_size + val_size)
         if stage in ['test']:
-            self.test_sampler = sampler(test)
+            self.test_sampler = sampler(train_size + val_size, num_times)
         if stage in ['predict']:
-            self.predict_sampler = sampler(test)
+            self.predict_sampler = sampler(train_size + val_size, num_times)
 
     def on_after_batch_transfer(self, batch: Sample, dataloader_idx: int) -> Sample:
         """Skip normalization and keep values in physical units.

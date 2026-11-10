@@ -3,10 +3,10 @@
 
 """Pre-trained Aurora models."""
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from functools import partial
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from torch import nn
 from torchvision.models._api import Weights, WeightsEnum
@@ -15,6 +15,25 @@ from ..datasets.utils import Sample, lazy_import
 
 if TYPE_CHECKING:
     from aurora import Batch
+
+type _VariableMapping = Mapping[
+    str, tuple[Literal['surf_vars', 'atmos_vars', 'static_vars'], str]
+]
+
+_DEFAULT_VARIABLE_MAPPING: _VariableMapping = {
+    '2m_temperature': ('surf_vars', '2t'),
+    '10m_u_component_of_wind': ('surf_vars', '10u'),
+    '10m_v_component_of_wind': ('surf_vars', '10v'),
+    'mean_sea_level_pressure': ('surf_vars', 'msl'),
+    'land_sea_mask': ('static_vars', 'lsm'),
+    'soil_type': ('static_vars', 'slt'),
+    'geopotential_at_surface': ('static_vars', 'z'),
+    'temperature': ('atmos_vars', 't'),
+    'u_component_of_wind': ('atmos_vars', 'u'),
+    'v_component_of_wind': ('atmos_vars', 'v'),
+    'specific_humidity': ('atmos_vars', 'q'),
+    'geopotential': ('atmos_vars', 'z'),
+}
 
 # Aurora operates on the raw unnormalized data.
 _aurora_transforms = nn.Identity()
@@ -208,11 +227,13 @@ class Aurora_Weights(WeightsEnum):
 def aurora_swin_unet(
     weights: Aurora_Weights | None = None,
     *args: Any,
-    data_vars: Sequence[str] | None = None,
-    variable_mapping: Mapping[str, str] | None = None,
+    variable_mapping: _VariableMapping | None = None,
     **kwargs: Any,
 ) -> nn.Module:
     """Aurora model.
+
+    Inputs and predictions use physical units. Aurora normalizes inputs internally
+    and restores physical units before returning predictions.
 
     If you use this model in your research, please cite the following paper:
 
@@ -225,28 +246,32 @@ def aurora_swin_unet(
     .. versionadded:: 0.8
 
     .. versionadded:: 0.11
-       The *data_vars* and *variable_mapping* parameters.
+       The *variable_mapping* parameter.
 
     Args:
         weights: Pre-trained model weights to use.
         *args: Additional arguments to pass to ``aurora.Aurora``
-        data_vars: Dataset variable names to predict. When supplied, enable weather
-            dictionary inputs and prediction dictionaries. Otherwise, use Aurora's
-            native batch interface.
-        variable_mapping: Mapping from dataset names to Aurora names for surface,
-            atmospheric, and static variables when *data_vars* is supplied.
-            Unmapped names are kept unchanged.
+        variable_mapping: Complete mapping from dataset names to
+            ``(category, Aurora name)`` pairs. Categories are ``'surf_vars'``,
+            ``'atmos_vars'``, and ``'static_vars'``. For example,
+            ``{'temperature': ('atmos_vars', 't')}``. Include every model input
+            variable, including variables whose names are unchanged. If unset,
+            use the standard ERA5 variables loaded by
+            :class:`~torchgeo.datasets.WeatherBench2`. A supplied mapping replaces
+            the default mapping in full.
             Weather dictionaries use surface inputs of shape ``(B, T, H, W)``,
             atmospheric inputs of shape ``(B, T, L, H, W)``, and shared static
             inputs of shape ``(H, W)``. Times are Unix nanoseconds, with the last
             input time used for each batch element. Predictions use dataset names
-            and retain one time step.
+            and retain one time step. Static fields are not returned as predictions.
         **kwargs: Additional keyword arguments to pass to ``aurora.Aurora``
 
     Returns:
         An Aurora model.
     """
     aurora = lazy_import('aurora')
+    if variable_mapping is None:
+        variable_mapping = _DEFAULT_VARIABLE_MAPPING
 
     if weights is None:
         model = aurora.Aurora(*args, **kwargs)
@@ -256,40 +281,28 @@ def aurora_swin_unet(
             repo=weights.meta['hf_repo'], name=weights.meta['filename']
         )
 
-    if data_vars is not None:
-        variable_mapping = variable_mapping or {}
-        model.register_forward_pre_hook(
-            partial(_to_aurora_batch, variable_mapping=variable_mapping)
-        )
-        model.register_forward_hook(
-            partial(
-                _from_aurora_batch,
-                data_vars=data_vars,
-                variable_mapping=variable_mapping,
-            )
-        )
+    model.register_forward_pre_hook(
+        partial(_to_aurora_batch, variable_mapping=variable_mapping)
+    )
+    model.register_forward_hook(
+        partial(_from_aurora_batch, variable_mapping=variable_mapping)
+    )
     return cast(nn.Module, model)
 
 
 def _to_aurora_batch(
-    module: nn.Module, inputs: tuple[Sample], variable_mapping: Mapping[str, str]
+    module: nn.Module, inputs: tuple[Sample], variable_mapping: _VariableMapping
 ) -> 'Batch':
     """Convert a weather dictionary to Aurora's batch object."""
     batch = inputs[0]
     aurora = lazy_import('aurora')
-    surface: Sample = {}
-    atmosphere: Sample = {}
-    static: Sample = {}
-    for source, value in batch.items():
-        if source in ('latitude', 'longitude', 'level', 'time'):
-            continue
-        name = variable_mapping.get(source, source)
-        if value.ndim == 2:
-            static[name] = value
-        elif value.ndim == 4:
-            surface[name] = value
-        elif value.ndim == 5:
-            atmosphere[name] = value
+    variables: dict[str, Sample] = {
+        'surf_vars': {},
+        'atmos_vars': {},
+        'static_vars': {},
+    }
+    for source, (category, name) in variable_mapping.items():
+        variables[category][name] = batch[source]
     metadata = aurora.Metadata(
         lat=batch['latitude'][0],
         lon=batch['longitude'][0],
@@ -299,19 +312,18 @@ def _to_aurora_batch(
             for time in batch['time'][:, -1].tolist()
         ),
     )
-    return aurora.Batch(surface, static, atmosphere, metadata)
+    return aurora.Batch(**variables, metadata=metadata)
 
 
 def _from_aurora_batch(
     module: nn.Module,
     inputs: tuple['Batch'],
     output: 'Batch',
-    data_vars: Sequence[str],
-    variable_mapping: Mapping[str, str],
+    variable_mapping: _VariableMapping,
 ) -> Sample:
     """Return Aurora predictions under their dataset variable names."""
-    predictions = output.surf_vars | output.atmos_vars
     return {
-        source: predictions[variable_mapping.get(source, source)]
-        for source in data_vars
+        source: getattr(output, category)[name]
+        for source, (category, name) in variable_mapping.items()
+        if category != 'static_vars'
     }
