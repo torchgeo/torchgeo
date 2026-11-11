@@ -310,7 +310,7 @@ class Sentinel2(Sentinel):
         'B11',
         'B12',
     )
-    default_bands = (band for band in all_bands if band != 'B10')
+    default_bands = tuple(band for band in all_bands if band != 'B10')
 
     # Native resolutions of each band
     resolutions: ClassVar[dict[str, str]] = {
