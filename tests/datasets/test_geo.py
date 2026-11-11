@@ -24,6 +24,7 @@ from torch import Tensor, nn
 from torch.utils.data import ConcatDataset
 
 from torchgeo.datasets import (
+    CDL,
     NAIP,
     DatasetNotFoundError,
     GeoDataset,
@@ -35,6 +36,8 @@ from torchgeo.datasets import (
     UnionDataset,
     VectorDataset,
     XarrayDataset,
+    concat_samples,
+    stack_samples,
 )
 from torchgeo.datasets.utils import GeoSlice, Sample
 
@@ -986,6 +989,15 @@ class TestIntersectionDataset:
         ds1 = IntersectionDataset(rd, rd, rd, rd)
         ds2 = rd & rd & rd & rd
         assert torch.allclose(ds1[ds1.bounds]['image'], ds2[ds2.bounds]['image'])
+
+    def test_collate_fn(self) -> None:
+        root = Path('tests/data')
+        image = Sentinel2(root / 'sentinel2', bands=['B04', 'B03', 'B02'])
+        mask = CDL(root / 'cdl')
+        images = IntersectionDataset(image, image, collate_fn=concat_samples)
+        masks = IntersectionDataset(mask, mask, collate_fn=stack_samples)
+        dataset = images & masks
+        dataset[dataset.bounds]
 
     def test_nongeo_dataset(self) -> None:
         ds1 = CustomNonGeoDataset()
