@@ -111,22 +111,26 @@ class AirQuality(NonGeoDataset):
             'target': torch.tensor(target.values, dtype=torch.float32),
         }
 
-    def _parse_datetime(self, data: pd.DataFrame) -> None:
+    def _parse_datetime(self, data: pd.DataFrame) -> pd.DataFrame:
         """Parse datetime columns into cyclical features.
 
         Args:
             data: Raw data.
+
+        Returns:
+            Preprocessed data.
         """
         if {'Date', 'Time'} <= set(data.columns):
             dt = pd.to_datetime(data['Date'] + ' ' + data['Time']).dt
-            doy = 2 * np.pi * dt.dayofyear / 365.25
+            doy = 2 * np.pi * dt.day_of_year / 365.25
             hod = 2 * np.pi * dt.hour / 24
             data['sin(DOY)'] = np.sin(doy)
             data['cos(DOY)'] = np.cos(doy)
             data['sin(HOD)'] = np.sin(hod)
             data['cos(HOD)'] = np.cos(hod)
 
-        data.drop(columns=['Date', 'Time'], inplace=True, errors='ignore')
+        data = data.drop(columns=['Date', 'Time'], errors='ignore')
+        return data
 
     def _load_data(self) -> None:
         """Load the dataset into a pandas dataframe."""
@@ -144,8 +148,8 @@ class AirQuality(NonGeoDataset):
         self.target_data = pd.read_csv(filepath, usecols=self.target_features, **kwargs)  # ty: ignore[no-matching-overload]
 
         # Encode cyclic features
-        self._parse_datetime(self.input_data)
-        self._parse_datetime(self.target_data)
+        self.input_data = self._parse_datetime(self.input_data)
+        self.target_data = self._parse_datetime(self.target_data)
 
         # Interpolate missing values using linear interpolation
         self.input_data.interpolate(inplace=True)
