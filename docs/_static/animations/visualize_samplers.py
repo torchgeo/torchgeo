@@ -67,11 +67,11 @@ for sampler in spatial_samplers + temporal_samplers:
     filename = f'{sampler.__class__.__name__}.gif'
     print(filename)
     ani = sampler.plot()
-    ani.save(directory / filename)
+    ani.save(directory / filename, dpi=200)
 
 for spatial, temporal in itertools.product(spatial_samplers, temporal_samplers):
     filename = f'{spatial.__class__.__name__}_{temporal.__class__.__name__}.gif'
     print(filename)
     sampler = spatial @ temporal
     ani = sampler.plot()
-    ani.save(directory / filename)
+    ani.save(directory / filename, dpi=200)
