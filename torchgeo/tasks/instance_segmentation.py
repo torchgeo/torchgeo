@@ -3,10 +3,7 @@
 
 """Tasks for instance segmentation."""
 
-import kornia.augmentation as K
-import matplotlib.pyplot as plt
 import torch
-from matplotlib.figure import Figure
 from timm.models import adapt_input_conv
 from torch import Tensor
 from torch.nn.parameter import Parameter
@@ -15,8 +12,6 @@ from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchvision.models._api import WeightsEnum
 from torchvision.models.detection import maskrcnn_resnet50_fpn
 
-from ..datamodules import BaseDataModule
-from ..datasets import RGBBandsMissingError
 from ..datasets.utils import Sample
 from .base import BaseTask
 from .utils import GeneralizedRCNNTransformNoOp
@@ -152,13 +147,16 @@ class InstanceSegmentation(BaseTask):
 
     def validation_step(
         self, batch: Sample, batch_idx: int, dataloader_idx: int = 0
-    ) -> None:
+    ) -> Sample:
         """Compute the validation metrics.
 
         Args:
             batch: The output of your DataLoader.
             batch_idx: Integer displaying index of this batch.
             dataloader_idx: Index of the current dataloader.
+
+        Returns:
+            Batch with example predictions.
         """
         x = batch['image']
         y = [
@@ -180,42 +178,12 @@ class InstanceSegmentation(BaseTask):
 
         self.log_dict(metrics, batch_size=len(x))
 
-        if (
-            batch_idx < 10
-            and hasattr(self.trainer, 'datamodule')
-            and isinstance(self.trainer.datamodule, BaseDataModule)
-            and self.logger
-            and hasattr(self.logger, 'experiment')
-            and hasattr(self.logger.experiment, 'add_figure')
-        ):
-            datamodule = self.trainer.datamodule
-            aug = K.AugmentationSequential(
-                K.Denormalize(datamodule.mean, datamodule.std),
-                data_keys=None,
-                keepdim=True,
-            )
-            batch = aug(batch)
+        batch['prediction_bbox_xyxy'] = [pred['boxes'] for pred in y_hat]
+        batch['prediction_mask'] = [pred['masks'] for pred in y_hat]
+        batch['prediction_label'] = [pred['labels'] for pred in y_hat]
+        batch['prediction_score'] = [pred['scores'] for pred in y_hat]
 
-            batch['prediction_bbox_xyxy'] = [pred['boxes'].cpu() for pred in y_hat]
-            batch['prediction_mask'] = [pred['masks'].cpu() for pred in y_hat]
-            batch['prediction_label'] = [pred['labels'].cpu() for pred in y_hat]
-            batch['prediction_score'] = [pred['scores'].cpu() for pred in y_hat]
-            batch['image'] = batch['image'].cpu()
-
-            sample = {key: value[0] for key, value in batch.items()}
-
-            fig: Figure | None = None
-            try:
-                fig = datamodule.plot(sample)
-            except RGBBandsMissingError:
-                pass
-
-            if fig:
-                summary_writer = self.logger.experiment
-                summary_writer.add_figure(
-                    f'image/{batch_idx}', fig, global_step=self.global_step
-                )  # ty: ignore[call-non-callable]
-                plt.close()
+        return batch
 
     def test_step(self, batch: Sample, batch_idx: int, dataloader_idx: int = 0) -> None:
         """Compute the test metrics.
