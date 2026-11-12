@@ -111,22 +111,26 @@ class AirQuality(NonGeoDataset):
             'target': torch.tensor(target.values, dtype=torch.float32),
         }
 
-    def _parse_datetime(self, data: pd.DataFrame) -> None:
+    def _parse_datetime(self, data: pd.DataFrame) -> pd.DataFrame:
         """Parse datetime columns into cyclical features.
 
         Args:
             data: Raw data.
+
+        Returns:
+            Preprocessed data.
         """
         if {'Date', 'Time'} <= set(data.columns):
             dt = pd.to_datetime(data['Date'] + ' ' + data['Time']).dt
-            doy = 2 * np.pi * dt.dayofyear / 365.25
+            doy = 2 * np.pi * dt.day_of_year / 365.25
             hod = 2 * np.pi * dt.hour / 24
             data['sin(DOY)'] = np.sin(doy)
             data['cos(DOY)'] = np.cos(doy)
             data['sin(HOD)'] = np.sin(hod)
             data['cos(HOD)'] = np.cos(hod)
 
-        data.drop(columns=['Date', 'Time'], inplace=True, errors='ignore')
+        data = data.drop(columns=['Date', 'Time'], errors='ignore')
+        return data
 
     def _load_data(self) -> None:
         """Load the dataset into a pandas dataframe."""
@@ -144,8 +148,8 @@ class AirQuality(NonGeoDataset):
         self.target_data = pd.read_csv(filepath, usecols=self.target_features, **kwargs)  # ty: ignore[no-matching-overload]
 
         # Encode cyclic features
-        self._parse_datetime(self.input_data)
-        self._parse_datetime(self.target_data)
+        self.input_data = self._parse_datetime(self.input_data)
+        self.target_data = self._parse_datetime(self.target_data)
 
         # Interpolate missing values using linear interpolation
         self.input_data.interpolate(inplace=True)
@@ -193,8 +197,8 @@ class AirQuality(NonGeoDataset):
             len(sample['input']), len(sample['input']) + len(sample['target'])
         )
 
-        features = features or self.target_data.columns
-        n_features = len(features)
+        selected_features = features or self.target_data.columns
+        n_features = len(selected_features)
 
         ncols = math.ceil(math.sqrt(n_features))
         nrows = math.ceil(n_features / ncols)
@@ -205,25 +209,25 @@ class AirQuality(NonGeoDataset):
         axes = axes.ravel()
 
         # For each axis, feature...
-        for ax, feature in zip(axes, features):
+        for ax, feature in zip(axes, selected_features):
             if show_titles:
                 ax.set_title(feature)
 
             # Input data
             if feature in self.input_data:
                 idx = self.input_data.columns.get_loc(feature)
-                data = sample['input'][:, idx]
+                data = sample['input'][:, idx]  # ty: ignore[invalid-argument-type]
                 ax.plot(input_steps, data, label='Input', marker='o')
 
             # Target data
             if feature in self.target_data:
                 idx = self.target_data.columns.get_loc(feature)
-                data = sample['target'][:, idx]
+                data = sample['target'][:, idx]  # ty: ignore[invalid-argument-type]
                 ax.plot(target_steps, data, label='Target', marker='x')
 
                 # Predicted data
                 if 'prediction' in sample:
-                    data = sample['prediction'][:, idx]
+                    data = sample['prediction'][:, idx]  # ty: ignore[invalid-argument-type]
                     ax.plot(target_steps, data, label='Prediction', marker='^')
 
             ax.legend()
