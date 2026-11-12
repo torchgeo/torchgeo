@@ -110,32 +110,32 @@ The table reports EuroSAT test-set top-1 accuracy using kNN with five neighbors.
      - ResNet-50
      - **0.9494**
      - 1e-2
-     - `moco_resnet50.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/configs/ssl_benchmarking/moco_resnet50.yaml>`__
+     - `moco_resnet50.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/conf/ssl/moco_resnet50.yaml>`__
    * - :class:`~torchgeo.tasks.MoCo` v3
      - ViT-S/16
      - 0.9413
      - 1e-4
-     - `moco_vit_small.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/configs/ssl_benchmarking/moco_vit_small.yaml>`__
+     - `moco_vit_small.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/conf/ssl/moco_vit_small.yaml>`__
    * - :class:`~torchgeo.tasks.SimCLR`
      - ResNet-50
      - 0.9356
      - 1.5
-     - `simclr_resnet50.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/configs/ssl_benchmarking/simclr_resnet50.yaml>`__
+     - `simclr_resnet50.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/conf/ssl/simclr_resnet50.yaml>`__
    * - :class:`~torchgeo.tasks.SimCLR`
      - ViT-S/16
      - 0.9296
      - 1.5
-     - `simclr_vit_small.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/configs/ssl_benchmarking/simclr_vit_small.yaml>`__
+     - `simclr_vit_small.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/conf/ssl/simclr_vit_small.yaml>`__
    * - :class:`~torchgeo.tasks.BYOL`
      - ResNet-50
      - 0.9294
      - 1e-3
-     - `byol_resnet50.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/configs/ssl_benchmarking/byol_resnet50.yaml>`__
+     - `byol_resnet50.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/conf/ssl/byol_resnet50.yaml>`__
    * - :class:`~torchgeo.tasks.BYOL`
      - ViT-S/16
      - 0.9241
      - 1e-4
-     - `byol_vit_small.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/configs/ssl_benchmarking/byol_vit_small.yaml>`__
+     - `byol_vit_small.yaml <https://github.com/torchgeo/torchgeo/blob/main/tests/conf/ssl/byol_vit_small.yaml>`__
 
 The image-statistics baseline scores 0.8937, higher than either randomly initialized encoder. The ImageNet-pretrained ViT scores 0.9178. Compare against these baselines as well as random initialization when assessing whether SSL improves classification accuracy.
 
@@ -148,20 +148,15 @@ The selected learning rate depends on both the task and the encoder. The rates i
 Running the benchmark
 ---------------------
 
-Use the configurations in `tests/configs/ssl_benchmarking <https://github.com/torchgeo/torchgeo/tree/main/tests/configs/ssl_benchmarking>`__ to reproduce the six SSL runs. I.e. run `torchgeo fit --config tests/configs/ssl_benchmarking/byol_resnet50.yaml`.
+Use the configurations in `tests/conf/ssl <https://github.com/torchgeo/torchgeo/tree/main/tests/conf/ssl>`__ to run the six SSL integration tests. For example:
+
+.. code-block:: console
+
+   $ torchgeo fit --config tests/conf/ssl/byol_resnet50.yaml
 
 See :doc:`/tutorials/ssl_knn_eval` for evaluation code and checks for collapse. The tutorial uses EuroSAT100 for a short demonstration; use the full EuroSAT dataset and the settings above for this benchmark.
 
 Adding a new task
 -----------------
 
-When adding an SSL task, include:
-
-#. ``torchgeo/tasks/foo.py``, subclassing :class:`~torchgeo.tasks.BaseTask`.
-#. An entry in ``torchgeo/tasks/__init__.py``.
-#. Tests in ``tests/tasks/test_foo.py``.
-#. An API documentation entry in ``docs/api/tasks.rst``.
-
-Evaluate the task using the benchmark settings above, trying at least three or four learning rates on the EuroSAT validation split. The current MoCo v3 and SimCLR defaults are scaled for a batch size of 4096: ``lr=9.6`` is ``0.6 x 4096 / 256`` for MoCo v3, and ``lr=4.8`` is ``0.3 x 4096 / 256`` for SimCLR.
-
-Select the learning rate using validation accuracy, then evaluate the selected model once on the test split. Include the configuration, kNN accuracy, and checks for collapse in the pull request so reviewers can compare the result with the baselines. If accuracy is below the image-statistics baseline, investigate the training and evaluation setup before drawing conclusions about the task.
+Follow the :ref:`SSL contribution checklist <contributing-ssl>` when adding a new SSL task.
