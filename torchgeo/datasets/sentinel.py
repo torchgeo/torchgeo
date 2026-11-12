@@ -310,6 +310,7 @@ class Sentinel2(Sentinel):
         'B11',
         'B12',
     )
+    default_bands = tuple(band for band in all_bands if band != 'B10')
 
     # Native resolutions of each band
     resolutions: ClassVar[dict[str, str]] = {
@@ -378,7 +379,7 @@ class Sentinel2(Sentinel):
             res: resolution of the dataset in units of CRS in (xres, yres) format. If a
                 single float is provided, it is used for both the x and y resolution.
                 (defaults to the resolution of the first file found)
-            bands: bands to return (defaults to all bands)
+            bands: bands to return (defaults to all bands except B10)
             transforms: a function/transform that takes an input sample
                 and returns a transformed version
             cache: if True, cache file handle to speed up repeated sampling
@@ -388,13 +389,16 @@ class Sentinel2(Sentinel):
         Raises:
             DatasetNotFoundError: If dataset is not found.
 
+        .. versionchanged:: 0.11
+           The default value for *bands* no longer includes B10.
+
         .. versionadded:: 0.9
            The *time_series* parameter.
 
         .. versionchanged:: 0.5
             *root* was renamed to *paths*
         """
-        bands = bands or self.all_bands
+        bands = bands or self.default_bands
         self.filename_glob = self.filename_glob.format(bands[0])
         self.filename_regex = self.filename_regex.format(self.resolutions[bands[0]])
         super().__init__(paths, crs, res, bands, transforms, cache, time_series)
