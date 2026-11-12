@@ -12,27 +12,7 @@ This page describes TorchGeo's SSL tasks and a EuroSAT benchmark for comparing t
 Available tasks
 ---------------
 
-The tasks below subclass :class:`~torchgeo.tasks.BaseTask`. Each task has a ``model`` argument that selects a `timm <https://huggingface.co/docs/timm/reference/models>`__ encoder, subject to the restrictions noted below, and ``in_channels`` sets the number of input bands for multispectral imagery.
-
-.. list-table::
-   :header-rows: 1
-   :widths: 14 46 40
-
-   * - Task
-     - Approach
-     - Notes
-   * - :class:`~torchgeo.tasks.SimCLR`
-     - Uses NT-Xent to bring representations of two augmented views of the same image closer together and separate those of different images.
-     - ``version`` selects SimCLR v1 or v2. Large batches provide more negative examples.
-   * - :class:`~torchgeo.tasks.MoCo`
-     - Uses a momentum-updated target encoder. Versions 1 and 2 store negative examples in a queue.
-     - ``version`` selects MoCo v1, v2, or v3. v3 drops the queue and uses a predictor head.
-   * - :class:`~torchgeo.tasks.BYOL`
-     - Predicts the target network's projection of one view from the online network's projection of another, without negative examples.
-     - Uses a fixed 224x224 input resolution internally and does not expose ``size`` or augmentation arguments.
-   * - :class:`~torchgeo.tasks.MAE`
-     - Reconstructs masked image patches.
-     - Supports vision transformers only, since it operates on patch tokens.
+See the :ref:`SSL task overview <ssl-tasks>` for supported tasks, their approaches, and encoder restrictions.
 
 
 Benchmarking
