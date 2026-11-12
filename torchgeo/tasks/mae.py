@@ -7,7 +7,10 @@ import timm
 import torch
 from kornia import augmentation as K
 from lightly.models import utils
-from lightly.models.modules import MAEDecoderTIMM, MaskedVisionTransformerTIMM
+from lightly.models.modules import (
+    MaskedVisionTransformerDecoderTIMM,
+    MaskedVisionTransformerTIMM,
+)
 from lightning.pytorch.utilities.types import OptimizerLRScheduler
 from timm.models import VisionTransformer
 from torch import nn
@@ -137,7 +140,7 @@ class MAE(BaseTask):
         self.num_prefix_tokens = vit.num_prefix_tokens
 
         self.backbone = MaskedVisionTransformerTIMM(vit=vit)
-        self.decoder = MAEDecoderTIMM(
+        self.decoder = MaskedVisionTransformerDecoderTIMM(
             num_patches=vit.patch_embed.num_patches,
             patch_size=self.patch_size,
             embed_dim=vit.embed_dim,
