@@ -269,9 +269,9 @@ class ObjectDetection(BaseTask):
 
         self.log_dict(metrics, batch_size=batch_size)
 
-        batch['prediction_bbox_xyxy'] = [b['boxes'] for b in y_hat]
-        batch['prediction_label'] = [b['labels'] for b in y_hat]
-        batch['prediction_score'] = [b['scores'] for b in y_hat]
+        batch['prediction_bbox_xyxy'] = torch.stack([b['boxes'] for b in y_hat])
+        batch['prediction_label'] = torch.stack([b['labels'] for b in y_hat])
+        batch['prediction_score'] = torch.stack([b['scores'] for b in y_hat])
 
         return batch
 

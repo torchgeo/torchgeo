@@ -178,10 +178,10 @@ class InstanceSegmentation(BaseTask):
 
         self.log_dict(metrics, batch_size=len(x))
 
-        batch['prediction_bbox_xyxy'] = [pred['boxes'] for pred in y_hat]
-        batch['prediction_mask'] = [pred['masks'] for pred in y_hat]
-        batch['prediction_label'] = [pred['labels'] for pred in y_hat]
-        batch['prediction_score'] = [pred['scores'] for pred in y_hat]
+        batch['prediction_bbox_xyxy'] = torch.stack([pred['boxes'] for pred in y_hat])
+        batch['prediction_mask'] = torch.stack([pred['masks'] for pred in y_hat])
+        batch['prediction_label'] = torch.stack([pred['labels'] for pred in y_hat])
+        batch['prediction_score'] = torch.stack([pred['scores'] for pred in y_hat])
 
         return batch
 
