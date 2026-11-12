@@ -6,9 +6,10 @@
 import json
 import os
 import shutil
-from datetime import date, timedelta
 
+from matplotlib import dates
 import numpy as np
+import pandas as pd
 
 SIZE = 32
 NUM_SAMPLES = 5
@@ -57,11 +58,8 @@ def create_directory(directory: str, hierarchy: FILENAME_HIERARCHY) -> None:
 
 
 def make_dates(t: int) -> dict[str, int]:
-    start = date(2018, 10, 4)
-    return {
-        str(i): int((start + timedelta(days=6 * i)).strftime('%Y%m%d'))
-        for i in range(t)
-    }
+    dates = pd.date_range('2018-10-04', periods=t, freq='6D')
+    return {str(i): int(d.strftime('%Y%m%d')) for i, d in enumerate(dates)}
 
 
 def num_steps(modality: str, i: int) -> int:
