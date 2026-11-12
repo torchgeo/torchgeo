@@ -4338,7 +4338,7 @@ requires-dist = [
     { name = "rioxarray", marker = "extra == 'datasets'", specifier = ">=0.14.1" },
     { name = "scipy", marker = "extra == 'datasets'", specifier = ">=1.11.2" },
     { name = "segmentation-models-pytorch", specifier = ">=0.5" },
-    { name = "shapely", specifier = ">=2.0.2" },
+    { name = "shapely", specifier = ">=2.1" },
     { name = "timm", specifier = ">=1.0.3" },
     { name = "tokenizers", marker = "extra == 'datasets'", specifier = ">=0.14" },
     { name = "torch", specifier = ">=2.2" },
@@ -4372,7 +4372,7 @@ all = [
     { name = "types-geopandas", specifier = ">=1.0" },
     { name = "types-rasterio", specifier = ">=1.5.1" },
     { name = "types-requests", specifier = ">=2.25" },
-    { name = "types-shapely", specifier = ">=2.0.2" },
+    { name = "types-shapely", specifier = ">=2.1" },
 ]
 docs = [
     { name = "ipywidgets", specifier = ">=7" },
@@ -4389,7 +4389,7 @@ style = [
     { name = "types-geopandas", specifier = ">=1.0" },
     { name = "types-rasterio", specifier = ">=1.5.1" },
     { name = "types-requests", specifier = ">=2.25" },
-    { name = "types-shapely", specifier = ">=2.0.2" },
+    { name = "types-shapely", specifier = ">=2.1" },
 ]
 tests = [
     { name = "nbmake", specifier = ">=1.4.5" },

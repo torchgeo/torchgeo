@@ -14,8 +14,8 @@ import pandas as pd
 import pyproj
 import rasterio
 import rasterio.mask
+import shapely
 import shapely.geometry
-import shapely.ops
 import torch
 from matplotlib.colors import ListedColormap
 from matplotlib.figure import Figure
@@ -357,8 +357,8 @@ class EnviroAtlas(GeoDataset):
                     dst_crs = f.crs.to_string().lower()
 
                     if query_geom_transformed is None:
-                        query_box_transformed = shapely.ops.transform(
-                            self.p_transformers[dst_crs], query_box
+                        query_box_transformed = shapely.transform(
+                            query_box, self.p_transformers[dst_crs], interleaved=False
                         ).envelope
                         query_geom_transformed = shapely.geometry.mapping(
                             query_box_transformed
