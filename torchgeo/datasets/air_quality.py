@@ -197,8 +197,8 @@ class AirQuality(NonGeoDataset):
             len(sample['input']), len(sample['input']) + len(sample['target'])
         )
 
-        features = features or self.target_data.columns
-        n_features = len(features)
+        selected_features = features or self.target_data.columns
+        n_features = len(selected_features)
 
         ncols = math.ceil(math.sqrt(n_features))
         nrows = math.ceil(n_features / ncols)
@@ -209,25 +209,25 @@ class AirQuality(NonGeoDataset):
         axes = axes.ravel()
 
         # For each axis, feature...
-        for ax, feature in zip(axes, features):
+        for ax, feature in zip(axes, selected_features):
             if show_titles:
                 ax.set_title(feature)
 
             # Input data
             if feature in self.input_data:
                 idx = self.input_data.columns.get_loc(feature)
-                data = sample['input'][:, idx]
+                data = sample['input'][:, idx]  # ty: ignore[invalid-argument-type]
                 ax.plot(input_steps, data, label='Input', marker='o')
 
             # Target data
             if feature in self.target_data:
                 idx = self.target_data.columns.get_loc(feature)
-                data = sample['target'][:, idx]
+                data = sample['target'][:, idx]  # ty: ignore[invalid-argument-type]
                 ax.plot(target_steps, data, label='Target', marker='x')
 
                 # Predicted data
                 if 'prediction' in sample:
-                    data = sample['prediction'][:, idx]
+                    data = sample['prediction'][:, idx]  # ty: ignore[invalid-argument-type]
                     ax.plot(target_steps, data, label='Prediction', marker='^')
 
             ax.legend()
