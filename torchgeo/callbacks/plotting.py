@@ -44,4 +44,6 @@ class TensorBoardCallback(Callback):
         sample = unbind_samples(outputs)[0]
         sample = {k: v.to(device='cpu') for k, v in sample.items()}
         fig = dm.plot(sample)
-        trainer.logger.experiment.add_figure(f'image/{batch_idx}', fig)
+        trainer.logger.experiment.add_figure(
+            f'image/{batch_idx}', fig, global_step=trainer.global_step
+        )
