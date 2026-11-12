@@ -11,8 +11,8 @@ import rasterio
 from rasterio import Affine
 from rasterio.crs import CRS
 from rasterio.features import rasterize
+from shapely import transform
 from shapely.geometry import Polygon
-from shapely.ops import transform
 
 SIZE = 128
 
@@ -153,7 +153,7 @@ filenames: FILENAME_HIERARCHY = {
 # Leave placeholder for coords to be filled with actual valid footprint
 xml_template = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <n1:Level-1C_User_Product
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://psd-14.sentinel2.eo.esa.int/PSD/User_Product_Level-1C.xsd">
     <n1:General_Info>
         <Product_Info>
@@ -204,7 +204,7 @@ def create_metadata_file(raster_path: str, nodata: float | None) -> None:
     project = pyproj.Transformer.from_crs(
         source_crs, CRS.from_epsg(4326), always_xy=True
     ).transform
-    footprint_wgs84 = transform(project, valid_footprint)
+    footprint_wgs84 = transform(valid_footprint, project)
 
     coords = ' '.join(f'{lat} {lon}' for lon, lat in footprint_wgs84.exterior.coords)
     xml_content = xml_template.format(coords=coords)
