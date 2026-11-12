@@ -49,17 +49,22 @@ class IOBenchDataModule(GeoDataModule):
         Args:
             stage: Either 'fit', 'validate', 'test', or 'predict'.
         """
-        self.dataset = IOBench(**self.kwargs)
+        self.train_dataset = IOBench(**self.kwargs)
+        self.val_dataset = IOBench(**self.kwargs)
+        self.test_dataset = IOBench(**self.kwargs)
 
         if stage in ['fit']:
             self.train_sampler = RandomPatchSampler(
-                self.dataset, size=self.patch_size, length=self.length
+                self.train_dataset,
+                size=self.patch_size,
+                length=self.length,
+                generator=0,
             )
         if stage in ['fit', 'validate']:
             self.val_sampler = GriddedPatchSampler(
-                self.dataset, size=self.patch_size, stride=self.patch_size
+                self.val_dataset, size=self.patch_size, stride=self.patch_size
             )
         if stage in ['test']:
             self.test_sampler = GriddedPatchSampler(
-                self.dataset, size=self.patch_size, stride=self.patch_size
+                self.test_dataset, size=self.patch_size, stride=self.patch_size
             )
