@@ -204,7 +204,7 @@ def create_metadata_file(raster_path: str, nodata: float | None) -> None:
     project = pyproj.Transformer.from_crs(
         source_crs, CRS.from_epsg(4326), always_xy=True
     ).transform
-    footprint_wgs84 = transform(valid_footprint, project)
+    footprint_wgs84 = transform(valid_footprint, project, interleaved=False)
 
     coords = ' '.join(f'{lat} {lon}' for lon, lat in footprint_wgs84.exterior.coords)
     xml_content = xml_template.format(coords=coords)

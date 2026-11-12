@@ -358,7 +358,7 @@ class EnviroAtlas(GeoDataset):
 
                     if query_geom_transformed is None:
                         query_box_transformed = shapely.transform(
-                            query_box, self.p_transformers[dst_crs]
+                            query_box, self.p_transformers[dst_crs], interleaved=False
                         ).envelope
                         query_geom_transformed = shapely.geometry.mapping(
                             query_box_transformed
