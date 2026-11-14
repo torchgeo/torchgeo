@@ -145,7 +145,7 @@ class BRIGHTDFC2025(NonGeoDataset):
 
         if 'target' in idx_paths and self.split != 'test':
             target = self._load_image(idx_paths['target']).long()
-            sample['mask'] = target
+            sample['mask'] = target.squeeze(0)
 
         if self.transforms is not None:
             sample = self.transforms(sample)
@@ -302,7 +302,7 @@ class BRIGHTDFC2025(NonGeoDataset):
 
         kwargs = {'cmap': cmap, 'vmin': 0, 'vmax': 3, 'interpolation': 'none'}
         if showing_mask:
-            axs[2].imshow(sample['mask'][0], **kwargs)
+            axs[2].imshow(sample['mask'], **kwargs)
             axs[2].axis('off')
             unique_classes = np.unique(sample['mask'].numpy())
             handles = [
@@ -317,10 +317,10 @@ class BRIGHTDFC2025(NonGeoDataset):
             ]
             axs[2].legend(handles=handles, loc='upper right', bbox_to_anchor=(1.4, 1))
             if showing_prediction:
-                axs[3].imshow(sample['prediction'][0], **kwargs)
+                axs[3].imshow(sample['prediction'], **kwargs)
                 axs[3].axis('off')
         elif showing_prediction:
-            axs[2].imshow(sample['prediction'][0], **kwargs)
+            axs[2].imshow(sample['prediction'], **kwargs)
             axs[2].axis('off')
 
         if show_titles:

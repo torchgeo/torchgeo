@@ -10,7 +10,7 @@ from typing import Literal
 import kornia.augmentation as K
 import matplotlib.pyplot as plt
 import segmentation_models_pytorch as smp
-from einops import rearrange
+from einops import rearrange, repeat
 from matplotlib.figure import Figure
 from torch import Tensor
 from torchvision.models._api import WeightsEnum
@@ -228,6 +228,7 @@ class ChangeDetection(ClassificationMixin, BaseTask):
         y_hat = self(x)
 
         if self.hparams['loss'] == 'bce':
+            y_hat = rearrange(y_hat, 'b () h w -> b h w')
             y = y.float()
 
         # Compute the loss
@@ -253,12 +254,15 @@ class ChangeDetection(ClassificationMixin, BaseTask):
                 data_keys=None,
                 keepdim=True,
             )
+            # VideoSequential only supports BTCHW images and BTHW masks
+            batch['mask'] = repeat(batch['mask'], 'b h w -> b t h w', t=2)
             batch = aug(batch)
+            batch['mask'] = batch['mask'][:, 0]  # b t h w -> b h w
             match self.hparams['task']:
                 case 'binary' | 'multilabel':
                     batch['prediction'] = (y_hat.sigmoid() >= 0.5).long()
                 case 'multiclass':
-                    batch['prediction'] = y_hat.argmax(dim=1, keepdim=True)
+                    batch['prediction'] = y_hat.argmax(dim=1)
 
             for key in ['image', 'mask', 'prediction']:
                 batch[key] = batch[key].cpu()
