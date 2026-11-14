@@ -53,7 +53,7 @@ class FCN(Module):
             num_filters, classes, kernel_size=1, stride=1, padding=0
         )
 
-    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[incompatible-mutable-override]
         """Forward pass of the model."""
         x = self.backbone(x)
         x = self.last(x)

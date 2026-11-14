@@ -80,7 +80,7 @@ class BasicBlock(nn.Module):
                 nn.BatchNorm2d(planes),
             )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[incompatible-mutable-override]
         """Forward pass."""
         out = F.relu(self.bn1(self.conv1(x)))
         out = F.relu(self.bn2(self.conv2(out)))
@@ -136,7 +136,7 @@ class TileNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[incompatible-mutable-override]
         """Compute TileNet embeddings.
 
         Args:

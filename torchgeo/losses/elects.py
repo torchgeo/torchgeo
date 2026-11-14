@@ -54,7 +54,7 @@ class EarlyRewardLoss(Module):
         self.epsilon = epsilon
         self.nll_loss = NLLLoss(weight=weight, reduction='none')
 
-    def forward(  # ty: ignore[invalid-mutable-override]
+    def forward(  # ty: ignore[incompatible-mutable-override]
         self,
         log_probs: Tensor,
         probability_stopping: Tensor,

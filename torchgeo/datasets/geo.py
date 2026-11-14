@@ -1417,7 +1417,7 @@ class NonGeoClassificationDataset(NonGeoDataset, ImageFolder):
         # Avoid conflict between ImageFolder.transforms and our transforms
         self.tg_transforms = transforms
 
-    def __getitem__(self, index: int) -> Sample:  # ty: ignore[invalid-method-override]
+    def __getitem__(self, index: int) -> Sample:  # ty: ignore[incompatible-method-override]
         """Return an index within the dataset.
 
         Args:
