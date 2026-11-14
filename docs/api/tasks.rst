@@ -55,24 +55,40 @@ Supervised learning tasks have both inputs and labeled outputs.
      - :ref:`SpatioTemporalPixelwiseRegression`
 
 
+.. _ssl-tasks:
+
 Self-Supervised Learning
 ------------------------
 
 Self-supervised learning (SSL) tasks have inputs and create their own labeled outputs.
+
+The tasks below subclass :class:`~torchgeo.tasks.BaseTask`. Each task has a ``model`` argument that selects a `timm <https://huggingface.co/docs/timm/reference/models>`__ encoder, subject to the restrictions noted below, and ``in_channels`` sets the number of input bands for multispectral imagery.
 
 .. list-table:: Self-Supervised Learning Tasks
    :header-rows: 1
 
    * - Input
      - Task
+     - Approach
+     - Notes
    * - :math:`\mathbb{R}^{C \times H \times W}` or :math:`\mathbb{R}^{T \times C \times H \times W}`
      - :ref:`BYOL`
+     - Predicts the target network's projection of one view from the online network's projection of another, without negative examples.
+     - Uses a fixed 224x224 input resolution internally and does not expose ``size`` or augmentation arguments.
    * - :math:`\mathbb{R}^{C \times H \times W}`
      - :ref:`MAE`
+     - Reconstructs masked image patches.
+     - Supports vision transformers only, since it operates on patch tokens.
    * - :math:`\mathbb{R}^{C \times H \times W}` or :math:`\mathbb{R}^{T \times C \times H \times W}`
      - :ref:`MoCo`
+     - Uses a momentum-updated target encoder. Versions 1 and 2 store negative examples in a queue.
+     - ``version`` selects MoCo v1, v2, or v3. v3 drops the queue and uses a predictor head.
    * - :math:`\mathbb{R}^{C \times H \times W}` or :math:`\mathbb{R}^{T \times C \times H \times W}`
      - :ref:`SimCLR`
+     - Uses NT-Xent to bring representations of two augmented views of the same image closer together and separate those of different images.
+     - ``version`` selects SimCLR v1 or v2. Large batches provide more negative examples.
+
+See the :doc:`SSL benchmark </user/ssl_benchmark>` for training configurations and kNN evaluation results.
 
 Non-Learning Tasks
 ------------------

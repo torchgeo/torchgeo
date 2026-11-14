@@ -213,6 +213,23 @@ The following checklist lists all files that need to be modified to add new mode
 * ``docs/api/models.rst``: if bar.csv is a new sensor
 
 
+.. _contributing-ssl:
+
+Self-Supervised Learning Tasks
+------------------------------
+
+When adding an SSL task, include:
+
+#. ``torchgeo/tasks/foo.py``, subclassing :class:`~torchgeo.tasks.BaseTask`.
+#. An entry in ``torchgeo/tasks/__init__.py``.
+#. Tests in ``tests/tasks/test_foo.py``.
+#. An API documentation entry in ``docs/api/tasks.rst``.
+
+Evaluate the task using the :doc:`SSL benchmark <ssl_benchmark>` settings and the :doc:`evaluation tutorial </tutorials/ssl_knn_eval>`, trying at least three or four learning rates on the EuroSAT validation split. The current MoCo v3 and SimCLR defaults are scaled for a batch size of 4096: ``lr=9.6`` is ``0.6 x 4096 / 256`` for MoCo v3, and ``lr=4.8`` is ``0.3 x 4096 / 256`` for SimCLR.
+
+Select the learning rate using validation accuracy, then evaluate the selected model once on the test split. Include the configuration, kNN accuracy, and checks for collapse in the pull request so reviewers can compare the result with the baselines. If accuracy is below the image-statistics baseline, investigate the training and evaluation setup before drawing conclusions about the task.
+
+
 I/O Benchmarking
 ----------------
 
