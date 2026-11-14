@@ -5,7 +5,7 @@
 
 import os
 from collections.abc import Callable
-from typing import ClassVar, Literal, TypedDict, cast
+from typing import ClassVar, Literal, TypedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -249,8 +249,7 @@ class QuakeSet(NonGeoDataset):
             a matplotlib Figure with the rendered sample
         """
         image = sample['image']
-        label = cast(int, sample['label'].item())
-        label_class = self.classes[label]
+        label = sample['label'].item()
 
         # Create false color image for image1
         vv = quantile_normalization(image[0, 0]) + 1e-16
@@ -263,9 +262,6 @@ class QuakeSet(NonGeoDataset):
         fci2 = torch.stack([vv, vh, vv / vh], dim=-1).clamp(0, 1)
 
         showing_predictions = 'prediction' in sample
-        if showing_predictions:
-            prediction = cast(int, sample['prediction'].item())
-            prediction_class = self.classes[prediction]
 
         ncols = 2
         fig, axs = plt.subplots(
@@ -280,12 +276,18 @@ class QuakeSet(NonGeoDataset):
         axs[1].set_title('Image Post')
 
         if show_titles:
-            title = f'Label: {label_class}'
-            if 'magnitude' in sample:
-                magnitude = sample['magnitude'].item()
-                title += f' | Magnitude: {magnitude:.2f}'
+            if self.task == 'classification':
+                title = f'Label: {self.classes[int(label)]}'
+            else:
+                title = f'Magnitude: {label:.2f}'
             if showing_predictions:
-                title += f'\nPrediction: {prediction_class}'
+                prediction = sample['prediction'].item()
+                prediction = (
+                    self.classes[int(prediction)]
+                    if self.task == 'classification'
+                    else round(prediction, 2)
+                )
+                title += f'\nPrediction: {prediction}'
             fig.supxlabel(title, y=0.22)
 
         if suptitle is not None:

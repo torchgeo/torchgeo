@@ -35,7 +35,7 @@ class ClassificationTestModel(Module):
         self.fc = nn.Linear(1, num_classes) if num_classes else nn.Identity()
         self.num_features = 1
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         x = self.conv1(x)
         x = self.pool(x)
         x = torch.flatten(x, 1)

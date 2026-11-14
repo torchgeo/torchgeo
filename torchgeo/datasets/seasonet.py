@@ -472,6 +472,7 @@ class SeasoNet(NonGeoDataset):
 
             if show_predictions:
                 lgd = np.union1d(lgd, np.unique(prediction))
+            assert isinstance(self.cmap, ListedColormap)
             patches = [
                 mpatches.Patch(color=self.cmap(i), label=self.classes[i]) for i in lgd
             ]
