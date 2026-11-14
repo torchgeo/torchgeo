@@ -1693,7 +1693,7 @@ wheels = [
 
 [[package]]
 name = "lightly"
-version = "1.6.0"
+version = "1.6.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "hydra-core" },
@@ -1703,9 +1703,9 @@ dependencies = [
     { name = "torchvision" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bd/d0/a2180d2363d92eabe61dfeacdbb89db3ea047c554025bc07e0f0a6d092cb/lightly-1.6.0.tar.gz", hash = "sha256:05cfb780837989a92cc1255aa0dfef7413881cb99b9e1d2a21b1c2f48231a7e9", size = 611242, upload-time = "2026-10-26T19:33:22.456Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2d/a2/20d224392117104b56a16bab33bc565bed0e0b1284bdadabcddd0576e03f/lightly-1.6.1.tar.gz", hash = "sha256:c60d60bd8bd7383ad3079804fd9e0454d1f8b6c59495fd1ee260878d2265a28c", size = 615954, upload-time = "2026-11-10T19:59:45.548Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3c/e2/41f8ed4e692fccdf031a1252fe9e244b71836a9ff6625e8b8e06cd248787/lightly-1.6.0-py3-none-any.whl", hash = "sha256:f1564244cec0a4d2a5206f818e9de90d5869becbcfcb4a8ef0d78ba61c5b9071", size = 284465, upload-time = "2026-10-26T19:33:21.172Z" },
+    { url = "https://files.pythonhosted.org/packages/47/2d/d7edc1bd71c3e20e43c429a2969e219f852c0b5314190f3430aaee130242/lightly-1.6.1-py3-none-any.whl", hash = "sha256:e21e0f196c7178fa8083de1d6ff8c1abd9d0d8f262847ad7c1984df534b0aec2", size = 285116, upload-time = "2026-11-10T19:59:44.029Z" },
 ]
 
 [[package]]
