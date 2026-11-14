@@ -6,17 +6,12 @@
 import os
 from typing import Literal
 
-import kornia.augmentation as K
-import matplotlib.pyplot as plt
 import segmentation_models_pytorch as smp
 import timm
 import torch
-from matplotlib.figure import Figure
 from torch import Tensor
 from torchvision.models._api import WeightsEnum
 
-from ..datamodules import BaseDataModule
-from ..datasets import RGBBandsMissingError, unbind_samples
 from ..datasets.utils import Sample
 from ..models import FCN, get_weight
 from . import utils
@@ -146,13 +141,16 @@ class Regression(RegressionMixin, BaseTask):
 
     def validation_step(
         self, batch: Sample, batch_idx: int, dataloader_idx: int = 0
-    ) -> None:
+    ) -> Sample:
         """Compute the validation loss and additional metrics.
 
         Args:
             batch: The output of your DataLoader.
             batch_idx: Integer displaying index of this batch.
             dataloader_idx: Index of the current dataloader.
+
+        Returns:
+            Batch with example predictions.
         """
         x = batch['image']
         batch_size = x.shape[0]
@@ -165,40 +163,11 @@ class Regression(RegressionMixin, BaseTask):
         self.log('val_loss', loss, batch_size=batch_size)
         self.val_metrics(y_hat, y)
 
-        if (
-            batch_idx < 10
-            and hasattr(self.trainer, 'datamodule')
-            and isinstance(self.trainer.datamodule, BaseDataModule)
-            and self.logger
-            and hasattr(self.logger, 'experiment')
-            and hasattr(self.logger.experiment, 'add_figure')
-        ):
-            datamodule = self.trainer.datamodule
-            aug = K.AugmentationSequential(
-                K.Denormalize(datamodule.mean, datamodule.std),
-                data_keys=None,
-                keepdim=True,
-            )
-            batch = aug(batch)
-            if self.target_key == 'mask':
-                y_hat = y_hat.squeeze(dim=1)
-            batch['prediction'] = y_hat
-            for key in ['image', self.target_key, 'prediction']:
-                batch[key] = batch[key].cpu()
-            sample = unbind_samples(batch)[0]
+        if self.target_key == 'mask':
+            y_hat = y_hat.squeeze(dim=1)
+        batch['prediction'] = y_hat
 
-            fig: Figure | None = None
-            try:
-                fig = datamodule.plot(sample)
-            except RGBBandsMissingError:
-                pass
-
-            if fig:
-                summary_writer = self.logger.experiment
-                summary_writer.add_figure(
-                    f'image/{batch_idx}', fig, global_step=self.global_step
-                )  # ty: ignore[call-non-callable]
-                plt.close()
+        return batch
 
     def test_step(self, batch: Sample, batch_idx: int, dataloader_idx: int = 0) -> None:
         """Compute the test loss and additional metrics.
