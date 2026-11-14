@@ -331,21 +331,18 @@ class OpenStreetMap(VectorDataset):
                 if lat is not None and lon is not None:
                     return shapely.Point(lon, lat)
 
-            elif element_type in ('way', 'relation'):
-                if 'geometry' in element:
-                    coords = [
-                        (node['lon'], node['lat']) for node in element['geometry']
-                    ]
-                    if len(coords) >= 2:
-                        tags = element.get('tags', {})
-                        is_area = tags.get('area') == 'yes' or (
-                            len(coords) >= 4 and coords[0] == coords[-1]
-                        )
-                        return (
-                            shapely.Polygon(coords)
-                            if is_area
-                            else shapely.LineString(coords)
-                        )
+            elif element_type in ('way', 'relation') and 'geometry' in element:
+                coords = [(node['lon'], node['lat']) for node in element['geometry']]
+                if len(coords) >= 2:
+                    tags = element.get('tags', {})
+                    is_area = tags.get('area') == 'yes' or (
+                        len(coords) >= 4 and coords[0] == coords[-1]
+                    )
+                    return (
+                        shapely.Polygon(coords)
+                        if is_area
+                        else shapely.LineString(coords)
+                    )
 
         return None
 
