@@ -129,9 +129,12 @@ class MoCo(BaseTask):
     * v3: https://arxiv.org/abs/2104.02057
 
     .. versionadded:: 0.5
+
+    .. versionchanged:: 0.11
+       The two augmentation pipelines are exposed through *augmentations*.
     """
 
-    ignore = ('weights', 'augmentation1', 'augmentation2')
+    ignore = ('weights', 'augmentations')
     monitor = 'train_loss'
 
     def __init__(
@@ -153,8 +156,7 @@ class MoCo(BaseTask):
         gather_distributed: bool = False,
         size: int = 224,
         grayscale_weights: Tensor | None = None,
-        augmentation1: nn.Module | None = None,
-        augmentation2: nn.Module | None = None,
+        augmentations: tuple[nn.Module | None, nn.Module | None] | None = None,
     ) -> None:
         """Initialize a new MoCo instance.
 
@@ -187,10 +189,8 @@ class MoCo(BaseTask):
             grayscale_weights: Weight vector for grayscale computation, see
                 :class:`~torchgeo.transforms.RandomGrayscale`. Only used when
                 ``augmentations=None``. Defaults to average of all bands.
-            augmentation1: Data augmentation for 1st branch.
-                Defaults to MoCo augmentation.
-            augmentation2: Data augmentation for 2nd branch.
-                Defaults to MoCo augmentation.
+            augmentations: Data augmentations for the first and second branches. A
+                ``None`` entry uses the default augmentation for that branch.
 
         Raises:
             AssertionError: If an invalid version of MoCo is requested.
@@ -220,8 +220,11 @@ class MoCo(BaseTask):
         if grayscale_weights is None:
             grayscale_weights = torch.ones(in_channels)
         aug1, aug2 = moco_augmentations(version, size, grayscale_weights)
-        self.augmentation1 = aug1 if augmentation1 is None else augmentation1
-        self.augmentation2 = aug2 if augmentation2 is None else augmentation2
+        if augmentations is not None:
+            custom_aug1, custom_aug2 = augmentations
+            aug1 = aug1 if custom_aug1 is None else custom_aug1
+            aug2 = aug2 if custom_aug2 is None else custom_aug2
+        self.augmentations = nn.ModuleList([aug1, aug2])
 
     def configure_models(self) -> None:
         """Initialize the model."""
@@ -386,8 +389,8 @@ class MoCo(BaseTask):
             x2 = x[:, in_channels:]
 
         with torch.no_grad():
-            x1 = self.augmentation1(x1)
-            x2 = self.augmentation2(x2)
+            x1 = self.augmentations[0](x1)
+            x2 = self.augmentations[1](x2)
 
         m = self.hparams['moco_momentum']
         if self.hparams['version'] == 1:

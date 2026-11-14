@@ -20,7 +20,7 @@ from torchgeo.tasks.byol import BYOLModule, SimCLRAugmentation
 
 
 class TestBYOLModule:
-    def test_custom_augment_fn(self) -> None:
+    def test_custom_augmentations(self) -> None:
         model = resnet18()
         layer = model.conv1
         new_layer = nn.Conv2d(
@@ -32,11 +32,17 @@ class TestBYOLModule:
             bias=layer.bias,
         ).requires_grad_()
         model.conv1 = new_layer
-        augment_fn = SimCLRAugmentation((2, 2))
-        BYOLModule(model, augment_fn=augment_fn)
+        augmentations = SimCLRAugmentation((2, 2))
+        BYOLModule(model, augmentations=augmentations)
 
 
 class TestBYOL:
+    def test_custom_augmentations(self) -> None:
+        augmentations = torch.nn.Identity()
+        task = BYOL(model='resnet18', augmentations=augmentations)
+        assert task.augmentations is augmentations
+        assert task.model.augmentations is augmentations
+
     @pytest.mark.parametrize(
         'name',
         [

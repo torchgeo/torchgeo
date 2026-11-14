@@ -25,6 +25,11 @@ def create_model(*args: Any, **kwargs: Any) -> Module:
 
 
 class TestMAE:
+    def test_custom_augmentations(self) -> None:
+        augmentations = torch.nn.Identity()
+        task = MAE(augmentations=augmentations)
+        assert task.augmentations is augmentations
+
     @pytest.mark.parametrize('name', ['ssl4eo_s12_mae_1', 'ssl4eo_s12_mae_2'])
     def test_trainer(
         self, monkeypatch: MonkeyPatch, name: str, fast_dev_run: bool

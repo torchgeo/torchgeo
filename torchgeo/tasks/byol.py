@@ -224,7 +224,7 @@ class BYOLModule(nn.Module):
         in_channels: int = 4,
         projection_size: int = 256,
         hidden_size: int = 4096,
-        augment_fn: nn.Module | None = None,
+        augmentations: nn.Module | None = None,
         beta: float = 0.99,
         **kwargs: Any,
     ) -> None:
@@ -238,18 +238,18 @@ class BYOLModule(nn.Module):
             in_channels: number of input channels to the model
             projection_size: size of first layer of the projection MLP
             hidden_size: size of the hidden layer of the projection MLP
-            augment_fn: an instance of a module that performs data augmentation
+            augmentations: an instance of a module that performs data augmentation
             beta: the speed at which the target backbone is updated using the main
                 backbone
             **kwargs: Additional keyword arguments passed to :class:`nn.Module`
         """
         super().__init__()
 
-        self.augment: nn.Module
-        if augment_fn is None:
-            self.augment = SimCLRAugmentation(image_size)
+        self.augmentations: nn.Module
+        if augmentations is None:
+            self.augmentations = SimCLRAugmentation(image_size)
         else:
-            self.augment = augment_fn
+            self.augmentations = augmentations
 
         self.beta = beta
         self.in_channels = in_channels
@@ -308,6 +308,7 @@ class BYOL(BaseTask):
     * https://arxiv.org/abs/2006.07733
     """
 
+    ignore = ('weights', 'augmentations')
     monitor = 'train_loss'
 
     def __init__(
@@ -317,6 +318,7 @@ class BYOL(BaseTask):
         in_channels: int = 3,
         lr: float = 1e-3,
         patience: int = 10,
+        augmentations: nn.Module | None = None,
     ) -> None:
         """Initialize a new BYOL instance.
 
@@ -329,6 +331,7 @@ class BYOL(BaseTask):
             in_channels: Number of input channels to model.
             lr: Learning rate for optimizer.
             patience: Patience for learning rate scheduler.
+            augmentations: Data augmentation pipeline. Defaults to SimCLR augmentation.
 
         .. versionchanged:: 0.4
            *backbone_name* was renamed to *backbone*. Changed backbone support from
@@ -340,6 +343,13 @@ class BYOL(BaseTask):
         """
         self.weights = weights
         super().__init__()
+        if augmentations is not None:
+            self.model.augmentations = augmentations
+
+    @property
+    def augmentations(self) -> nn.Module:
+        """Data augmentation pipeline."""
+        return self.model.augmentations
 
     def configure_models(self) -> None:
         """Initialize the model."""
@@ -402,8 +412,8 @@ class BYOL(BaseTask):
             x2 = x[:, in_channels:]
 
         with torch.no_grad():
-            x1 = self.model.augment(x1)
-            x2 = self.model.augment(x2)
+            x1 = self.model.augmentations(x1)
+            x2 = self.model.augmentations(x2)
 
         pred1 = self(x1)
         pred2 = self(x2)

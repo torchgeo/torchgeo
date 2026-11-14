@@ -48,16 +48,19 @@ class MAE(BaseTask):
     * https://arxiv.org/abs/2111.06377
 
     .. versionadded:: 0.10
+
+    .. versionchanged:: 0.11
+       The *transform* parameter was renamed to *augmentations*.
     """
 
-    ignore = ('transform', 'weights')
+    ignore = ('augmentations', 'weights')
 
     def __init__(
         self,
         model: str = 'vit_base_patch32_224',
         weights: WeightsEnum | str | bool | None = None,
         in_channels: int = 3,
-        transform: nn.Module | None = None,
+        augmentations: nn.Module | None = None,
         decoder_dim: int = 512,
         lr: float = 1.5e-4,
         decoder_num_heads: int = 8,
@@ -78,7 +81,7 @@ class MAE(BaseTask):
                 default pretrained weights, or None for random initialization.
             in_channels: Number of input channels in the images. Must match the in_chans
                 argument of the ViT model.
-            transform: Optional transform to apply to the input images. If None, a
+            augmentations: Optional augmentations to apply to the input images. If None, a
                 default MAE augmentation will be used.
             decoder_dim: The embedding dimension of the MAE decoder. Typically 512 is a
                 good choice for ViT-Base encoders.
@@ -100,7 +103,9 @@ class MAE(BaseTask):
         """
         self.weights = weights
         super().__init__()
-        self.transform = transform if transform is not None else mae_augmentation(size)
+        self.augmentations = (
+            augmentations if augmentations is not None else mae_augmentation(size)
+        )
         self.warmup_epochs = warmup_epochs
 
     def configure_losses(self) -> None:
@@ -231,7 +236,7 @@ class MAE(BaseTask):
             The loss tensor.
         """
         with torch.no_grad():
-            images = self.transform(batch['image'].float())
+            images = self.augmentations(batch['image'].float())
         batch_size = images.shape[0]
         idx_keep, idx_mask = utils.random_token_mask(
             size=(batch_size, self.sequence_length),
