@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 import os
+from itertools import product
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -17,23 +18,30 @@ pytest.importorskip('h5py', minversion='3.10')
 
 
 class TestQuakeSet:
-    @pytest.fixture(params=['train', 'val', 'test'])
+    @pytest.fixture(
+        params=[
+            pytest.param(st, id=f'{st[0]}_{st[1]}')
+            for st in product(
+                ['train', 'val', 'test'], ['classification', 'regression']
+            )
+        ]
+    )
     def dataset(
         self, monkeypatch: MonkeyPatch, tmp_path: Path, request: SubRequest
     ) -> QuakeSet:
         url = os.path.join('tests', 'data', 'quakeset', 'earthquakes.h5')
         monkeypatch.setattr(QuakeSet, 'url', url)
         root = tmp_path
-        split = request.param
+        split, task = request.param
         transforms = nn.Identity()
-        return QuakeSet(root, split, transforms=transforms, download=True)
+        return QuakeSet(root, split, task=task, transforms=transforms, download=True)
 
     def test_getitem(self, dataset: QuakeSet) -> None:
         x = dataset[0]
         assert isinstance(x, dict)
         assert isinstance(x['image'], torch.Tensor)
         assert isinstance(x['label'], torch.Tensor)
-        assert x['image'].shape[0] == 4
+        assert x['image'].shape[:2] == (2, 2)
 
     def test_len(self, dataset: QuakeSet) -> None:
         assert len(dataset) == 8
