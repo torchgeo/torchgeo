@@ -172,7 +172,7 @@ class RandomBatchGeoSampler(BatchGeoSampler):
         if torch.sum(self.areas) == 0:
             self.areas += 1
 
-    def __iter__(self) -> Iterator[list[tuple[slice, slice, slice]]]:  # ty: ignore[invalid-method-override]
+    def __iter__(self) -> Iterator[list[tuple[slice, slice, slice]]]:  # ty: ignore[incompatible-method-override]
         """Return the indices of a dataset.
 
         Yields:

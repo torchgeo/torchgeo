@@ -64,7 +64,7 @@ class ChangeMixin(Module):
 
         self.convs = nn.modules.Sequential(*layers)
 
-    def forward(self, bi_feature: Tensor) -> list[Tensor]:  # ty: ignore[invalid-mutable-override]
+    def forward(self, bi_feature: Tensor) -> list[Tensor]:  # ty: ignore[incompatible-mutable-override]
         """Forward pass of the model.
 
         Args:
@@ -126,7 +126,7 @@ class ChangeStar(Module):
         self.changemixin = changemixin
         self.inference_mode = inference_mode
 
-    def forward(self, x: Tensor) -> dict[str, Tensor]:  # ty: ignore[invalid-mutable-override]
+    def forward(self, x: Tensor) -> dict[str, Tensor]:  # ty: ignore[incompatible-mutable-override]
         """Forward pass of the model.
 
         Args:
