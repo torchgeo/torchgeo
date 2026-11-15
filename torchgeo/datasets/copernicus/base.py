@@ -272,7 +272,7 @@ class CopernicusBenchBase(NonGeoDataset, ABC):
         # Mask
         if 'mask' in sample:
             kwargs: dict[str, Any] = {'cmap': self.cmap}
-            if hasattr(self, 'classes'):
+            if self.classes:
                 # Semantic segmentation
                 kwargs |= {
                     'vmin': 0,
