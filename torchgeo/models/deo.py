@@ -96,7 +96,7 @@ class DEO(nn.Module):
 
         return features
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[incompatible-mutable-override]
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Get last layer swin features.
 
         Args:

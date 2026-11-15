@@ -786,7 +786,7 @@ def test_get_valid_footprint_all_nodata_warns() -> None:
             transform=from_origin(0, 40, 10, 10),
             nodata=0,
         ) as dataset:
-            dataset.write(np.zeros((1, 4, 4), dtype=np.uint8))
+            dataset.write(np.zeros((1, 4, 4), dtype=np.uint8))  # ty: ignore[missing-union-attribute]
         with rasterio.open(memfile.name) as dataset:
             with pytest.warns(UserWarning, match='All pixels are nodata'):
                 footprint = get_valid_footprint_from_datasource(dataset)

@@ -59,4 +59,4 @@ class TestSpatioTemporalPixelwiseRegression:
         predictions = trainer.predict(model=model, datamodule=datamodule)
 
         assert predictions is not None
-        assert predictions[0].shape == (1, 1, 282, 282)
+        assert predictions[0].shape == (1, 1, 282, 282)  # ty: ignore[missing-union-attribute]

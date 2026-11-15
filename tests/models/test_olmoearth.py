@@ -51,14 +51,14 @@ def test_olmoearth_meta(
 ) -> None:
     """The weights metadata matches the architecture the library builds."""
     meta = weights.meta
-    encoder = builder(model_version=meta['model_version']).model.encoder
-    assert encoder.embedding_size == meta['embed_dim']
-    blocks = encoder.blocks
+    encoder = builder(model_version=meta['model_version']).model.encoder  # ty: ignore[missing-union-attribute]
+    assert encoder.embedding_size == meta['embed_dim']  # ty: ignore[missing-union-attribute]
+    blocks = encoder.blocks  # ty: ignore[missing-union-attribute]
     assert isinstance(blocks, nn.ModuleList)
     assert len(blocks) == meta['depth']
-    assert blocks[0].attn.num_heads == meta['num_heads']
-    assert (encoder.min_patch_size, encoder.max_patch_size) == meta['patch_size']
-    assert encoder.max_sequence_length == meta['max_sequence_length']
+    assert blocks[0].attn.num_heads == meta['num_heads']  # ty: ignore[missing-union-attribute]
+    assert (encoder.min_patch_size, encoder.max_patch_size) == meta['patch_size']  # ty: ignore[missing-union-attribute]
+    assert encoder.max_sequence_length == meta['max_sequence_length']  # ty: ignore[missing-union-attribute]
     for modality in meta['modalities']:
         spec = constants.Modality.get(modality)
         assert meta['bands'][modality] == list(spec.band_order)
@@ -80,7 +80,7 @@ class TestOlmoEarthNano:
         weights = request.param
         path = tmp_path / f'{weights}.pth'
         model = olmoearth_nano(model_version=weights.meta['model_version'])
-        torch.save(model.model.state_dict(), path)
+        torch.save(model.model.state_dict(), path)  # ty: ignore[missing-union-attribute]
         monkeypatch.setattr(weights.value, 'url', str(path))
         return weights
 
@@ -111,7 +111,7 @@ class TestOlmoEarthTiny:
         weights = request.param
         path = tmp_path / f'{weights}.pth'
         model = olmoearth_tiny(model_version=weights.meta['model_version'])
-        torch.save(model.model.state_dict(), path)
+        torch.save(model.model.state_dict(), path)  # ty: ignore[missing-union-attribute]
         monkeypatch.setattr(weights.value, 'url', str(path))
         return weights
 
@@ -142,7 +142,7 @@ class TestOlmoEarthSmall:
         weights = request.param
         path = tmp_path / f'{weights}.pth'
         model = olmoearth_small(model_version=weights.meta['model_version'])
-        torch.save(model.model.state_dict(), path)
+        torch.save(model.model.state_dict(), path)  # ty: ignore[missing-union-attribute]
         monkeypatch.setattr(weights.value, 'url', str(path))
         return weights
 
@@ -173,7 +173,7 @@ class TestOlmoEarthBase:
         weights = request.param
         path = tmp_path / f'{weights}.pth'
         model = olmoearth_base(model_version=weights.meta['model_version'])
-        torch.save(model.model.state_dict(), path)
+        torch.save(model.model.state_dict(), path)  # ty: ignore[missing-union-attribute]
         monkeypatch.setattr(weights.value, 'url', str(path))
         return weights
 
@@ -188,7 +188,7 @@ class TestOlmoEarthBase:
     ) -> None:
         weights = OlmoEarthBase_Weights.V1_3
         path = tmp_path / 'weights.pth'
-        state_dict = olmoearth_base(model_version='v1.3').model.state_dict()
+        state_dict = olmoearth_base(model_version='v1.3').model.state_dict()  # ty: ignore[missing-union-attribute]
         state_dict['supervision_head.heads.cdl.weight'] = torch.zeros(1)
         state_dict['location_token_distillation_head.weight'] = torch.zeros(1)
         torch.save(state_dict, path)
@@ -217,7 +217,7 @@ class TestOlmoEarthLarge:
         weights = request.param
         path = tmp_path / f'{weights}.pth'
         model = olmoearth_large(model_version=weights.meta['model_version'])
-        torch.save(model.model.state_dict(), path)
+        torch.save(model.model.state_dict(), path)  # ty: ignore[missing-union-attribute]
         monkeypatch.setattr(weights.value, 'url', str(path))
         return weights
 
@@ -247,7 +247,7 @@ class TestOlmoEarthV1:
         weights = OlmoEarthV1_Weights.NANO
         path = tmp_path / 'weights.pth'
         model = olmoearth_v1(model_size='nano')
-        torch.save(model.model.state_dict(), path)
+        torch.save(model.model.state_dict(), path)  # ty: ignore[missing-union-attribute]
         monkeypatch.setattr(weights.value, 'url', str(path))
         return weights
 

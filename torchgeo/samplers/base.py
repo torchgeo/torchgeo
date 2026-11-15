@@ -238,8 +238,8 @@ class TemporalSampler(GeoSampler):
         Returns:
             An animation visualizing the sampling strategy.
         """
-        tmin = self.index.index.left.min()
-        tmax = self.index.index.right.max()
+        tmin = self.index.index.left.min()  # ty: ignore[missing-union-attribute]
+        tmax = self.index.index.right.max()  # ty: ignore[missing-union-attribute]
 
         fig, ax = plt.subplots()
         ax.set_title(self.__class__.__name__)
@@ -353,8 +353,8 @@ class SpatioTemporalSampler(GeoSampler):
         temporal = self.temporal_sampler
 
         xmin, ymin, xmax, ymax = spatial.geometry.bounds
-        tmin = temporal.index.index.left.min().timestamp()  # Timestamp not supported
-        tmax = temporal.index.index.right.max().timestamp()
+        tmin = temporal.index.index.left.min().timestamp()  # ty: ignore[missing-union-attribute]
+        tmax = temporal.index.index.right.max().timestamp()  # ty: ignore[missing-union-attribute]
 
         fig = plt.figure()
         ax = fig.add_subplot(projection='3d')
@@ -368,8 +368,8 @@ class SpatioTemporalSampler(GeoSampler):
             verts = []
             for index, data in temporal.index.iterrows():
                 x, y = data['geometry'].exterior.coords.xy
-                tmin = index.left.timestamp()
-                tmax = index.right.timestamp()
+                tmin = index.left.timestamp()  # ty: ignore[missing-union-attribute]
+                tmax = index.right.timestamp()  # ty: ignore[missing-union-attribute]
                 t = np.array([tmin, tmax])
                 verts.extend(prism(x, y, t))
             poly = Poly3DCollection(verts, color='tab:blue', alpha=0.3)

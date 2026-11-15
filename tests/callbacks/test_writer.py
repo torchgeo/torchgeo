@@ -201,7 +201,7 @@ class TestGeoTIFFWriter:
             writer.write_chunk(data, 0, 0)
 
         with rasterio.open(output) as src:
-            assert src.compression.name == 'deflate'
+            assert src.compression.name == 'deflate'  # ty: ignore[missing-union-attribute]
 
     def test_failed_cog_translation_cleans_up(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch

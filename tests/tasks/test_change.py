@@ -30,7 +30,7 @@ class ChangeDetectionTestModel(Module):
             in_channels=in_channels, out_channels=classes, kernel_size=1, padding=0
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[incompatible-mutable-override]
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv1(x)
         return x
 

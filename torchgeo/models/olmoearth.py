@@ -248,7 +248,7 @@ def _olmoearth(
             for key, value in state_dict.items()
             if not key.startswith(_olmoearth_training_only_prefixes)
         }
-        model.model.load_state_dict(state_dict, strict=True)
+        model.model.load_state_dict(state_dict, strict=True)  # ty: ignore[missing-union-attribute]
 
     return model
 
