@@ -220,7 +220,9 @@ class MAE(BaseTask):
         x_encoded = self.backbone.encode(images=images, idx_keep=idx_keep)
         batch_size = x_encoded.shape[0]
         x_decode = self.decoder_embed(x_encoded)
-        x_masked = utils.new_zeros(batch_size, self.sequence_length, x_decode.shape[-1])
+        x_masked = x_decode.new_zeros(
+            batch_size, self.sequence_length, x_decode.shape[-1]
+        )
         x_masked = utils.set_at_index(x_masked, idx_keep, x_decode.type_as(x_masked))
         # decoder forward pass
         x_decoded = self.decoder(x_masked, idx_mask=idx_mask)
