@@ -10,6 +10,7 @@ from lightning.pytorch.cli import ArgsType, LightningCLI
 import torchgeo
 
 # Allows classes to be referenced using only the class name
+import torchgeo.callbacks
 import torchgeo.datamodules
 import torchgeo.profilers
 import torchgeo.tasks

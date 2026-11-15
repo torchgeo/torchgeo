@@ -8,6 +8,7 @@ from typing import Any, Literal, cast
 
 from torch import Tensor
 
+from ..datasets.utils import Sample
 from ..models import UTAE, Conv3dLSTM, ConvLSTM
 from .base import BaseTask
 from .mixins import ClassificationMixin
@@ -101,7 +102,7 @@ class SpatioTemporalSegmentation(ClassificationMixin, BaseTask):
                 )
                 self.model = UTAE(input_dim=in_channels, out_conv=out_conv, **kwargs)
 
-    def _model_kwargs(self, batch: Any) -> dict[str, Tensor]:
+    def _model_kwargs(self, batch: Sample) -> dict[str, Tensor]:
         """Extract model-specific keyword arguments from a batch.
 
         UTAE accepts ``batch_positions`` of shape ``(B, T)`` for date-aware
@@ -117,7 +118,7 @@ class SpatioTemporalSegmentation(ClassificationMixin, BaseTask):
                     kwargs['batch_positions'] = batch_positions
         return kwargs
 
-    def _shared_step(self, batch: Any, stage: str) -> Tensor:
+    def _shared_step(self, batch: Sample, stage: str) -> tuple[Tensor, Sample]:
         """Compute the loss and metrics for the given stage."""
         x = batch['image']
         y = batch['mask']
@@ -133,26 +134,35 @@ class SpatioTemporalSegmentation(ClassificationMixin, BaseTask):
 
         loss: Tensor = self.criterion(y_hat, y)
         self.log(f'{stage}_loss', loss, batch_size=batch_size)
-        return loss
+
+        match self.hparams['task']:
+            case 'binary' | 'multilabel':
+                batch['prediction'] = (y_hat.sigmoid() >= 0.5).long()
+            case 'multiclass':
+                batch['prediction'] = y_hat.argmax(dim=1)
+
+        return loss, batch
 
     def training_step(
-        self, batch: Any, batch_idx: int, dataloader_idx: int = 0
+        self, batch: Sample, batch_idx: int, dataloader_idx: int = 0
     ) -> Tensor:
         """Compute the training loss and additional metrics."""
-        return self._shared_step(batch, 'train')
+        loss, _ = self._shared_step(batch, 'train')
+        return loss
 
     def validation_step(
-        self, batch: Any, batch_idx: int, dataloader_idx: int = 0
-    ) -> None:
+        self, batch: Sample, batch_idx: int, dataloader_idx: int = 0
+    ) -> Sample:
         """Compute the validation loss and additional metrics."""
-        self._shared_step(batch, 'val')
+        _, batch = self._shared_step(batch, 'val')
+        return batch
 
-    def test_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0) -> None:
+    def test_step(self, batch: Sample, batch_idx: int, dataloader_idx: int = 0) -> None:
         """Compute the test loss and additional metrics."""
         self._shared_step(batch, 'test')
 
     def predict_step(
-        self, batch: Any, batch_idx: int, dataloader_idx: int = 0
+        self, batch: Sample, batch_idx: int, dataloader_idx: int = 0
     ) -> Tensor:
         """Compute the predicted class probabilities."""
         kwargs = self._model_kwargs(batch)

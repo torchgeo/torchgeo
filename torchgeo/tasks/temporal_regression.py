@@ -60,7 +60,9 @@ class TemporalRegression(RegressionMixin, BaseTask):
                 linear = nn.Linear(ltae.n_neurons[-1], out)
                 self.model = nn.Sequential(ltae, linear)
 
-    def _shared_step(self, batch: Sample, batch_idx: int, stage: str) -> Tensor:
+    def _shared_step(
+        self, batch: Sample, batch_idx: int, stage: str
+    ) -> tuple[Tensor, Sample]:
         """Forward pass, loss computation, and metric update for all splits.
 
         Args:
@@ -69,7 +71,7 @@ class TemporalRegression(RegressionMixin, BaseTask):
             stage: One of 'train', 'val', or 'test'.
 
         Returns:
-            Scalar loss tensor.
+            Scalar loss tensor and batch with example predictions.
         """
         x = batch['input']
         y = batch['target']
@@ -93,7 +95,9 @@ class TemporalRegression(RegressionMixin, BaseTask):
         metrics = getattr(self, f'{stage}_metrics')
         metrics(y_hat, y)
 
-        return loss
+        batch['prediction'] = y_hat
+
+        return loss, batch
 
     def training_step(
         self, batch: Sample, batch_idx: int, dataloader_idx: int = 0
@@ -108,19 +112,24 @@ class TemporalRegression(RegressionMixin, BaseTask):
         Returns:
             The loss tensor.
         """
-        return self._shared_step(batch, batch_idx, 'train')
+        loss, _ = self._shared_step(batch, batch_idx, 'train')
+        return loss
 
     def validation_step(
         self, batch: Sample, batch_idx: int, dataloader_idx: int = 0
-    ) -> None:
+    ) -> Sample:
         """Compute the validation loss and additional metrics.
 
         Args:
             batch: The output of the DataLoader.
             batch_idx: Integer displaying index of this batch.
             dataloader_idx: Index of the current dataloader.
+
+        Returns:
+            Batch with example predictions.
         """
-        self._shared_step(batch, batch_idx, 'val')
+        _, batch = self._shared_step(batch, batch_idx, 'val')
+        return batch
 
     def test_step(self, batch: Sample, batch_idx: int, dataloader_idx: int = 0) -> None:
         """Compute the test loss and additional metrics.

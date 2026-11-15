@@ -7,16 +7,11 @@ import os
 from collections.abc import Sequence
 from typing import Literal
 
-import kornia.augmentation as K
-import matplotlib.pyplot as plt
 import segmentation_models_pytorch as smp
 from einops import rearrange
-from matplotlib.figure import Figure
 from torch import Tensor
 from torchvision.models._api import WeightsEnum
 
-from ..datamodules import BaseDataModule
-from ..datasets import RGBBandsMissingError, unbind_samples
 from ..datasets.utils import Sample
 from ..models import BTC, FCN, ChangeViT, FCSiamConc, FCSiamDiff, get_weight
 from . import utils
@@ -203,7 +198,9 @@ class ChangeDetection(ClassificationMixin, BaseTask):
             for param in self.model.decoder.parameters():
                 param.requires_grad = False
 
-    def _shared_step(self, batch: Sample, batch_idx: int, stage: str) -> Tensor:
+    def _shared_step(
+        self, batch: Sample, batch_idx: int, stage: str
+    ) -> tuple[Tensor, Sample]:
         """Compute the loss and additional metrics for the given stage.
 
         Args:
@@ -212,7 +209,7 @@ class ChangeDetection(ClassificationMixin, BaseTask):
             stage: The current stage.
 
         Returns:
-            The loss tensor.
+            The loss tensor and batch with example predictions.
         """
         model: str = self.hparams['model']
         x = batch['image']
@@ -239,45 +236,13 @@ class ChangeDetection(ClassificationMixin, BaseTask):
         if metrics:
             metrics(y_hat, y)
 
-        if stage == 'val' and (
-            batch_idx < 10
-            and hasattr(self.trainer, 'datamodule')
-            and isinstance(self.trainer.datamodule, BaseDataModule)
-            and self.logger
-            and hasattr(self.logger, 'experiment')
-            and hasattr(self.logger.experiment, 'add_figure')
-        ):
-            datamodule = self.trainer.datamodule
-            aug = K.AugmentationSequential(
-                K.VideoSequential(K.Denormalize(datamodule.mean, datamodule.std)),
-                data_keys=None,
-                keepdim=True,
-            )
-            batch = aug(batch)
-            match self.hparams['task']:
-                case 'binary' | 'multilabel':
-                    batch['prediction'] = (y_hat.sigmoid() >= 0.5).long()
-                case 'multiclass':
-                    batch['prediction'] = y_hat.argmax(dim=1, keepdim=True)
+        match self.hparams['task']:
+            case 'binary' | 'multilabel':
+                batch['prediction'] = (y_hat.sigmoid() >= 0.5).long()
+            case 'multiclass':
+                batch['prediction'] = y_hat.argmax(dim=1, keepdim=True)
 
-            for key in ['image', 'mask', 'prediction']:
-                batch[key] = batch[key].cpu()
-            sample = unbind_samples(batch)[0]
-
-            fig: Figure | None = None
-            try:
-                fig = datamodule.plot(sample)
-            except RGBBandsMissingError:
-                pass
-
-            if fig:
-                summary_writer = self.logger.experiment
-                summary_writer.add_figure(
-                    f'image/{batch_idx}', fig, global_step=self.global_step
-                )  # ty: ignore[call-non-callable]
-                plt.close()
-
-        return loss
+        return loss, batch
 
     def training_step(self, batch: Sample, batch_idx: int) -> Tensor:
         """Compute the training loss and additional metrics.
@@ -289,17 +254,21 @@ class ChangeDetection(ClassificationMixin, BaseTask):
         Returns:
             The loss tensor.
         """
-        loss = self._shared_step(batch, batch_idx, 'train')
+        loss, _ = self._shared_step(batch, batch_idx, 'train')
         return loss
 
-    def validation_step(self, batch: Sample, batch_idx: int) -> None:
+    def validation_step(self, batch: Sample, batch_idx: int) -> Sample:
         """Compute the validation loss and additional metrics.
 
         Args:
             batch: The output of your DataLoader.
             batch_idx: Integer displaying index of this batch.
+
+        Returns:
+            Batch with example predictions.
         """
-        self._shared_step(batch, batch_idx, 'val')
+        _, batch = self._shared_step(batch, batch_idx, 'val')
+        return batch
 
     def test_step(self, batch: Sample, batch_idx: int) -> None:
         """Compute the test loss and additional metrics.

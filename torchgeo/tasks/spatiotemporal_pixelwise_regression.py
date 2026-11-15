@@ -70,7 +70,7 @@ class SpatioTemporalPixelwiseRegression(RegressionMixin, BaseTask):
         """
         return self.model(x, **kwargs)
 
-    def _shared_step(self, batch: Sample, stage: str) -> Tensor:
+    def _shared_step(self, batch: Sample, stage: str) -> tuple[Tensor, Sample]:
         """Compute the loss and metrics for a given stage."""
         x = batch['image']
         y = batch['mask'].to(torch.float)
@@ -90,19 +90,24 @@ class SpatioTemporalPixelwiseRegression(RegressionMixin, BaseTask):
         metrics(y_hat, y)
 
         self.log(f'{stage}_loss', loss, batch_size=batch_size)
-        return loss
+
+        batch['prediction'] = y_hat
+
+        return loss, batch
 
     def training_step(
         self, batch: Sample, batch_idx: int, dataloader_idx: int = 0
     ) -> Tensor:
         """Compute the training loss and additional metrics."""
-        return self._shared_step(batch, 'train')
+        loss, _ = self._shared_step(batch, 'train')
+        return loss
 
     def validation_step(
         self, batch: Sample, batch_idx: int, dataloader_idx: int = 0
-    ) -> None:
+    ) -> Sample:
         """Compute the validation loss and additional metrics."""
-        self._shared_step(batch, 'val')
+        _, batch = self._shared_step(batch, 'val')
+        return batch
 
     def test_step(self, batch: Sample, batch_idx: int, dataloader_idx: int = 0) -> None:
         """Compute the test loss and additional metrics."""
