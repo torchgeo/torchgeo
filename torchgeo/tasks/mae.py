@@ -1,6 +1,9 @@
 # Copyright (c) TorchGeo Contributors. All rights reserved.
 # Licensed under the MIT License.
 
+# Adapted from https://docs.lightly.ai/self-supervised-learning/examples/mae.html
+# Copyright (c) 2018 The Python Packaging Authority
+
 """MAE task for self-supervised learning (SSL)."""
 
 import timm
@@ -140,7 +143,11 @@ class MAE(BaseTask):
         self.patch_size = vit.patch_embed.patch_size[0]
         self.num_prefix_tokens = vit.num_prefix_tokens
 
-        self.backbone = MaskedVisionTransformerTIMM(vit=vit)
+        self.backbone = MaskedVisionTransformerTIMM(
+            vit=vit,
+            weight_initialization='skip' if weights else '',
+            pos_embed_initialization='skip' if weights else 'sincos',
+        )
         self.sequence_length = self.backbone.sequence_length
         self.decoder_embed = nn.Linear(vit.embed_dim, self.hparams['decoder_dim'])
         self.decoder = MaskedVisionTransformerDecoderTIMM(
@@ -213,12 +220,10 @@ class MAE(BaseTask):
         x_encoded = self.backbone.encode(images=images, idx_keep=idx_keep)
         batch_size = x_encoded.shape[0]
         x_decode = self.decoder_embed(x_encoded)
-        x_masked = utils.repeat_token(
-            self.decoder.mask_token, (batch_size, self.sequence_length)
-        )
+        x_masked = utils.new_zeros(batch_size, self.sequence_length, x_decode.shape[-1])
         x_masked = utils.set_at_index(x_masked, idx_keep, x_decode.type_as(x_masked))
         # decoder forward pass
-        x_decoded = self.decoder.decode(x_masked)
+        x_decoded = self.decoder(x_masked, idx_mask=idx_mask)
         # predict pixel values for masked tokens
         x_pred = utils.get_at_index(x_decoded, idx_mask)
         x_pred = self.prediction_head(x_pred)
