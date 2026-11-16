@@ -40,18 +40,18 @@ def parse_pascal_voc(path: Path) -> dict[str, Any]:
     """
     et = ElementTree.parse(path)
     element = et.getroot()
-    filename = element.find('filename').text
+    filename = element.find('filename').text  # ty: ignore[missing-union-attribute]
     labels, bboxes = [], []
 
     for obj in element.findall('object'):
         bndbox = obj.find('bndbox')
         bbox = [
-            int(bndbox.find('xmin').text),  # ty: ignore[invalid-argument-type]
-            int(bndbox.find('ymin').text),  # ty: ignore[invalid-argument-type]
-            int(bndbox.find('xmax').text),  # ty: ignore[invalid-argument-type]
-            int(bndbox.find('ymax').text),  # ty: ignore[invalid-argument-type]
+            int(bndbox.find('xmin').text),  # ty: ignore[invalid-argument-type,missing-union-attribute]
+            int(bndbox.find('ymin').text),  # ty: ignore[invalid-argument-type,missing-union-attribute]
+            int(bndbox.find('xmax').text),  # ty: ignore[invalid-argument-type,missing-union-attribute]
+            int(bndbox.find('ymax').text),  # ty: ignore[invalid-argument-type,missing-union-attribute]
         ]
-        label = obj.find('name').text
+        label = obj.find('name').text  # ty: ignore[missing-union-attribute]
         bboxes.append(bbox)
         labels.append(label)
 

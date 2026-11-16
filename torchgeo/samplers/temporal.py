@@ -137,8 +137,8 @@ class RandomTimedeltaSampler(TemporalSampler):
         """
         super().__init__(dataset, toi=toi)
         self.delta = delta
-        left = self.index.index.left.min()
-        right = self.index.index.right.max()
+        left = self.index.index.left.min()  # ty: ignore[missing-union-attribute]
+        right = self.index.index.right.max()  # ty: ignore[missing-union-attribute]
         self._length = length or convolution_arithmetic(right - left, delta)
         self.generator = np.random.default_rng(generator)
 
@@ -263,8 +263,8 @@ class RandomPeriodSampler(TemporalSampler):
         """
         super().__init__(dataset, toi=toi)
         self.freq = freq
-        left = self.index.index.left.min()
-        right = self.index.index.right.max()
+        left = self.index.index.left.min()  # ty: ignore[missing-union-attribute]
+        right = self.index.index.right.max()  # ty: ignore[missing-union-attribute]
         period = Period(left, freq=freq)
         window = period.end_time - period.start_time
         self._length = length or convolution_arithmetic(right - left, window)

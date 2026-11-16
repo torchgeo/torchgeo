@@ -307,14 +307,14 @@ class PixelwiseRegression(Regression):
                 state_dict = get_weight(weights).get_state_dict(
                     progress=True, check_hash=True, weights_only=True
                 )
-            self.model.encoder.load_state_dict(state_dict)
+            self.model.encoder.load_state_dict(state_dict)  # ty: ignore[missing-union-attribute]
 
         # Freeze backbone
         if self.hparams.get('freeze_backbone', False) and model != 'fcn':
-            for param in self.model.encoder.parameters():
+            for param in self.model.encoder.parameters():  # ty: ignore[missing-union-attribute]
                 param.requires_grad = False
 
         # Freeze decoder
         if self.hparams.get('freeze_decoder', False) and model != 'fcn':
-            for param in self.model.decoder.parameters():
+            for param in self.model.decoder.parameters():  # ty: ignore[missing-union-attribute]
                 param.requires_grad = False

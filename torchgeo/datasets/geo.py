@@ -1220,7 +1220,7 @@ class VectorDataset(GeoDataset):
                 [self.get_label(row) for _, row in src.iterrows()]
             ).astype(np.int32)
 
-            shapes.extend(list(zip(src.geometry, labels)))  # ty: ignore[invalid-argument-type]
+            shapes.extend(list(zip(src.geometry, labels)))
 
         # Rasterize geometries
         width = (x.stop - x.start) / x.step
@@ -1417,7 +1417,7 @@ class NonGeoClassificationDataset(NonGeoDataset, ImageFolder):
         # Avoid conflict between ImageFolder.transforms and our transforms
         self.tg_transforms = transforms
 
-    def __getitem__(self, index: int) -> Sample:  # ty: ignore[invalid-method-override]
+    def __getitem__(self, index: int) -> Sample:  # ty: ignore[incompatible-method-override]
         """Return an index within the dataset.
 
         Args:

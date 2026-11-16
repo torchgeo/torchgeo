@@ -198,7 +198,7 @@ class TestGeoDataset:
 
     def test_abstract(self) -> None:
         with pytest.raises(TypeError, match="Can't instantiate abstract class"):
-            GeoDataset()  # ty: ignore[call-non-callable]
+            GeoDataset()  # ty: ignore[abstract-class-instantiation]
 
     def test_and_nongeo(self, dataset: GeoDataset) -> None:
         ds2 = CustomNonGeoDataset()
@@ -883,7 +883,7 @@ class TestNonGeoDataset:
 
     def test_abstract(self) -> None:
         with pytest.raises(TypeError, match="Can't instantiate abstract class"):
-            NonGeoDataset()  # ty: ignore[call-non-callable]
+            NonGeoDataset()  # ty: ignore[abstract-class-instantiation]
 
 
 class TestNonGeoClassificationDataset:

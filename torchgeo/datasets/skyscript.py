@@ -143,7 +143,7 @@ class SkyScript(NonGeoDataset):
             A dict containing image and tokenized caption at index.
         """
         filepath, title = self.captions.iloc[index][:2]
-        output = self.tokenizer.encode(title)
+        output = self.tokenizer.encode(title)  # ty: ignore[missing-union-attribute]
 
         with Image.open(self.root / filepath) as img:
             array = np.array(img, dtype=np.float32)
@@ -207,10 +207,10 @@ class SkyScript(NonGeoDataset):
 
         if show_titles:
             caption = sample['caption'].numpy()
-            title = textwrap.wrap(self.tokenizer.decode(caption))
+            title = textwrap.wrap(self.tokenizer.decode(caption))  # ty: ignore[missing-union-attribute]
             if 'prediction' in sample:
                 caption = sample['prediction'].numpy()
-                title += textwrap.wrap(self.tokenizer.decode(caption))
+                title += textwrap.wrap(self.tokenizer.decode(caption))  # ty: ignore[missing-union-attribute]
             ax.set_title('\n'.join(title))
 
         if suptitle is not None:
