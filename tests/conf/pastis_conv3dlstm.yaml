@@ -13,7 +13,6 @@ model:
     num_layers: 1
     conv3d_kernel_size: 3
     kernel_size: 3
-    head_kernel_size: 1
 data:
   class_path: PASTISDataModule
   init_args:

@@ -11,7 +11,6 @@ model:
     hidden_dim: 8
     num_layers: 1
     kernel_size: 3
-    head_kernel_size: 1
 data:
   class_path: PASTISDataModule
   init_args:
