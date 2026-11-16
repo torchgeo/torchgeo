@@ -101,7 +101,7 @@ class CopernicusBenchCloudS3(CopernicusBenchBase):
     )
     rgb_bands = ('Oa08_radiance', 'Oa06_radiance', 'Oa04_radiance')
     cmap = ListedColormap(['red', 'gray', 'lightgray', 'white', 'black', 'snow'])
-    classes: tuple[str, ...] = (
+    classes = (
         'Invalid',
         'Clear',
         'Cloud-Ambiguous',
