@@ -1539,7 +1539,7 @@ class IntersectionDataset(GeoDataset):
         # Remove duplicate columns with a suffix
         # Pandas does not allow suffixes of suffixes
         columns = ['filepath_1', 'filepath_2']
-        self.index.drop(columns=columns, inplace=True, errors='ignore')
+        self.index = self.index.drop(columns=columns, errors='ignore')
 
         name = 'datetime'
         datetime_1 = pd.IntervalIndex(list(self.index.pop('datetime_1')), name=name)

@@ -212,7 +212,7 @@ class SpaceNet(NonGeoDataset, ABC):
         else:
             # Convert to CRS and filter out invalid geometries
             gdf.to_crs(raster_crs, inplace=True)
-            gdf.dropna(subset=['geometry'], inplace=True)
+            gdf = gdf.dropna(subset=['geometry'])
             labels = gdf.geometry.tolist()
 
         if labels:
