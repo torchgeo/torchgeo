@@ -658,7 +658,7 @@ def pad_across_batches(
     return collated
 
 
-def stack_samples(samples: Iterable[Sample]) -> Sample:
+def stack_samples(samples: Iterable[Sample], dim: int = 0) -> Sample:
     """Stack a list of samples along a new axis.
 
     Useful for forming a mini-batch of samples to pass to
@@ -666,36 +666,44 @@ def stack_samples(samples: Iterable[Sample]) -> Sample:
 
     Args:
         samples: list of samples
+        dim: dimension to insert
 
     Returns:
         a single sample
+
+    .. versionadded:: 0.11
+       The *dim* parameter.
 
     .. versionadded:: 0.2
     """
     uncollated = _list_dict_to_dict_list(samples)
     collated: Sample = {}
     for key, value in uncollated.items():
-        collated[key] = torch.stack(value)
+        collated[key] = torch.stack(value, dim)
     return collated
 
 
-def concat_samples(samples: Iterable[Sample]) -> Sample:
+def concat_samples(samples: Iterable[Sample], dim: int = 0) -> Sample:
     """Concatenate a list of samples along an existing axis.
 
     Useful for joining samples in a :class:`torchgeo.datasets.IntersectionDataset`.
 
     Args:
         samples: list of samples
+        dim: the dimension over which the tensors are concatenated
 
     Returns:
         a single sample
+
+    .. versionadded:: 0.11
+       The *dim* parameter.
 
     .. versionadded:: 0.2
     """
     uncollated = _list_dict_to_dict_list(samples)
     collated = {}
     for key, value in uncollated.items():
-        collated[key] = torch.cat(value)
+        collated[key] = torch.cat(value, dim)
     return collated
 
 
@@ -724,7 +732,7 @@ def merge_samples(samples: Iterable[Sample]) -> Sample:
     return collated
 
 
-def unbind_samples(sample: Sample) -> list[Sample]:
+def unbind_samples(sample: Sample, dim: int = 0) -> list[Sample]:
     """Reverse of :func:`stack_samples`.
 
     Useful for turning a mini-batch of samples into a list of samples. These individual
@@ -732,15 +740,19 @@ def unbind_samples(sample: Sample) -> list[Sample]:
 
     Args:
         sample: a mini-batch of samples
+        dim: dimension to remove
 
     Returns:
          list of samples
+
+    .. versionadded:: 0.11
+       The *dim* parameter.
 
     .. versionadded:: 0.2
     """
     uncollated = {}
     for key, values in sample.items():
-        uncollated[key] = torch.unbind(values)
+        uncollated[key] = torch.unbind(values, dim)
     return _dict_list_to_list_dict(uncollated)
 
 
