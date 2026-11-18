@@ -6,7 +6,6 @@
 from collections.abc import Sequence
 from typing import Any
 
-import einops
 import torch
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -47,6 +46,7 @@ class MeanSquaredError(Metric):
     full_state_update = False
     plot_lower_bound = 0.0
 
+    weights: Tensor
     sse: Tensor
     total: Tensor
 
@@ -54,7 +54,7 @@ class MeanSquaredError(Metric):
         self,
         num_outputs: tuple[int, ...],
         squared: bool = True,
-        weights: Tensor = torch.tensor(1),
+        weights: Tensor | None = None,
         **kwargs: Any,
     ) -> None:
         r"""Initialize a new MeanSquaredError instance.
@@ -68,6 +68,7 @@ class MeanSquaredError(Metric):
         super().__init__(**kwargs)
 
         self.squared = squared
+        weights = torch.tensor(1) if weights is None else weights
         self.register_buffer('weights', weights)
 
         self.add_state('sse', default=torch.zeros(num_outputs), dist_reduce_fx='sum')
