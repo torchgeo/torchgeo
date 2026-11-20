@@ -46,8 +46,12 @@ class RarePlanes(NonGeoDataset):
     Both variants return axis-aligned pixel boxes in ``bbox_xyxy`` as
     ``(xmin, ymin, xmax, ymax)``, with the origin at the image's upper-left corner.
     Real GeoJSON coordinates are transformed into pixels and enclosed by each box;
-    synthetic boxes retain the XML coordinates. Aircraft have label 1; label 0 is
-    reserved for background.
+    synthetic boxes retain the XML coordinates.
+
+    Class labels:
+
+    * 0: background
+    * 1: aircraft
 
     The dataset must be downloaded manually from the dataset website.
 
