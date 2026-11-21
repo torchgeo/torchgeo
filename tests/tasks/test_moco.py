@@ -25,6 +25,12 @@ def create_model(*args: Any, **kwargs: Any) -> Module:
 
 
 class TestMoCo:
+    def test_custom_augmentations(self) -> None:
+        augmentations = torch.nn.Identity()
+        task = MoCo(augmentations=(augmentations, None))
+        assert task.augmentations[0] is augmentations
+        assert task.augmentations[1] is not None
+
     @pytest.mark.parametrize(
         'name',
         [
@@ -81,8 +87,8 @@ class TestMoCo:
     def test_grayscale_weights_tensor(self) -> None:
         weights = torch.ones(4)
         task = MoCo(in_channels=4, grayscale_weights=weights)
-        assert task.augmentation1 is not None
-        assert task.augmentation2 is not None
+        assert task.augmentations[0] is not None
+        assert task.augmentations[1] is not None
 
     @pytest.fixture
     def weights(self) -> WeightsEnum:
