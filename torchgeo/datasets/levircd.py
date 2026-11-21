@@ -128,9 +128,7 @@ class LEVIRCDBase(NonGeoDataset, abc.ABC):
             array: np.typing.NDArray[np.int_] = np.array(img.convert('L'))
             tensor = torch.from_numpy(array)
             tensor = torch.clamp(tensor, min=0, max=1)
-            tensor = tensor.to(torch.long)
-            # VideoSequential requires time dimension
-            return einops.rearrange(tensor, 'h w -> () h w')
+            return tensor.to(torch.long)
 
     def plot(
         self, sample: Sample, show_titles: bool = True, suptitle: str | None = None
@@ -164,11 +162,11 @@ class LEVIRCDBase(NonGeoDataset, abc.ABC):
         axs[0].axis('off')
         axs[1].imshow(image2)
         axs[1].axis('off')
-        axs[2].imshow(sample['mask'][0], cmap='gray', interpolation='none')
+        axs[2].imshow(sample['mask'], cmap='gray', interpolation='none')
         axs[2].axis('off')
 
         if 'prediction' in sample:
-            axs[3].imshow(sample['prediction'][0], cmap='gray', interpolation='none')
+            axs[3].imshow(sample['prediction'], cmap='gray', interpolation='none')
             axs[3].axis('off')
             if show_titles:
                 axs[3].set_title('Prediction')
