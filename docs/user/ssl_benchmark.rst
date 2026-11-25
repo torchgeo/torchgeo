@@ -18,7 +18,7 @@ See the :ref:`SSL task overview <ssl-tasks>` for supported tasks, their approach
 Benchmarking
 ------------
 
-We benchmark by pretraining on EuroSAT's 13-band multispectral images without labels, then freeze the encoder and evaluate its features with a k-nearest-neighbor (kNN) classifier. This evaluation follows `Corley et al. 2024, "Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters" <https://arxiv.org/abs/2305.13456>`_. Using kNN avoids the optimizer, learning-rate, and regularization choices needed to train a linear probe.
+We use EuroSAT as a benchmark for comparing SSL tasks, not to produce pretrained weights for use on other datasets. We benchmark by pretraining on EuroSAT's 13-band multispectral images without labels, then freeze the encoder and evaluate its features with a k-nearest-neighbor (kNN) classifier. This evaluation follows `Corley et al. 2024, "Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters" <https://arxiv.org/abs/2305.13456>`_. Using kNN avoids the optimizer, learning-rate, and regularization choices needed to train a linear probe.
 
 Use the following settings when comparing runs with the results below.
 
@@ -36,16 +36,18 @@ Use the following settings when comparing runs with the results below.
      - 224x224, produced by each task's ``RandomResizedCrop`` from the native 64x64 imagery
    * - Pretraining
      - 60 epochs, batch size 128, mixed precision, one GPU, seed 0
+   * - Learning rates
+     - Swept for each task and encoder.
    * - Features
-     - ``forward_head(forward_features(x), pre_logits=True)`` on the frozen encoder, evaluated on unaugmented images
+     - ``forward_head(forward_features(x), pre_logits=True)`` on the frozen encoder from the final checkpoint, evaluated on unaugmented images resized to 224x224 with bilinear interpolation
    * - Classifier
-     - ``sklearn.neighbors.KNeighborsClassifier(n_neighbors=5)``, Euclidean distance
+     - ``sklearn.neighbors.KNeighborsClassifier(n_neighbors=5)``, Euclidean distance, fit on features from the training split
    * - Scaling
      - Evaluate kNN with and without ``StandardScaler`` and report the better accuracy, following the reference paper
    * - Selection
      - Select the learning rate using validation accuracy, then evaluate the selected model once on the test set
 
-Resizing and normalization affect the comparison. The reference paper reports changes in model rankings when images are evaluated at their native 64x64 resolution instead of 224x224. In our runs, for example, changing preprocessing produced a 0.43 range in kNN accuracy for the same ImageNet-pretrained ResNet-50.
+Resizing and normalization affect the comparison. The reference paper reports changes in model rankings when images are evaluated at their native 64x64 resolution instead of 224x224. In our runs, for example, changing preprocessing produced a 0.43 range in kNN accuracy for the same ImageNet-pretrained ResNet-18.
 
 Results
 -------
@@ -119,7 +121,7 @@ The table reports EuroSAT test-set top-1 accuracy using kNN with five neighbors.
 
 The image-statistics baseline scores 0.8937, higher than either randomly initialized encoder. The ImageNet-pretrained ViT scores 0.9178. Compare against these baselines as well as random initialization when assessing whether SSL improves classification accuracy.
 
-The selected learning rate depends on both the task and the encoder. The rates in this table span four orders of magnitude: MoCo v3 uses 1e-2 with ResNet-50 and 1e-4 with ViT-S/16. Sweep learning rates for each combination rather than assuming one setting will work for all of them. For example, three of the sixteen MoCo and SimCLR runs that we did produced checkpoints with entirely NaN features. Another run collapsed to a near-constant embedding while its loss stayed flat.
+The selected learning rate depends on both the task and the encoder. The rates in this table span four orders of magnitude: MoCo v3 uses 1e-2 with ResNet-50 and 1e-4 with ViT-S/16. Sweep learning rates for each combination rather than assuming one setting will work for all of them. For example, three of the eight MoCo v3 runs produced final checkpoints with entirely NaN features. One of them had already collapsed after 40 epochs, with test accuracy below random initialization while its training loss stayed nearly flat.
 
 .. rubric:: Footnotes
 
