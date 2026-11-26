@@ -8,6 +8,7 @@ The following case studies present end-to-end workflows for common use cases of 
 * `Earthquake Detection <earthquake_detection.ipynb>`_: A workflow for change detection to detect areas affected by earthquakes
 * `Evaluating SSL Checkpoints <ssl_knn_eval.ipynb>`_: Scoring a self-supervised encoder with a kNN probe
 * `NAIP Road Segmentation <naip_road_segmentation.ipynb>`_: A workflow for road extraction from NAIP imagery using pre-trained segmentation weights
+* `Tessera Embeddings <tessera_embeddings_pixelwise_classification.ipynb>`_: A workflow for pixel-wise crop classification using TESSERA embeddings and the Cropland Data Layer (CDL)
 
 Do you have a use case that is missing from this list? Please open a pull request to add tutorials for your own use cases.
 
@@ -20,3 +21,4 @@ Do you have a use case that is missing from this list? Please open a pull reques
    earthquake_detection
    ssl_knn_eval
    naip_road_segmentation
+   tessera_embeddings_pixelwise_classification
