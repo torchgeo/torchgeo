@@ -227,8 +227,10 @@ class ChangeDetection(ClassificationMixin, BaseTask):
 
         y_hat = self(x)
 
-        if self.hparams['loss'] == 'bce':
+        if self.hparams['task'] == 'binary':
             y_hat = rearrange(y_hat, 'b () h w -> b h w')
+
+        if self.hparams['loss'] == 'bce':
             y = y.float()
 
         # Compute the loss
