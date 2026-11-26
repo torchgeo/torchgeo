@@ -52,7 +52,7 @@ class TestCaBuAr:
             assert x['image'].shape[:2] == (2, 12)
 
         # Mask tests:
-        assert x['mask'].ndim == 3
+        assert x['mask'].ndim == 2
 
     def test_len(self, dataset: CaBuAr) -> None:
         assert len(dataset) == 4
