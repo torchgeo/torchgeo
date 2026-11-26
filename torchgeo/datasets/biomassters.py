@@ -147,8 +147,8 @@ class BioMassters(NonGeoDataset):
         sample_df = self.df[self.df['num_index'] == index].copy()
 
         # sort by satellite and month to return correct order
-        sample_df.sort_values(
-            by=['satellite', 'num_month'], inplace=True, ascending=True
+        sample_df = sample_df.sort_values(
+            by=['satellite', 'num_month'], ascending=True
         )
 
         filepaths = sample_df['filename'].tolist()
