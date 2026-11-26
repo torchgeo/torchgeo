@@ -80,7 +80,7 @@ class TestOpenStreetMap:
             download=True,
         )
         assert dataset.bbox == common_test_params['bbox']
-        assert dataset.classes == common_test_params['classes']
+        assert dataset.feature_classes == common_test_params['classes']
 
     def test_custom_query(self, mock_download_and_integrity: None) -> None:
         root = os.path.join('tests', 'data', 'openstreetmap')
@@ -94,7 +94,7 @@ class TestOpenStreetMap:
             }
         ]
         dataset = OpenStreetMap(bbox=bbox, paths=root, classes=classes)
-        assert dataset.classes == classes
+        assert dataset.feature_classes == classes
 
     def test_build_overpass_query(self, mock_download_and_integrity: None) -> None:
         root = os.path.join('tests', 'data', 'openstreetmap')
@@ -210,7 +210,9 @@ class TestOpenStreetMap:
             OpenStreetMap
         )  # Create instance without __init__
         dataset.bbox = bbox
-        dataset.classes = [{'name': 'nonexistent', 'selector': [{'nonexistent': '*'}]}]
+        dataset.feature_classes = [
+            {'name': 'nonexistent', 'selector': [{'nonexistent': '*'}]}
+        ]
         dataset.root = pathlib.Path(root)
         assert not dataset._check_integrity()
 
@@ -242,7 +244,7 @@ class TestOpenStreetMap:
         # Create a temporary instance to test the query generation
         dataset = OpenStreetMap.__new__(OpenStreetMap)
         dataset.bbox = common_test_params['bbox']
-        dataset.classes = classes
+        dataset.feature_classes = classes
 
         query = dataset._build_overpass_query()
 
@@ -507,7 +509,9 @@ class TestOpenStreetMap:
         # Direct call to _download_data
         dataset = OpenStreetMap.__new__(OpenStreetMap)
         dataset.bbox = (2.3520, 48.8565, 2.3525, 48.8570)
-        dataset.classes = [{'name': 'building', 'selector': [{'building': '*'}]}]
+        dataset.feature_classes = [
+            {'name': 'building', 'selector': [{'building': '*'}]}
+        ]
         dataset.root = tmp_path
 
         with pytest.raises(ValueError, match='No features found in the specified area'):
@@ -563,7 +567,7 @@ class TestOpenStreetMap:
         """Test that dataset can be instantiated when data already exists."""
         OpenStreetMap(
             bbox=dataset.bbox,
-            classes=dataset.classes,
+            classes=dataset.feature_classes,
             paths=dataset.root,
             download=True,
         )
@@ -612,7 +616,7 @@ class TestOpenStreetMap:
                 classes=classes,
                 download=False,
             )
-            assert dataset.classes == classes
+            assert dataset.feature_classes == classes
         else:
             # Invalid case - should raise the expected error
             with pytest.raises(expected_error, match=error_pattern):

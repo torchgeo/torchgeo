@@ -454,7 +454,7 @@ class NLCD(RasterDataset):
 
         self.paths = paths
         self.years = years
-        self.classes = classes
+        self.class_indices = classes
         self.download = download
         self.checksum = checksum
         self.ordinal_map = torch.zeros(self.valid_classes[-1] + 1, dtype=self.dtype)
@@ -467,7 +467,7 @@ class NLCD(RasterDataset):
         )
 
         # Map chosen classes to ordinal numbers, all others mapped to background class
-        for v, k in enumerate(self.classes):
+        for v, k in enumerate(self.class_indices):
             self.ordinal_map[k] = v
             self.inverse_map[v] = k
 
