@@ -1625,16 +1625,16 @@ wheels = [
 
 [[package]]
 name = "kornia"
-version = "0.9.0"
+version = "0.9.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "kornia-rs" },
     { name = "numpy" },
     { name = "torch" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0b/42/71a33feb491955f0eb181287e6afbaf6f437757766d496ae0ca70f54fc2e/kornia-0.9.0.tar.gz", hash = "sha256:65e82219b10e73289fb8cb3c739879d917e6908c0a977b1d65f388cba1741f71", size = 1455352, upload-time = "2026-10-23T18:35:33.741Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/23/7b/6cd75c23261745a8d574ed7cc33c9d470de746a61717ec5e9ae380efd3cc/kornia-0.9.2.tar.gz", hash = "sha256:d94362a4f57d4d86eb4ae656c6cef4911f577bfe09b098e8c3c69da43b45445b", size = 1708697, upload-time = "2026-11-16T19:21:15.083Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/ee/6bffb3fc85446de03fa7e397954ba4dd1bc5edab92b4b8be3ce09c9ccd1b/kornia-0.9.0-py3-none-any.whl", hash = "sha256:7a1632fe004a305c94f2b979fc6ab4df26e01f925e74bdb9f8b8a03a1229caaf", size = 1940302, upload-time = "2026-10-23T18:35:32.237Z" },
+    { url = "https://files.pythonhosted.org/packages/b9/07/274fef1f0d8e230ef1049a1a1fe89651d090bf5de52a40e4d5e402738290/kornia-0.9.2-py3-none-any.whl", hash = "sha256:3b0340c196106fbdd4cbcd2186abe02e4f16c76c2b5e1a3c5e219c849fdd18db", size = 2214099, upload-time = "2026-11-16T19:21:12.812Z" },
 ]
 
 [[package]]
