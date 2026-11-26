@@ -47,7 +47,7 @@ class DetailCaptureModule(Module):
             in_chans=in_channels,
         )
 
-        backbone_channels: list[int] = self.backbone.feature_info.channels()  # ty: ignore[call-non-callable,missing-union-attribute]
+        backbone_channels: list[int] = self.backbone.feature_info.channels()  # ty: ignore[not-callable,missing-union-attribute]
 
         self.proj1 = nn.Conv2d(backbone_channels[0], 64, kernel_size=1)
         self.proj2 = nn.Conv2d(backbone_channels[1], 128, kernel_size=1)

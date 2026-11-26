@@ -302,7 +302,7 @@ class ObjectDetection(BaseTask):
                 summary_writer = self.logger.experiment
                 summary_writer.add_figure(
                     f'image/{batch_idx}', fig, global_step=self.global_step
-                )  # ty: ignore[call-non-callable]
+                )  # ty: ignore[not-callable]
                 plt.close()
 
     def test_step(self, batch: Sample, batch_idx: int, dataloader_idx: int = 0) -> None:

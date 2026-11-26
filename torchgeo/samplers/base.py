@@ -217,7 +217,7 @@ class TemporalSampler(GeoSampler):
         x, y = location
         index = index.cx[x.start : x.stop, y.start : y.stop]
 
-        return index.index  # ty: ignore[invalid-return-type]
+        return index.index  # ty: ignore[invalid-explicit-return]
 
     @abc.abstractmethod
     def _iter_subset(
