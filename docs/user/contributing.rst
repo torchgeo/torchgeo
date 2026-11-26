@@ -51,7 +51,7 @@ TorchGeo is licensed under the MIT License. If your pull request adds any new fi
 AI Policy
 ---------
 
-The TorchGeo project does not currently allow the use of LLMs. See the `AI policy <https://github.com/torchgeo/torchgeo/blob/main/.github/AI-POLICY.md>`__ for details.
+The TorchGeo project does not currently allow the use of LLMs. See the `AI policy <https://github.com/torchgeo/torchgeo/blob/main/.github/AI_POLICY.md>`__ for details.
 
 .. _tests:
 
