@@ -187,8 +187,8 @@ class DigitalTyphoon(NonGeoDataset):
         self.aux_df['hour_diff'] = self.aux_df['hour_diff_consecutive'].combine_first(
             self.aux_df['hour_diff_to_next']
         )
-        self.aux_df.drop(
-            ['hour_diff_consecutive', 'hour_diff_to_next'], axis=1, inplace=True
+        self.aux_df = self.aux_df.drop(
+            ['hour_diff_consecutive', 'hour_diff_to_next'], axis=1
         )
 
         # 0 hour difference is for the last time step of each typhoon sequence and want

@@ -309,7 +309,7 @@ class EnviroAtlas(GeoDataset):
         gdf['prior'] = gdf['naip'].replace('a_naip', 'prior_from_cooccurrences_101_31')
         datetimes = [(mint, maxt)] * len(gdf)
         index = pd.IntervalIndex.from_tuples(datetimes, closed='both', name='datetime')
-        gdf.set_index(index, inplace=True)
+        gdf = gdf.set_index(index)
         self.index = gdf
 
     def __getitem__(self, index: GeoSlice) -> Sample:
