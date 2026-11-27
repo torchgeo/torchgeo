@@ -20,3 +20,4 @@ Library,ML Backend,I/O Backend,Spatial Backend,Transform Backend,Datasets,Weight
 `rs-embed`_,PyTorch,"Earth Engine, tifffile, xarray, pandas, pillow","pyproj, affine",-,0,19,✅,❌,❌,❌,✅
 `GeoDeep`_,ONNX,GDAL,-,-,0,7,✅,❌,✅,❌,❌
 `torchange`_,PyTorch,"Apache Arrow, skimage",-,Albumentations,8,8,❌,❌,❌,❌,✅
+`rslearn`_,PyTorch,"GDAL, NetCDF4, pillow, zarr, xarray","shapely, R-tree","PyTorch, torchvision",24,54,✅,✅,✅,✅,✅
