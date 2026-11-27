@@ -6,14 +6,11 @@
 from collections.abc import Sequence
 from typing import Any
 
-import einops
 import torch
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from torch import Tensor
 from torchmetrics import Metric
-
-from .utils import latitude_weights
 
 
 class MeanSquaredError(Metric):
@@ -49,29 +46,30 @@ class MeanSquaredError(Metric):
     full_state_update = False
     plot_lower_bound = 0.0
 
+    weights: Tensor
     sse: Tensor
     total: Tensor
 
     def __init__(
         self,
-        latitude: Tensor,
         num_outputs: tuple[int, ...],
         squared: bool = True,
+        weights: Tensor | None = None,
         **kwargs: Any,
     ) -> None:
         r"""Initialize a new MeanSquaredError instance.
 
         Args:
-            latitude: Latitude of :math:`f` and :math:`o` in degrees
-                :math:`[-90, \ldots, 90]`.
             num_outputs: Dimensions of output metric after mean across
                 :math:`t`, :math:`i`, and :math:`j` dimensions.
             squared: If True returns MSE value, if False returns RMSE value.
+            weights: Weights to multiply with squared error before mean.
         """
         super().__init__(**kwargs)
 
-        self.weights = einops.rearrange(latitude_weights(latitude), 'y -> y 1')
         self.squared = squared
+        weights = torch.tensor(1) if weights is None else weights
+        self.register_buffer('weights', weights)
 
         self.add_state('sse', default=torch.zeros(num_outputs), dist_reduce_fx='sum')
         self.add_state('total', default=torch.tensor(0), dist_reduce_fx='sum')
