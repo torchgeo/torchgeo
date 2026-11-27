@@ -223,6 +223,11 @@ QuakeSet
 
 .. autoclass:: QuakeSetDataModule
 
+RarePlanes
+^^^^^^^^^^
+
+.. autoclass:: RarePlanesDataModule
+
 ReforesTree
 ^^^^^^^^^^^
 
