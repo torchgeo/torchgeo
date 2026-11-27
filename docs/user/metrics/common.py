@@ -24,6 +24,7 @@ index = [
     'rs-embed',
     'GeoDeep',
     'torchange',
+    'rslearn',
 ]
 
 # Sort by date of first commit (update_timeline.py)
@@ -62,6 +63,7 @@ name_to_github = {
     'geodl': ('maxwell-geospatial', 'geodl'),
     'GeoAI': ('opengeos', 'geoai'),
     'scikit-eo': ('yotarazona', 'scikit-eo'),
+    'rslearn': ('rslearn'),
     'TerraTorch': ('torchgeo', 'terratorch'),
     'GeoDeep': ('uav4geo', 'GeoDeep'),
     'GeoTessera': ('ucam-eo', 'geotessera'),
@@ -95,6 +97,7 @@ hardcoded_coverage = {
     'torchange': 0,
     'AIDE': 0,
     'rs-embed': 61,
+    'rslearn': 73,
 }
 name_to_pypi = {
     'SPy': 'spectral',
@@ -115,6 +118,7 @@ name_to_pypi = {
     'torchange': 'torchange',
     'rs-embed': 'rs-embed',
     'py4dgeo': 'py4dgeo',
+    'rslearn': 'rslearn',
 }
 name_to_cran = {'SITS': 'sits'}
 name_to_conda = {
