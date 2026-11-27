@@ -63,7 +63,7 @@ name_to_github = {
     'geodl': ('maxwell-geospatial', 'geodl'),
     'GeoAI': ('opengeos', 'geoai'),
     'scikit-eo': ('yotarazona', 'scikit-eo'),
-    'rslearn': ('rslearn'),
+    'rslearn': ('allenai', 'rslearn'),
     'TerraTorch': ('torchgeo', 'terratorch'),
     'GeoDeep': ('uav4geo', 'GeoDeep'),
     'GeoTessera': ('ucam-eo', 'geotessera'),
