@@ -278,7 +278,7 @@ class ChangeDetection(ClassificationMixin, BaseTask):
                 summary_writer = self.logger.experiment
                 summary_writer.add_figure(
                     f'image/{batch_idx}', fig, global_step=self.global_step
-                )  # ty: ignore[call-non-callable]
+                )  # ty: ignore[not-callable]
                 plt.close()
 
         return loss

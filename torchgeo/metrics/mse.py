@@ -112,4 +112,4 @@ class MeanSquaredError(Metric):
         Returns:
             The resulting figure and axis.
         """
-        return self._plot(val, ax)  # ty: ignore[invalid-return-type]
+        return self._plot(val, ax)  # ty: ignore[invalid-explicit-return]
