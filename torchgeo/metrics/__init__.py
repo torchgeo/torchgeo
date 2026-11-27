@@ -3,6 +3,7 @@
 
 """TorchGeo metrics."""
 
+from .acc import AnomalyCorrCoef
 from .mse import MeanSquaredError
 
-__all__ = ('MeanSquaredError',)
+__all__ = ('AnomalyCorrCoef', 'MeanSquaredError')
