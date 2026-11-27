@@ -6,6 +6,7 @@ Library,ML Backend,I/O Backend,Spatial Backend,Transform Backend,Datasets,Weight
 `Raster Vision`_,"PyTorch, TensorFlow*","GDAL, OpenCV, pandas, pillow, scipy, xarray",STAC,Albumentations,0,6,✅,❌,✅,✅,🚧
 `GeoAI`_,PyTorch,"GDAL, xarray",geopandas,Albumentations,0,6,❌,✅,✅,✅,❌
 `samgeo`_,PyTorch,"GDAL, OpenCV, pandas, xarray",geopandas,numpy,0,0,❌,✅,✅,❌,❌
+`rslearn`_,PyTorch,"GDAL, NetCDF4, pillow, zarr, xarray","shapely, R-tree","PyTorch, torchvision",24,54,✅,✅,✅,✅,✅
 `spopt`_,scikit-learn,pandas,shapely,numpy,0,0,❌,❌,✅,❌,❌
 `SPy`_,numpy,numpy,-,numpy,3,0,❌,❌,❌,❌,❌
 `GDL`_,PyTorch,"GDAL, pandas",-,Kornia,0,3,✅,❌,❌,❌,❌
@@ -20,4 +21,3 @@ Library,ML Backend,I/O Backend,Spatial Backend,Transform Backend,Datasets,Weight
 `rs-embed`_,PyTorch,"Earth Engine, tifffile, xarray, pandas, pillow","pyproj, affine",-,0,19,✅,❌,❌,❌,✅
 `GeoDeep`_,ONNX,GDAL,-,-,0,7,✅,❌,✅,❌,❌
 `torchange`_,PyTorch,"Apache Arrow, skimage",-,Albumentations,8,8,❌,❌,❌,❌,✅
-`rslearn`_,PyTorch,"GDAL, NetCDF4, pillow, zarr, xarray","shapely, R-tree","PyTorch, torchvision",24,54,✅,✅,✅,✅,✅
