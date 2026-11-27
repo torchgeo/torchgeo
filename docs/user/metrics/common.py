@@ -10,6 +10,7 @@ index = [
     'Raster Vision',
     'GeoAI',
     'samgeo',
+    'rslearn',
     'spopt',
     'SPy',
     'GDL',
@@ -24,7 +25,6 @@ index = [
     'rs-embed',
     'GeoDeep',
     'torchange',
-    'rslearn',
 ]
 
 # Sort by date of first commit (update_timeline.py)
