@@ -4006,17 +4006,18 @@ wheels = [
 
 [[package]]
 name = "sphinx-github-changelog"
-version = "2.0.1"
+version = "2.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "docutils" },
     { name = "httpx" },
     { name = "myst-parser" },
     { name = "sphinx" },
+    { name = "tenacity" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b8/e5/acaa1a6aa5e0a6ac28078b0d47a0b0eba85ca891a89e6980cb167bb24396/sphinx_github_changelog-2.0.1.tar.gz", hash = "sha256:3ff7f3352bb3637f309571e45364a81e71b7840a4f23dc6dc171d72b5e0625d1", size = 70464, upload-time = "2026-05-16T09:41:26.129Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/40/06/afa67f8ac5669e37cd108fabb42b333dcda631d7566b00ae35c0addfa555/sphinx_github_changelog-2.3.1.tar.gz", hash = "sha256:525b228370bc9aae702359db7a4954c74792009098ee26d4349a57e614df5436", size = 104507, upload-time = "2026-11-18T23:26:05.094Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f1/e5/e038ae1bd8d8a2313d699108a18a3b0cabb87b514ea081db1b98d7e7bf97/sphinx_github_changelog-2.0.1-py3-none-any.whl", hash = "sha256:bd3b5a73a4d083d0ff5ce435396ffc5d426758945505a32ee0359ec4862e31bb", size = 11626, upload-time = "2026-05-16T09:41:24.264Z" },
+    { url = "https://files.pythonhosted.org/packages/bc/68/f55bccdbbb07d6347ad42a8bb804626cd079e0f2420a424c15a48e808c73/sphinx_github_changelog-2.3.1-py3-none-any.whl", hash = "sha256:b255680fe981bf2b4d6b507a75e953c08696de6fadbe6eaa7fdb1edc32c1fe31", size = 14249, upload-time = "2026-11-18T23:26:03.72Z" },
 ]
 
 [[package]]
@@ -4097,6 +4098,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/83/d3/803453b36afefb7c2bb238361cd4ae6125a569b4db67cd9e79846ba2d68c/sympy-1.14.0.tar.gz", hash = "sha256:d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517", size = 7793921, upload-time = "2025-04-27T18:05:01.611Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl", hash = "sha256:e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5", size = 6299353, upload-time = "2025-04-27T18:04:59.103Z" },
+]
+
+[[package]]
+name = "tenacity"
+version = "9.2.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/82/9e/497c1c8ebe5a5b5d1d4a7511aea22c0bb1a97e3170d98abdef0e1b34265a/tenacity-9.2.1.tar.gz", hash = "sha256:a606b5c808d0cded4a359d5b9932d867ff2a6a6b64d37350260fd01bbdf83839", size = 58261, upload-time = "2026-10-07T12:13:01.633Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d6/26/1ff2b0721ac66a3ec5b1402b333110b352ab0a8724052ac279a7b82d40c4/tenacity-9.2.1-py3-none-any.whl", hash = "sha256:9e56f17539296baab7beabb08b92f6ee3d7be92d8be72d763360677c2ad6580e", size = 32310, upload-time = "2026-10-07T12:13:00.102Z" },
 ]
 
 [[package]]
